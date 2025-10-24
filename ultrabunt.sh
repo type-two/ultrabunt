@@ -104,7 +104,7 @@ update_package_cache() {
                 log "Cache updated: $name is installed (APT)"
             else
                 unset INSTALLED_CACHE["apt:$pkg"]
-                log "Cache updated: $name is not installed (APT)"
+                # Removed verbose logging for not installed packages
             fi
             ;;
         snap)
@@ -113,7 +113,7 @@ update_package_cache() {
                 log "Cache updated: $name is installed (Snap)"
             else
                 unset INSTALLED_CACHE["snap:$pkg"]
-                log "Cache updated: $name is not installed (Snap)"
+                # Removed verbose logging for not installed packages
             fi
             ;;
         flatpak)
@@ -122,7 +122,7 @@ update_package_cache() {
                 log "Cache updated: $name is installed (Flatpak)"
             else
                 unset INSTALLED_CACHE["flatpak:$pkg"]
-                log "Cache updated: $name is not installed (Flatpak)"
+                # Removed verbose logging for not installed packages
             fi
             ;;
         custom)
@@ -233,6 +233,107 @@ ui_checklist() {
     local menu_height="$5"
     shift 5
     whiptail --title "$title" --checklist "$text" "$height" "$width" "$menu_height" "$@" 3>&1 1>&2 2>&3
+}
+
+# ==============================================================================
+# INSTALLATION METHOD SELECTION
+# ==============================================================================
+
+# Function to get all available installation methods for a base app name
+get_available_methods() {
+    local base_name="$1"
+    local methods=()
+    
+    # Check if base package exists
+    if [[ -n "${PACKAGES[$base_name]:-}" ]]; then
+        local method="${PKG_METHOD[$base_name]}"
+        local desc="${PKG_DESC[$base_name]}"
+        methods+=("$base_name" "$desc")
+    fi
+    
+    # Check for alternative methods
+    for variant in "${base_name}-snap" "${base_name}-flatpak" "${base_name}-deb"; do
+        if [[ -n "${PACKAGES[$variant]:-}" ]]; then
+            local desc="${PKG_DESC[$variant]}"
+            methods+=("$variant" "$desc")
+        fi
+    done
+    
+    # Special cases for apps with different naming patterns
+    case "$base_name" in
+        "vscode")
+            if [[ -n "${PACKAGES[vscode-snap]:-}" ]]; then
+                methods+=("vscode-snap" "${PKG_DESC[vscode-snap]}")
+            fi
+            if [[ -n "${PACKAGES[vscode-flatpak]:-}" ]]; then
+                methods+=("vscode-flatpak" "${PKG_DESC[vscode-flatpak]}")
+            fi
+            ;;
+        "discord")
+            if [[ -n "${PACKAGES[discord-deb]:-}" ]]; then
+                methods+=("discord-deb" "${PKG_DESC[discord-deb]}")
+            fi
+            if [[ -n "${PACKAGES[discord-flatpak]:-}" ]]; then
+                methods+=("discord-flatpak" "${PKG_DESC[discord-flatpak]}")
+            fi
+            ;;
+    esac
+    
+    printf '%s\n' "${methods[@]}"
+}
+
+# Function to offer installation method choice
+choose_installation_method() {
+    local base_name="$1"
+    local available_methods
+    
+    # Get available methods as array
+    mapfile -t available_methods < <(get_available_methods "$base_name")
+    
+    # If only one method available, return it
+    if [[ ${#available_methods[@]} -eq 2 ]]; then
+        echo "${available_methods[0]}"
+        return 0
+    fi
+    
+    # If multiple methods available, show selection menu
+    if [[ ${#available_methods[@]} -gt 2 ]]; then
+        local choice
+        choice=$(ui_menu "Installation Method" "Multiple installation methods available for $base_name.\nChoose your preferred method:" 20 80 10 "${available_methods[@]}")
+        
+        if [[ -n "$choice" && "$choice" != "back" ]]; then
+            echo "$choice"
+            return 0
+        else
+            return 1
+        fi
+    fi
+    
+    # No methods found
+    return 1
+}
+
+# Enhanced install function that checks for multiple methods
+install_package_with_choice() {
+    local name="$1"
+    
+    # First check if this is already a specific variant (e.g., vscode-snap)
+    if [[ -n "${PACKAGES[$name]:-}" ]]; then
+        install_package "$name"
+        return $?
+    fi
+    
+    # Check for multiple installation methods
+    local chosen_method
+    chosen_method=$(choose_installation_method "$name")
+    
+    if [[ -n "$chosen_method" ]]; then
+        install_package "$chosen_method"
+        return $?
+    else
+        ui_msg "Installation Cancelled" "No installation method selected for $name."
+        return 1
+    fi
 }
 
 # ==============================================================================
@@ -348,116 +449,116 @@ declare -A PKG_DEPS
 
 # CORE UTILITIES
 PACKAGES[git]="git"
-PKG_DESC[git]="Version control system"
+PKG_DESC[git]="Version control system [APT]"
 PKG_METHOD[git]="apt"
 PKG_CATEGORY[git]="core"
 
 PACKAGES[curl]="curl"
-PKG_DESC[curl]="Command line tool for transferring data"
+PKG_DESC[curl]="Command line tool for transferring data [APT]"
 PKG_METHOD[curl]="apt"
 PKG_CATEGORY[curl]="core"
 
 PACKAGES[wget]="wget"
-PKG_DESC[wget]="Network downloader"
+PKG_DESC[wget]="Network downloader [APT]"
 PKG_METHOD[wget]="apt"
 PKG_CATEGORY[wget]="core"
 
 PACKAGES[build-essential]="build-essential"
-PKG_DESC[build-essential]="Compilation tools (gcc, make, etc)"
+PKG_DESC[build-essential]="Compilation tools (gcc, make, etc) [APT]"
 PKG_METHOD[build-essential]="apt"
 PKG_CATEGORY[build-essential]="core"
 
 PACKAGES[tree]="tree"
-PKG_DESC[tree]="Directory listing in tree format"
+PKG_DESC[tree]="Directory listing in tree format [APT]"
 PKG_METHOD[tree]="apt"
 PKG_CATEGORY[tree]="core"
 
 PACKAGES[ncdu]="ncdu"
-PKG_DESC[ncdu]="NCurses Disk Usage analyzer"
+PKG_DESC[ncdu]="NCurses Disk Usage analyzer [APT]"
 PKG_METHOD[ncdu]="apt"
 PKG_CATEGORY[ncdu]="core"
 
 PACKAGES[jq]="jq"
-PKG_DESC[jq]="JSON processor"
+PKG_DESC[jq]="JSON processor [APT]"
 PKG_METHOD[jq]="apt"
 PKG_CATEGORY[jq]="core"
 
 PACKAGES[tmux]="tmux"
-PKG_DESC[tmux]="Terminal multiplexer"
+PKG_DESC[tmux]="Terminal multiplexer [APT]"
 PKG_METHOD[tmux]="apt"
 PKG_CATEGORY[tmux]="core"
 
 PACKAGES[fzf]="fzf"
-PKG_DESC[fzf]="Fuzzy finder"
+PKG_DESC[fzf]="Fuzzy finder [APT]"
 PKG_METHOD[fzf]="apt"
 PKG_CATEGORY[fzf]="core"
 
 PACKAGES[ripgrep]="ripgrep"
-PKG_DESC[ripgrep]="Fast grep alternative (rg)"
+PKG_DESC[ripgrep]="Fast grep alternative (rg) [APT]"
 PKG_METHOD[ripgrep]="apt"
 PKG_CATEGORY[ripgrep]="core"
 
 PACKAGES[bat]="bat"
-PKG_DESC[bat]="Cat clone with syntax highlighting"
+PKG_DESC[bat]="Cat clone with syntax highlighting [APT]"
 PKG_METHOD[bat]="apt"
 PKG_CATEGORY[bat]="core"
 
 PACKAGES[eza]="eza"
-PKG_DESC[eza]="Modern ls replacement"
+PKG_DESC[eza]="Modern ls replacement [APT]"
 PKG_METHOD[eza]="apt"
 PKG_CATEGORY[eza]="core"
 
 PACKAGES[tldr]="tldr"
-PKG_DESC[tldr]="Simplified man pages"
+PKG_DESC[tldr]="Simplified man pages [APT]"
 PKG_METHOD[tldr]="apt"
 PKG_CATEGORY[tldr]="core"
 
 # DEVELOPMENT TOOLS
 PACKAGES[neovim]="neovim"
-PKG_DESC[neovim]="Modern Vim-based editor"
+PKG_DESC[neovim]="Modern Vim-based editor [APT]"
 PKG_METHOD[neovim]="apt"
 PKG_CATEGORY[neovim]="dev"
 
 PACKAGES[python3-pip]="python3-pip"
-PKG_DESC[python3-pip]="Python buntage installer"
+PKG_DESC[python3-pip]="Python buntage installer [APT]"
 PKG_METHOD[python3-pip]="apt"
 PKG_CATEGORY[python3-pip]="dev"
 
 PACKAGES[python3-venv]="python3-venv"
-PKG_DESC[python3-venv]="Python virtual environments"
+PKG_DESC[python3-venv]="Python virtual environments [APT]"
 PKG_METHOD[python3-venv]="apt"
 PKG_CATEGORY[python3-venv]="dev"
 
 PACKAGES[default-jdk]="default-jdk"
-PKG_DESC[default-jdk]="Java Development Kit"
+PKG_DESC[default-jdk]="Java Development Kit [APT]"
 PKG_METHOD[default-jdk]="apt"
 PKG_CATEGORY[default-jdk]="dev"
 
 PACKAGES[golang]="golang-go"
-PKG_DESC[golang]="Go programming language"
+PKG_DESC[golang]="Go programming language [APT]"
 PKG_METHOD[golang]="apt"
 PKG_CATEGORY[golang]="dev"
 
 # CONTAINERS
 PACKAGES[docker]="docker-ce"
-PKG_DESC[docker]="Docker container platform"
+PKG_DESC[docker]="Docker container platform [DEB]"
 PKG_METHOD[docker]="custom"
 PKG_CATEGORY[docker]="containers"
 
 PACKAGES[docker-compose]="docker-compose-plugin"
-PKG_DESC[docker-compose]="Docker Compose plugin"
+PKG_DESC[docker-compose]="Docker Compose plugin [APT]"
 PKG_METHOD[docker-compose]="apt"
 PKG_CATEGORY[docker-compose]="containers"
 PKG_DEPS[docker-compose]="docker"
 
 # WEB STACK
 PACKAGES[nginx]="nginx"
-PKG_DESC[nginx]="High-performance web server"
+PKG_DESC[nginx]="High-performance web server [APT]"
 PKG_METHOD[nginx]="apt"
 PKG_CATEGORY[nginx]="web"
 
 PACKAGES[apache2]="apache2"
-PKG_DESC[apache2]="Apache HTTP Server"
+PKG_DESC[apache2]="Apache HTTP Server [APT]"
 PKG_METHOD[apache2]="apt"
 PKG_CATEGORY[apache2]="web"
 
@@ -467,282 +568,390 @@ PKG_METHOD[php-fpm]="apt"
 PKG_CATEGORY[php-fpm]="web"
 
 PACKAGES[libapache2-mod-php]="libapache2-mod-php${PHP_VER}"
-PKG_DESC[libapache2-mod-php]="PHP module for Apache"
+PKG_DESC[libapache2-mod-php]="PHP module for Apache [APT]"
 PKG_METHOD[libapache2-mod-php]="apt"
 PKG_CATEGORY[libapache2-mod-php]="web"
 
 PACKAGES[php-mysql]="php${PHP_VER}-mysql"
-PKG_DESC[php-mysql]="PHP MySQL extension"
+PKG_DESC[php-mysql]="PHP MySQL extension [APT]"
 PKG_METHOD[php-mysql]="apt"
 PKG_CATEGORY[php-mysql]="web"
 
 PACKAGES[php-curl]="php${PHP_VER}-curl"
-PKG_DESC[php-curl]="PHP cURL extension"
+PKG_DESC[php-curl]="PHP cURL extension [APT]"
 PKG_METHOD[php-curl]="apt"
 PKG_CATEGORY[php-curl]="web"
 
 PACKAGES[php-gd]="php${PHP_VER}-gd"
-PKG_DESC[php-gd]="PHP GD graphics extension"
+PKG_DESC[php-gd]="PHP GD graphics extension [APT]"
 PKG_METHOD[php-gd]="apt"
 PKG_CATEGORY[php-gd]="web"
 
 PACKAGES[php-xml]="php${PHP_VER}-xml"
-PKG_DESC[php-xml]="PHP XML extension"
+PKG_DESC[php-xml]="PHP XML extension [APT]"
 PKG_METHOD[php-xml]="apt"
 PKG_CATEGORY[php-xml]="web"
 
 PACKAGES[php-mbstring]="php${PHP_VER}-mbstring"
-PKG_DESC[php-mbstring]="PHP multibyte string extension"
+PKG_DESC[php-mbstring]="PHP multibyte string extension [APT]"
 PKG_METHOD[php-mbstring]="apt"
 PKG_CATEGORY[php-mbstring]="web"
 
 PACKAGES[php-zip]="php${PHP_VER}-zip"
-PKG_DESC[php-zip]="PHP ZIP extension"
+PKG_DESC[php-zip]="PHP ZIP extension [APT]"
 PKG_METHOD[php-zip]="apt"
 PKG_CATEGORY[php-zip]="web"
 
 PACKAGES[mariadb]="mariadb-server"
-PKG_DESC[mariadb]="MariaDB database server"
+PKG_DESC[mariadb]="MariaDB database server [APT]"
 PKG_METHOD[mariadb]="apt"
 PKG_CATEGORY[mariadb]="web"
 
 PACKAGES[certbot]="certbot"
-PKG_DESC[certbot]="Let's Encrypt SSL certificate tool"
+PKG_DESC[certbot]="Let's Encrypt SSL certificate tool [APT]"
 PKG_METHOD[certbot]="apt"
 PKG_CATEGORY[certbot]="web"
 
 PACKAGES[python3-certbot-nginx]="python3-certbot-nginx"
-PKG_DESC[python3-certbot-nginx]="Certbot Nginx plugin"
+PKG_DESC[python3-certbot-nginx]="Certbot Nginx plugin [APT]"
 PKG_METHOD[python3-certbot-nginx]="apt"
 PKG_CATEGORY[python3-certbot-nginx]="web"
 
 PACKAGES[python3-certbot-apache]="python3-certbot-apache"
-PKG_DESC[python3-certbot-apache]="Certbot Apache plugin"
+PKG_DESC[python3-certbot-apache]="Certbot Apache plugin [APT]"
 PKG_METHOD[python3-certbot-apache]="apt"
 PKG_CATEGORY[python3-certbot-apache]="web"
 
 PACKAGES[redis]="redis-server"
-PKG_DESC[redis]="Redis in-memory data store"
+PKG_DESC[redis]="Redis in-memory data store [APT]"
 PKG_METHOD[redis]="apt"
 PKG_CATEGORY[redis]="web"
 
 # NODE.JS
 PACKAGES[nodejs]="nodejs"
-PKG_DESC[nodejs]="Node.js JavaScript runtime"
+PKG_DESC[nodejs]="Node.js JavaScript runtime [DEB]"
 PKG_METHOD[nodejs]="custom"
 PKG_CATEGORY[nodejs]="dev"
 
 PACKAGES[npm]="npm"
-PKG_DESC[npm]="Node buntage manager"
+PKG_DESC[npm]="Node buntage manager [APT]"
 PKG_METHOD[npm]="apt"
 PKG_CATEGORY[npm]="dev"
 
 # SHELLS & UI
 PACKAGES[zsh]="zsh"
-PKG_DESC[zsh]="Z shell"
+PKG_DESC[zsh]="Z shell [APT]"
 PKG_METHOD[zsh]="apt"
 PKG_CATEGORY[zsh]="shell"
 
 PACKAGES[fonts-powerline]="fonts-powerline"
-PKG_DESC[fonts-powerline]="Powerline fonts"
+PKG_DESC[fonts-powerline]="Powerline fonts [APT]"
 PKG_METHOD[fonts-powerline]="apt"
 PKG_CATEGORY[fonts-powerline]="shell"
 
 # EDITORS & IDEs
 PACKAGES[vscode]="code"
-PKG_DESC[vscode]="Visual Studio Code"
+PKG_DESC[vscode]="Visual Studio Code [DEB]"
 PKG_METHOD[vscode]="custom"
 PKG_CATEGORY[vscode]="editors"
 
 PACKAGES[sublime-text]="sublime-text"
-PKG_DESC[sublime-text]="Sublime Text editor"
+PKG_DESC[sublime-text]="Sublime Text editor [DEB]"
 PKG_METHOD[sublime-text]="custom"
 PKG_CATEGORY[sublime-text]="editors"
 
 # BROWSERS
 PACKAGES[brave]="brave-browser"
-PKG_DESC[brave]="Brave web browser"
+PKG_DESC[brave]="Brave web browser [DEB]"
 PKG_METHOD[brave]="custom"
 PKG_CATEGORY[brave]="browsers"
 
 PACKAGES[firefox]="firefox"
-PKG_DESC[firefox]="Mozilla Firefox browser"
+PKG_DESC[firefox]="Mozilla Firefox browser [APT]"
 PKG_METHOD[firefox]="apt"
 PKG_CATEGORY[firefox]="browsers"
 
 PACKAGES[chromium]="chromium"
-PKG_DESC[chromium]="Chromium web browser"
+PKG_DESC[chromium]="Chromium web browser [APT]"
 PKG_METHOD[chromium]="apt"
 PKG_CATEGORY[chromium]="browsers"
 
 # MONITORING
 PACKAGES[htop]="htop"
-PKG_DESC[htop]="Interactive process viewer"
+PKG_DESC[htop]="Interactive process viewer [APT]"
 PKG_METHOD[htop]="apt"
 PKG_CATEGORY[htop]="monitoring"
 
 PACKAGES[btop]="btop"
-PKG_DESC[btop]="Resource monitor with better graphs"
+PKG_DESC[btop]="Resource monitor with better graphs [APT]"
 PKG_METHOD[btop]="apt"
 PKG_CATEGORY[btop]="monitoring"
 
 PACKAGES[glances]="glances"
-PKG_DESC[glances]="Cross-platform system monitor"
+PKG_DESC[glances]="Cross-platform system monitor [APT]"
 PKG_METHOD[glances]="apt"
 PKG_CATEGORY[glances]="monitoring"
 
 PACKAGES[nethogs]="nethogs"
-PKG_DESC[nethogs]="Network bandwidth monitor per process"
+PKG_DESC[nethogs]="Network bandwidth monitor per process [APT]"
 PKG_METHOD[nethogs]="apt"
 PKG_CATEGORY[nethogs]="monitoring"
 
 PACKAGES[iotop]="iotop"
-PKG_DESC[iotop]="I/O monitor"
+PKG_DESC[iotop]="I/O monitor [APT]"
 PKG_METHOD[iotop]="apt"
 PKG_CATEGORY[iotop]="monitoring"
 
 # SECURITY
 PACKAGES[ufw]="ufw"
-PKG_DESC[ufw]="Uncomplicated Firewall"
+PKG_DESC[ufw]="Uncomplicated Firewall [APT]"
 PKG_METHOD[ufw]="apt"
 PKG_CATEGORY[ufw]="security"
 
 PACKAGES[fail2ban]="fail2ban"
-PKG_DESC[fail2ban]="Intrusion prevention system"
+PKG_DESC[fail2ban]="Intrusion prevention system [APT]"
 PKG_METHOD[fail2ban]="apt"
 PKG_CATEGORY[fail2ban]="security"
 
 # FLATPAK & APPS
 PACKAGES[flatpak]="flatpak"
-PKG_DESC[flatpak]="Flatpak buntage manager"
+PKG_DESC[flatpak]="Flatpak buntage manager [APT]"
 PKG_METHOD[flatpak]="apt"
 PKG_CATEGORY[flatpak]="system"
 
-PACKAGES[localsend]="org.localsend.localsend_app"
-PKG_DESC[localsend]="LocalSend file sharing"
-PKG_METHOD[localsend]="flatpak"
+PACKAGES[localsend]="localsend"
+PKG_DESC[localsend]="LocalSend file sharing [SNP]"
+PKG_METHOD[localsend]="snap"
 PKG_CATEGORY[localsend]="communication"
-PKG_DEPS[localsend]="flatpak"
+PKG_DEPS[localsend]="snapd"
 
 # SNAP APPS
 PACKAGES[spotify]="spotify"
-PKG_DESC[spotify]="Music streaming service"
+PKG_DESC[spotify]="Music streaming service [SNP]"
 PKG_METHOD[spotify]="snap"
 PKG_CATEGORY[spotify]="multimedia"
 
 PACKAGES[postman]="postman"
-PKG_DESC[postman]="API development platform"
+PKG_DESC[postman]="API development platform [SNP]"
 PKG_METHOD[postman]="snap"
 PKG_CATEGORY[postman]="development"
 
 # DESKTOP APPS
 PACKAGES[obs-studio]="obs-studio"
-PKG_DESC[obs-studio]="OBS Studio streaming/recording"
+PKG_DESC[obs-studio]="OBS Studio streaming/recording [APT]"
 PKG_METHOD[obs-studio]="apt"
 PKG_CATEGORY[obs-studio]="multimedia"
 
 PACKAGES[vlc]="vlc"
-PKG_DESC[vlc]="VLC media player"
+PKG_DESC[vlc]="VLC media player [APT]"
 PKG_METHOD[vlc]="apt"
 PKG_CATEGORY[vlc]="multimedia"
 
 # CLOUD & SYNC
 PACKAGES[rclone]="rclone"
-PKG_DESC[rclone]="Cloud storage sync tool"
+PKG_DESC[rclone]="Cloud storage sync tool [APT]"
 PKG_METHOD[rclone]="apt"
 PKG_CATEGORY[rclone]="cloud"
 
 # TERMINALS
 PACKAGES[warp-terminal]="warp-terminal"
-PKG_DESC[warp-terminal]="Modern terminal with AI features"
+PKG_DESC[warp-terminal]="Modern terminal with AI features [DEB]"
 PKG_METHOD[warp-terminal]="custom"
 PKG_CATEGORY[warp-terminal]="terminals"
 
 # GAMING
 PACKAGES[steam]="steam"
-PKG_DESC[steam]="Steam gaming platform"
+PKG_DESC[steam]="Steam gaming platform [APT]"
 PKG_METHOD[steam]="apt"
 PKG_CATEGORY[steam]="gaming"
 
-PACKAGES[heroic-launcher]="com.heroicgameslauncher.hgl"
-PKG_DESC[heroic-launcher]="Open-source Epic Games/GOG launcher"
-PKG_METHOD[heroic-launcher]="flatpak"
+PACKAGES[heroic-launcher]="heroic"
+PKG_DESC[heroic-launcher]="Open-source Epic Games/GOG launcher [SNP]"
+PKG_METHOD[heroic-launcher]="snap"
 PKG_CATEGORY[heroic-launcher]="gaming"
-PKG_DEPS[heroic-launcher]="flatpak"
+PKG_DEPS[heroic-launcher]="snapd"
 
 PACKAGES[gimp]="gimp"
-PKG_DESC[gimp]="GIMP image editor"
+PKG_DESC[gimp]="GIMP image editor [APT]"
 PKG_METHOD[gimp]="apt"
 PKG_CATEGORY[gimp]="multimedia"
 
 # OFFICE & PRODUCTIVITY
 PACKAGES[libreoffice]="libreoffice"
-PKG_DESC[libreoffice]="LibreOffice office suite"
+PKG_DESC[libreoffice]="LibreOffice office suite [APT]"
 PKG_METHOD[libreoffice]="apt"
 PKG_CATEGORY[libreoffice]="office"
 
 PACKAGES[thunderbird]="thunderbird"
-PKG_DESC[thunderbird]="Thunderbird email client"
+PKG_DESC[thunderbird]="Thunderbird email client [APT]"
 PKG_METHOD[thunderbird]="apt"
 PKG_CATEGORY[thunderbird]="office"
 
 # COMMUNICATION
 PACKAGES[discord]="discord"
-PKG_DESC[discord]="Discord voice and text chat"
+PKG_DESC[discord]="Discord voice and text chat [SNP]"
 PKG_METHOD[discord]="snap"
 PKG_CATEGORY[discord]="communication"
 
 PACKAGES[telegram-desktop]="telegram-desktop"
-PKG_DESC[telegram-desktop]="Telegram messaging app"
+PKG_DESC[telegram-desktop]="Telegram messaging app [APT]"
 PKG_METHOD[telegram-desktop]="apt"
 PKG_CATEGORY[telegram-desktop]="communication"
 
 PACKAGES[zoom]="zoom-client"
-PKG_DESC[zoom]="Zoom video conferencing"
+PKG_DESC[zoom]="Zoom video conferencing [SNP]"
 PKG_METHOD[zoom]="snap"
 PKG_CATEGORY[zoom]="communication"
 
 # MULTIMEDIA
 PACKAGES[audacity]="audacity"
-PKG_DESC[audacity]="Audacity audio editor"
+PKG_DESC[audacity]="Audacity audio editor [APT]"
 PKG_METHOD[audacity]="apt"
 PKG_CATEGORY[audacity]="multimedia"
 
 PACKAGES[blender]="blender"
-PKG_DESC[blender]="Blender 3D creation suite"
+PKG_DESC[blender]="Blender 3D creation suite [SNP]"
 PKG_METHOD[blender]="snap"
 PKG_CATEGORY[blender]="multimedia"
 
 PACKAGES[inkscape]="inkscape"
-PKG_DESC[inkscape]="Inkscape vector graphics editor"
+PKG_DESC[inkscape]="Inkscape vector graphics editor [APT]"
 PKG_METHOD[inkscape]="apt"
 PKG_CATEGORY[inkscape]="multimedia"
 
 # AI & MODERN TOOLS
 PACKAGES[ollama]="ollama"
-PKG_DESC[ollama]="Local AI model runner (Llama, Mistral, etc.)"
+PKG_DESC[ollama]="Local AI model runner (Llama, Mistral, etc.) [DEB]"
 PKG_METHOD[ollama]="custom"
 PKG_CATEGORY[ollama]="ai"
 
 PACKAGES[gollama]="gollama"
-PKG_DESC[gollama]="Advanced LLM model management and interaction tool"
+PKG_DESC[gollama]="Advanced LLM model management and interaction tool [DEB]"
 PKG_METHOD[gollama]="custom"
 PKG_CATEGORY[gollama]="ai"
 
 PACKAGES[ffmpeg]="ffmpeg"
-PKG_DESC[ffmpeg]="Complete multimedia processing toolkit"
+PKG_DESC[ffmpeg]="Complete multimedia processing toolkit [APT]"
 PKG_METHOD[ffmpeg]="apt"
 PKG_CATEGORY[ffmpeg]="multimedia"
 
 PACKAGES[yt-dlp]="yt-dlp"
-PKG_DESC[yt-dlp]="Modern YouTube/media downloader (youtube-dl fork)"
+PKG_DESC[yt-dlp]="Modern YouTube/media downloader (youtube-dl fork) [PIP]"
 PKG_METHOD[yt-dlp]="custom"
 PKG_CATEGORY[yt-dlp]="multimedia"
 
 PACKAGES[n8n]="n8n"
-PKG_DESC[n8n]="Workflow automation tool (self-hosted Zapier alternative)"
+PKG_DESC[n8n]="Workflow automation tool (self-hosted Zapier alternative) [NPM]"
 PKG_METHOD[n8n]="custom"
 PKG_CATEGORY[n8n]="development"
+
+# ==============================================================================
+# ALTERNATIVE INSTALLATION METHODS
+# ==============================================================================
+# Apps that have multiple installation options - users can choose their preferred method
+
+# VS Code alternatives
+PACKAGES[vscode-snap]="code"
+PKG_DESC[vscode-snap]="Visual Studio Code [SNP] - Alternative to DEB version"
+PKG_METHOD[vscode-snap]="snap"
+PKG_CATEGORY[vscode-snap]="editors"
+
+PACKAGES[vscode-flatpak]="com.visualstudio.code"
+PKG_DESC[vscode-flatpak]="Visual Studio Code [FLT] - Alternative to DEB version"
+PKG_METHOD[vscode-flatpak]="flatpak"
+PKG_CATEGORY[vscode-flatpak]="editors"
+PKG_DEPS[vscode-flatpak]="flatpak"
+
+# Firefox alternatives
+PACKAGES[firefox-snap]="firefox"
+PKG_DESC[firefox-snap]="Mozilla Firefox browser [SNP] - Alternative to APT version"
+PKG_METHOD[firefox-snap]="snap"
+PKG_CATEGORY[firefox-snap]="browsers"
+
+PACKAGES[firefox-flatpak]="org.mozilla.firefox"
+PKG_DESC[firefox-flatpak]="Mozilla Firefox browser [FLT] - Alternative to APT version"
+PKG_METHOD[firefox-flatpak]="flatpak"
+PKG_CATEGORY[firefox-flatpak]="browsers"
+PKG_DEPS[firefox-flatpak]="flatpak"
+
+# Chromium alternatives
+PACKAGES[chromium-snap]="chromium"
+PKG_DESC[chromium-snap]="Chromium web browser [SNP] - Alternative to APT version"
+PKG_METHOD[chromium-snap]="snap"
+PKG_CATEGORY[chromium-snap]="browsers"
+
+PACKAGES[chromium-flatpak]="org.chromium.Chromium"
+PKG_DESC[chromium-flatpak]="Chromium web browser [FLT] - Alternative to APT version"
+PKG_METHOD[chromium-flatpak]="flatpak"
+PKG_CATEGORY[chromium-flatpak]="browsers"
+PKG_DEPS[chromium-flatpak]="flatpak"
+
+# VLC alternatives
+PACKAGES[vlc-snap]="vlc"
+PKG_DESC[vlc-snap]="VLC media player [SNP] - Alternative to APT version"
+PKG_METHOD[vlc-snap]="snap"
+PKG_CATEGORY[vlc-snap]="multimedia"
+
+PACKAGES[vlc-flatpak]="org.videolan.VLC"
+PKG_DESC[vlc-flatpak]="VLC media player [FLT] - Alternative to APT version"
+PKG_METHOD[vlc-flatpak]="flatpak"
+PKG_CATEGORY[vlc-flatpak]="multimedia"
+PKG_DEPS[vlc-flatpak]="flatpak"
+
+# GIMP alternatives
+PACKAGES[gimp-snap]="gimp"
+PKG_DESC[gimp-snap]="GIMP image editor [SNP] - Alternative to APT version"
+PKG_METHOD[gimp-snap]="snap"
+PKG_CATEGORY[gimp-snap]="multimedia"
+
+PACKAGES[gimp-flatpak]="org.gimp.GIMP"
+PKG_DESC[gimp-flatpak]="GIMP image editor [FLT] - Alternative to APT version"
+PKG_METHOD[gimp-flatpak]="flatpak"
+PKG_CATEGORY[gimp-flatpak]="multimedia"
+PKG_DEPS[gimp-flatpak]="flatpak"
+
+# OBS Studio alternatives
+PACKAGES[obs-studio-flatpak]="com.obsproject.Studio"
+PKG_DESC[obs-studio-flatpak]="OBS Studio streaming/recording [FLT] - Alternative to APT version"
+PKG_METHOD[obs-studio-flatpak]="flatpak"
+PKG_CATEGORY[obs-studio-flatpak]="multimedia"
+PKG_DEPS[obs-studio-flatpak]="flatpak"
+
+# Discord alternatives (APT version)
+PACKAGES[discord-deb]="discord"
+PKG_DESC[discord-deb]="Discord voice and text chat [DEB] - Alternative to SNP version"
+PKG_METHOD[discord-deb]="custom"
+PKG_CATEGORY[discord-deb]="communication"
+
+PACKAGES[discord-flatpak]="com.discordapp.Discord"
+PKG_DESC[discord-flatpak]="Discord voice and text chat [FLT] - Alternative to SNP version"
+PKG_METHOD[discord-flatpak]="flatpak"
+PKG_CATEGORY[discord-flatpak]="communication"
+PKG_DEPS[discord-flatpak]="flatpak"
+
+# Audacity alternatives
+PACKAGES[audacity-snap]="audacity"
+PKG_DESC[audacity-snap]="Audacity audio editor [SNP] - Alternative to APT version"
+PKG_METHOD[audacity-snap]="snap"
+PKG_CATEGORY[audacity-snap]="multimedia"
+
+PACKAGES[audacity-flatpak]="org.audacityteam.Audacity"
+PKG_DESC[audacity-flatpak]="Audacity audio editor [FLT] - Alternative to APT version"
+PKG_METHOD[audacity-flatpak]="flatpak"
+PKG_CATEGORY[audacity-flatpak]="multimedia"
+PKG_DEPS[audacity-flatpak]="flatpak"
+
+# Inkscape alternatives
+PACKAGES[inkscape-snap]="inkscape"
+PKG_DESC[inkscape-snap]="Inkscape vector graphics [SNP] - Alternative to APT version"
+PKG_METHOD[inkscape-snap]="snap"
+PKG_CATEGORY[inkscape-snap]="multimedia"
+
+PACKAGES[inkscape-flatpak]="org.inkscape.Inkscape"
+PKG_DESC[inkscape-flatpak]="Inkscape vector graphics [FLT] - Alternative to APT version"
+PKG_METHOD[inkscape-flatpak]="flatpak"
+PKG_CATEGORY[inkscape-flatpak]="multimedia"
+PKG_DEPS[inkscape-flatpak]="flatpak"
 
 # ==============================================================================
 # CATEGORY DEFINITIONS
@@ -958,27 +1167,30 @@ remove_sublime() {
 install_warp() {
     log "Installing Warp terminal..."
     
-    # Download and install Warp terminal .deb buntage
-    local warp_url="https://releases.warp.dev/linux/v0.2024.10.29.08.02.stable_02/warp-terminal_0.2024.10.29.08.02.stable.02_amd64.deb"
-    local temp_file="/tmp/warp-terminal.deb"
+    # Add Warp's official GPG key and repository
+    sudo mkdir -p /usr/share/keyrings
+    if ! wget -qO- https://releases.warp.dev/linux/keys/warp.asc | sudo gpg --dearmor -o /usr/share/keyrings/warp-archive-keyring.gpg; then
+        log_error "Failed to add Warp GPG key"
+        return 1
+    fi
     
-    if wget -O "$temp_file" "$warp_url" 2>/dev/null; then
-        if sudo dpkg -i "$temp_file" 2>/dev/null || sudo apt-get install -f -y; then
-            rm -f "$temp_file"
-            ui_msg "Warp Installed" "Warp terminal installed successfully."
-        else
-            rm -f "$temp_file"
-            log_error "Failed to install Warp terminal"
-            return 1
-        fi
+    # Add Warp repository
+    echo "deb [signed-by=/usr/share/keyrings/warp-archive-keyring.gpg] https://releases.warp.dev/linux/deb stable main" | sudo tee /etc/apt/sources.list.d/warp-terminal.list > /dev/null
+    
+    # Update package list and install
+    sudo apt-get update -qq
+    if install_apt_package "warp-terminal"; then
+        ui_msg "Warp Installed" "Warp terminal installed successfully."
     else
-        log_error "Failed to download Warp terminal"
+        log_error "Failed to install Warp terminal from repository"
         return 1
     fi
 }
 
 remove_warp() {
     remove_apt_package "warp-terminal"
+    sudo rm -f /etc/apt/sources.list.d/warp-terminal.list
+    sudo rm -f /usr/share/keyrings/warp-archive-keyring.gpg
 }
 
 install_ollama() {
@@ -1046,6 +1258,33 @@ install_n8n() {
 remove_n8n() {
     log "Removing n8n..."
     sudo npm uninstall -g n8n 2>/dev/null || true
+}
+
+install_discord-deb() {
+    log "Installing Discord (DEB package)..."
+    
+    # Download Discord DEB package
+    local discord_url="https://discord.com/api/download?platform=linux&format=deb"
+    local temp_file="/tmp/discord.deb"
+    
+    if wget -O "$temp_file" "$discord_url" 2>/dev/null; then
+        if sudo dpkg -i "$temp_file" 2>/dev/null || sudo apt-get install -f -y; then
+            rm -f "$temp_file"
+            ui_msg "Discord Installed" "Discord voice and text chat installed successfully."
+        else
+            log_error "Failed to install Discord DEB package"
+            rm -f "$temp_file"
+            return 1
+        fi
+    else
+        log_error "Failed to download Discord DEB package"
+        return 1
+    fi
+}
+
+remove_discord-deb() {
+    log "Removing Discord (DEB)..."
+    remove_apt_package "discord"
 }
 
 install_gollama() {
@@ -1124,6 +1363,11 @@ install_package() {
                 brave) install_brave; install_result=$? ;;
                 sublime-text) install_sublime; install_result=$? ;;
                 warp-terminal) install_warp; install_result=$? ;;
+                ollama) install_ollama; install_result=$? ;;
+                yt-dlp) install_yt-dlp; install_result=$? ;;
+                n8n) install_n8n; install_result=$? ;;
+                gollama) install_gollama; install_result=$? ;;
+                discord-deb) install_discord-deb; install_result=$? ;;
                 *) log_error "Unknown custom installer: $name"; install_result=1 ;;
             esac
             ;;
@@ -1168,6 +1412,11 @@ remove_package() {
                 brave) remove_brave; remove_result=$? ;;
                 sublime-text) remove_sublime; remove_result=$? ;;
                 warp-terminal) remove_warp; remove_result=$? ;;
+                ollama) remove_ollama; remove_result=$? ;;
+                yt-dlp) remove_yt-dlp; remove_result=$? ;;
+                n8n) remove_n8n; remove_result=$? ;;
+                gollama) remove_gollama; remove_result=$? ;;
+                discord-deb) remove_discord-deb; remove_result=$? ;;
                 *) log_error "Unknown custom remover: $name"; remove_result=1 ;;
             esac
             ;;
@@ -1187,7 +1436,7 @@ remove_package() {
 
 is_package_installed() {
     local name="$1"
-    log "Checking if buntage '$name' is installed"
+    # Removed verbose logging for package checking
     
     # Add error handling for empty or invalid buntage names
     if [[ -z "$name" ]]; then
@@ -1277,6 +1526,13 @@ is_package_installed() {
                     ;;
                 warp-terminal) 
                     if is_apt_installed "warp-terminal"; then
+                        result=0
+                    else
+                        result=1
+                    fi
+                    ;;
+                yt-dlp)
+                    if is_binary_available "yt-dlp"; then
                         result=0
                     else
                         result=1
@@ -1526,13 +1782,13 @@ show_buntage_actions() {
         
         case "$choice" in
             install)
-                install_package "$name"
+                install_package_with_choice "$name"
                 ui_msg "Success" "$name installed successfully!"
                 status="✓ Installed"
                 ;;
             reinstall)
                 remove_package "$name"
-                install_package "$name"
+                install_package_with_choice "$name"
                 ui_msg "Success" "$name reinstalled successfully!"
                 ;;
             remove)

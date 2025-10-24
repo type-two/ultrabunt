@@ -396,10 +396,6 @@ This project is licensed under the **MIT License** - because sharing is caring!
 
 **So go forth, brave user, and BUNTAGE ALL THE THINGS!** 🎉
 
----
-
-### 🎪 **Made with Ridiculous Amounts of Love and Caffeine** ☕
-
 ```
     ╔══════════════════════════════════════════════════════════════╗
     ║  "In a world of packages, dare to be a BUNTAGE!"            ║
