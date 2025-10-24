@@ -30,6 +30,10 @@ NODE_LTS="20"
 # Cache for installed buntages - populated once at startup
 declare -A INSTALLED_CACHE
 
+# Session variables for database authentication
+MARIADB_SESSION_PASSWORD=""
+MARIADB_SESSION_ACTIVE=false
+
 # Color codes for terminal output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -80,28 +84,29 @@ build_package_cache() {
 # Function to update cache for a specific buntage
 update_package_cache() {
     local name="$1"
+    local silent="${2:-false}"  # Add silent mode parameter
     
     if [[ -z "$name" ]]; then
-        log "ERROR: No buntage name provided to update_package_cache"
+        [[ "$silent" != "true" ]] && log "ERROR: No buntage name provided to update_package_cache"
         return 1
     fi
     
     if [[ -z "${PACKAGES[$name]:-}" ]]; then
-        log "WARNING: Buntage '$name' not found in PACKAGES array"
+        [[ "$silent" != "true" ]] && log "WARNING: Buntage '$name' not found in PACKAGES array"
         return 1
     fi
     
     local pkg="${PACKAGES[$name]}"
     local method="${PKG_METHOD[$name]:-}"
     
-    log "Updating cache for buntage: $name (method: $method, pkg: $pkg)"
+    [[ "$silent" != "true" ]] && log "Updating cache for buntage: $name (method: $method, pkg: $pkg)"
     
     # Update the specific buntage in the cache
     case "$method" in
         apt)
             if dpkg -l "$pkg" 2>/dev/null | grep -q "^ii"; then
                 INSTALLED_CACHE["apt:$pkg"]="1"
-                log "Cache updated: $name is installed (APT)"
+                [[ "$silent" != "true" ]] && log "Cache updated: $name is installed (APT)"
             else
                 unset INSTALLED_CACHE["apt:$pkg"]
                 # Removed verbose logging for not installed packages
@@ -110,7 +115,7 @@ update_package_cache() {
         snap)
             if snap list "$pkg" &>/dev/null; then
                 INSTALLED_CACHE["snap:$pkg"]="1"
-                log "Cache updated: $name is installed (Snap)"
+                [[ "$silent" != "true" ]] && log "Cache updated: $name is installed (Snap)"
             else
                 unset INSTALLED_CACHE["snap:$pkg"]
                 # Removed verbose logging for not installed packages
@@ -119,7 +124,7 @@ update_package_cache() {
         flatpak)
             if flatpak list --app 2>/dev/null | grep -q "$pkg"; then
                 INSTALLED_CACHE["flatpak:$pkg"]="1"
-                log "Cache updated: $name is installed (Flatpak)"
+                [[ "$silent" != "true" ]] && log "Cache updated: $name is installed (Flatpak)"
             else
                 unset INSTALLED_CACHE["flatpak:$pkg"]
                 # Removed verbose logging for not installed packages
@@ -127,10 +132,10 @@ update_package_cache() {
             ;;
         custom)
             # For custom buntages, we can't easily cache them, so we'll just log
-            log "Cache update skipped for custom buntage: $name"
+            [[ "$silent" != "true" ]] && log "Cache update skipped for custom buntage: $name"
             ;;
         *)
-            log "WARNING: Unknown method '$method' for buntage '$name'"
+            [[ "$silent" != "true" ]] && log "WARNING: Unknown method '$method' for buntage '$name'"
             return 1
             ;;
     esac
@@ -140,7 +145,7 @@ update_package_cache() {
 
 log() {
     local msg="[$(date +'%Y-%m-%d %H:%M:%S')] $*"
-    echo "$msg" | tee -a "$LOGFILE"
+    echo "$msg" | tee -a "$LOGFILE" >&2
 }
 
 log_error() {
@@ -185,6 +190,10 @@ ui_yesno() {
 
 ui_input() {
     whiptail --title "$1" --inputbox "$2" 10 70 "${3:-}" 3>&1 1>&2 2>&3
+}
+
+ui_password() {
+    whiptail --title "$1" --passwordbox "$2" 10 70 3>&1 1>&2 2>&3
 }
 
 # UI Functions
@@ -251,8 +260,8 @@ get_available_methods() {
         methods+=("$base_name" "$desc")
     fi
     
-    # Check for alternative methods
-    for variant in "${base_name}-snap" "${base_name}-flatpak" "${base_name}-deb"; do
+    # Check for alternative methods in preferred order: APT → Snap → Flatpak → Custom
+    for variant in "${base_name}-deb" "${base_name}-snap" "${base_name}-flatpak"; do
         if [[ -n "${PACKAGES[$variant]:-}" ]]; then
             local desc="${PKG_DESC[$variant]}"
             methods+=("$variant" "$desc")
@@ -753,11 +762,51 @@ PKG_DESC[rclone]="Cloud storage sync tool [APT]"
 PKG_METHOD[rclone]="apt"
 PKG_CATEGORY[rclone]="cloud"
 
+PACKAGES[dropbox]="dropbox"
+PKG_DESC[dropbox]="File synchronization [DEB]"
+PKG_METHOD[dropbox]="custom"
+PKG_CATEGORY[dropbox]="cloud"
+
+PACKAGES[nextcloud-desktop]="nextcloud-desktop"
+PKG_DESC[nextcloud-desktop]="Self-hosted cloud client [APT]"
+PKG_METHOD[nextcloud-desktop]="apt"
+PKG_CATEGORY[nextcloud-desktop]="cloud"
+
+PACKAGES[syncthing]="syncthing"
+PKG_DESC[syncthing]="Decentralized sync [APT]"
+PKG_METHOD[syncthing]="apt"
+PKG_CATEGORY[syncthing]="cloud"
+
+PACKAGES[google-drive-ocamlfuse]="google-drive-ocamlfuse"
+PKG_DESC[google-drive-ocamlfuse]="Google Drive filesystem [APT]"
+PKG_METHOD[google-drive-ocamlfuse]="apt"
+PKG_CATEGORY[google-drive-ocamlfuse]="cloud"
+
 # TERMINALS
 PACKAGES[warp-terminal]="warp-terminal"
 PKG_DESC[warp-terminal]="Modern terminal with AI features [DEB]"
 PKG_METHOD[warp-terminal]="custom"
 PKG_CATEGORY[warp-terminal]="terminals"
+
+PACKAGES[alacritty]="alacritty"
+PKG_DESC[alacritty]="GPU-accelerated terminal emulator [APT]"
+PKG_METHOD[alacritty]="apt"
+PKG_CATEGORY[alacritty]="terminals"
+
+PACKAGES[terminator]="terminator"
+PKG_DESC[terminator]="Multiple terminals in one window [APT]"
+PKG_METHOD[terminator]="apt"
+PKG_CATEGORY[terminator]="terminals"
+
+PACKAGES[tilix]="tilix"
+PKG_DESC[tilix]="Tiling terminal emulator [APT]"
+PKG_METHOD[tilix]="apt"
+PKG_CATEGORY[tilix]="terminals"
+
+PACKAGES[ghostty]="ghostty"
+PKG_DESC[ghostty]="Fast, feature-rich terminal emulator [SNP]"
+PKG_METHOD[ghostty]="snap"
+PKG_CATEGORY[ghostty]="terminals"
 
 # GAMING
 PACKAGES[steam]="steam"
@@ -770,6 +819,16 @@ PKG_DESC[heroic-launcher]="Open-source Epic Games/GOG launcher [SNP]"
 PKG_METHOD[heroic-launcher]="snap"
 PKG_CATEGORY[heroic-launcher]="gaming"
 PKG_DEPS[heroic-launcher]="snapd"
+
+PACKAGES[lutris]="lutris"
+PKG_DESC[lutris]="Gaming on Linux made easy [APT]"
+PKG_METHOD[lutris]="apt"
+PKG_CATEGORY[lutris]="gaming"
+
+PACKAGES[gamemode]="gamemode"
+PKG_DESC[gamemode]="Optimize gaming performance [APT]"
+PKG_METHOD[gamemode]="apt"
+PKG_CATEGORY[gamemode]="gaming"
 
 PACKAGES[gimp]="gimp"
 PKG_DESC[gimp]="GIMP image editor [APT]"
@@ -786,6 +845,16 @@ PACKAGES[thunderbird]="thunderbird"
 PKG_DESC[thunderbird]="Thunderbird email client [APT]"
 PKG_METHOD[thunderbird]="apt"
 PKG_CATEGORY[thunderbird]="office"
+
+PACKAGES[calibre]="calibre"
+PKG_DESC[calibre]="E-book management [APT]"
+PKG_METHOD[calibre]="apt"
+PKG_CATEGORY[calibre]="office"
+
+PACKAGES[obsidian]="obsidian"
+PKG_DESC[obsidian]="Knowledge management [SNP]"
+PKG_METHOD[obsidian]="snap"
+PKG_CATEGORY[obsidian]="office"
 
 # COMMUNICATION
 PACKAGES[discord]="discord"
@@ -1023,7 +1092,16 @@ remove_apt_package() {
 install_snap_package() {
     local pkg="$1"
     log "Installing $pkg via Snap..."
-    sudo snap install "$pkg" 2>&1 | tee -a "$LOGFILE"
+    
+    # Packages that require classic confinement
+    case "$pkg" in
+        ghostty)
+            sudo snap install "$pkg" --classic 2>&1 | tee -a "$LOGFILE"
+            ;;
+        *)
+            sudo snap install "$pkg" 2>&1 | tee -a "$LOGFILE"
+            ;;
+    esac
 }
 
 remove_snap_package() {
@@ -1347,7 +1425,7 @@ install_package() {
             ;;
         flatpak)
             if ! is_apt_installed "flatpak"; then
-                ui_msg "Flatpak Required" "Installing Flatpak first..."
+                ui_msg "Flatpak Required" "Installing Flatpak first...\n\n⏳ This process is automatic - please wait..."
                 apt_update
                 install_apt_package "flatpak"
                 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -1436,16 +1514,16 @@ remove_package() {
 
 is_package_installed() {
     local name="$1"
-    # Removed verbose logging for package checking
+    local silent="${2:-false}"  # Add silent mode parameter
     
     # Add error handling for empty or invalid buntage names
     if [[ -z "$name" ]]; then
-        log "ERROR: Empty buntage name provided to is_package_installed"
+        [[ "$silent" != "true" ]] && log "ERROR: Empty buntage name provided to is_package_installed"
         return 1
     fi
     
     if [[ -z "${PACKAGES[$name]:-}" ]]; then
-        log "WARNING: Buntage '$name' not found in PACKAGES array"
+        [[ "$silent" != "true" ]] && log "WARNING: Buntage '$name' not found in PACKAGES array"
         return 1
     fi
     
@@ -1453,11 +1531,11 @@ is_package_installed() {
     local method="${PKG_METHOD[$name]:-}"
     
     if [[ -z "$method" ]]; then
-        log "WARNING: No method defined for buntage '$name'"
+        [[ "$silent" != "true" ]] && log "WARNING: No method defined for buntage '$name'"
         return 1
     fi
     
-    log "Buntage '$name' uses method '$method' with buntage name '$pkg'"
+    [[ "$silent" != "true" ]] && log "Buntage '$name' uses method '$method' with buntage name '$pkg'"
     
     # Add error handling for each method
     local result=1
@@ -1558,8 +1636,42 @@ is_package_installed() {
 # MENU SYSTEM
 # ==============================================================================
 
+# Function to refresh package cache in background without logging
+refresh_cache_silent() {
+    local refresh_pid
+    {
+        # Update cache for all packages silently
+        for name in "${!PACKAGES[@]}"; do
+            update_package_cache "$name" "true" &>/dev/null
+        done
+    } &
+    refresh_pid=$!
+    
+    # Store the PID for potential cleanup
+    echo "$refresh_pid" > "/tmp/ultrabunt_cache_refresh.pid" 2>/dev/null || true
+}
+
+# Function to check if background cache refresh is complete
+is_cache_refresh_complete() {
+    local pid_file="/tmp/ultrabunt_cache_refresh.pid"
+    if [[ -f "$pid_file" ]]; then
+        local pid
+        pid=$(cat "$pid_file" 2>/dev/null)
+        if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+            return 1  # Still running
+        else
+            rm -f "$pid_file" 2>/dev/null || true
+            return 0  # Complete
+        fi
+    fi
+    return 0  # No refresh running
+}
+
 show_category_menu() {
     log "Entering show_category_menu function"
+    
+    # Start background cache refresh on first load
+    refresh_cache_silent
     
     while true; do
         log "Building category menu items..."
@@ -1586,14 +1698,20 @@ show_category_menu() {
                 if [[ "$pkg_category" == "$cat_id" ]]; then
                     total=$((total + 1))
                     
-                    # Re-enable installation check
-                    if is_package_installed "$name"; then
+                    # Re-enable installation check with silent mode
+                    if is_package_installed "$name" "true"; then
                         installed=$((installed + 1))
                     fi
                 fi
             done
             
-            menu_items+=("$cat_id" "(.Y.) $cat_name [$installed/$total installed]")
+            # Add refresh indicator if cache is still updating
+            local refresh_indicator=""
+            if ! is_cache_refresh_complete; then
+                refresh_indicator=" 🔄"
+            fi
+            
+            menu_items+=("$cat_id" "(.Y.) $cat_name [$installed/$total installed]$refresh_indicator")
         done
         
         log "Adding additional menu items..."
@@ -1601,6 +1719,7 @@ show_category_menu() {
         menu_items+=("system-info" "(.Y.) System Information")
         menu_items+=("keyboard-layout" "(.Y.) Keyboard Layout Configuration")
         menu_items+=("wordpress-setup" "(.Y.) WordPress Installation")
+        menu_items+=("database-management" "(.Y.) Database Management")
         menu_items+=("bulk-ops" "(.Y.) Bulk Operations")
         menu_items+=("quit" "(Q) Exit Installer")
         
@@ -1650,6 +1769,12 @@ show_category_menu() {
                 show_wordpress_setup_menu || {
                     log "ERROR: show_wordpress_setup_menu failed"
                     ui_msg "Error" "Failed to display WordPress setup menu. Please check the logs."
+                }
+                ;;
+            database-management)
+                show_database_management_menu || {
+                    log "ERROR: show_database_management_menu failed"
+                    ui_msg "Error" "Failed to display database management menu. Please check the logs."
                 }
                 ;;
             bulk-ops) 
@@ -2251,7 +2376,7 @@ bulk_remove_selected() {
     local checklist_items=()
     
     for name in "${!PACKAGES[@]}"; do
-        if is_package_installed "$name"; then
+        if is_package_installed "$name" "true"; then
             local desc="${PKG_DESC[$name]}"
             local cat="${PKG_CATEGORY[$name]}"
             checklist_items+=("$name" "[$cat] $desc" "OFF")
@@ -2386,7 +2511,7 @@ export_package_list() {
             for name in "${!PACKAGES[@]}"; do
                 if [[ "${PKG_CATEGORY[$name]}" == "$cat_id" ]]; then
                     local status="NOT INSTALLED"
-                    if is_package_installed "$name"; then
+                    if is_package_installed "$name" "true"; then
                         status="INSTALLED"
                     fi
                     printf "%-20s %-15s %s\n" "$name" "[$status]" "${PKG_DESC[$name]}"
@@ -2444,6 +2569,8 @@ show_wordpress_setup_menu() {
             "" "(_*_)"
             "custom-nginx" "(.Y.) ⚙️  Custom Nginx Setup"
             "custom-apache" "(.Y.) ⚙️  Custom Apache Setup"
+            "custom-db-nginx" "(.Y.) 🔧 Custom Database + Nginx Setup"
+            "custom-db-apache" "(.Y.) 🔧 Custom Database + Apache Setup"
             "" "(_*_)"
             "ssl-setup" "(.Y.) 🔒 Add SSL Certificate (Let's Encrypt)"
             "wp-security" "(.Y.) 🛡️  WordPress Security Hardening"
@@ -2454,8 +2581,8 @@ show_wordpress_setup_menu() {
         
         local choice
         choice=$(ui_menu "WordPress Installation" \
-            "Choose your WordPress installation method:" \
-            20 80 12 "${menu_items[@]}") || break
+            "Choose your WordPress installation method:\n\n🚀 Quick Setup: Auto-generated database credentials\n⚙️  Custom Setup: Choose site directory\n🔧 Custom Database: Choose database name, user, and password" \
+            22 90 14 "${menu_items[@]}") || break
         
         case "$choice" in
             quick-nginx)
@@ -2469,6 +2596,12 @@ show_wordpress_setup_menu() {
                 ;;
             custom-apache)
                 wordpress_custom_setup "apache"
+                ;;
+            custom-db-nginx)
+                wordpress_custom_database_setup "nginx"
+                ;;
+            custom-db-apache)
+                wordpress_custom_database_setup "apache"
                 ;;
             ssl-setup)
                 wordpress_ssl_setup
@@ -2507,29 +2640,98 @@ wordpress_quick_setup() {
     fi
     
     # Install prerequisites
-    install_wordpress_prerequisites "$web_server"
+    ui_msg "Step 1/6" "Installing WordPress prerequisites...\n\nThis includes:\n• Web server ($web_server)\n• PHP and extensions\n• MariaDB database\n• Required system packages\n\n⏳ This process is automatic - please wait..."
+    install_wordpress_prerequisites "$web_server" || {
+        ui_msg "Installation Failed" "Failed to install prerequisites. Check the logs for details."
+        return 1
+    }
     
-    # Get domain name
+    log "Step 1 Complete: Prerequisites installed successfully"
+    
+    # Get domain name with validation
+    ui_msg "Step 2/6" "Configuring domain settings...\n\nPlease enter your domain name or use 'localhost' for local development.\n\n👆 User input required below..."
     local domain
-    domain=$(ui_input "Domain Name" "Enter your domain name:" "localhost") || return
-    domain=${domain:-localhost}
+    while true; do
+        domain=$(ui_input "Domain Name" "Enter your domain name (or 'localhost' for local development):" "localhost") || return
+        domain=${domain:-localhost}
+        
+        # Validate domain format
+        if [[ "$domain" == "localhost" ]] || [[ "$domain" =~ ^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
+            break
+        else
+            ui_msg "Invalid Domain" "Please enter a valid domain name or 'localhost'.\n\nExamples:\n• localhost\n• mysite.local\n• example.com\n• subdomain.example.com"
+        fi
+    done
     
-    # Setup database
-    local db_info
-    db_info=$(setup_wordpress_database "$domain")
+    ui_msg "Step 2 Complete" "✅ Domain configured: $domain\n\n• Site URL: http://$domain\n• Directory: /var/www/$domain\n• Admin URL: http://$domain/wp-admin/"
     
-    # Download and configure WordPress
-    setup_wordpress_files "$domain" "$db_info"
+    # Confirm installation details
+    local confirm_msg="WordPress Installation Summary\n\n"
+    confirm_msg+="Web Server: $web_server\n"
+    confirm_msg+="Domain: $domain\n"
+    confirm_msg+="Site Directory: /var/www/$domain\n"
+    confirm_msg+="Database: Auto-generated secure credentials\n\n"
+    confirm_msg+="Proceed with installation?"
     
-    # Configure web server
-    if [[ "$web_server" == "nginx" ]]; then
-        configure_nginx_wordpress "$domain"
-    else
-        configure_apache_wordpress "$domain"
+    if ! ui_yesno "Confirm Installation" "$confirm_msg"; then
+        return
     fi
     
+    # Create the WordPress database (this now handles MariaDB root access internally)
+    ui_msg "Step 3/6" "Creating WordPress database...\n\n• Verifying MariaDB root access\n• Creating WordPress database\n• Setting up database user\n• Configuring permissions\n\n⏳ This process is automatic - please wait..."
+    
+    local db_info
+    db_info=$(setup_wordpress_database "$domain") || {
+        ui_msg "Database Creation Failed" "❌ Failed to create WordPress database.\n\nPossible causes:\n• MariaDB authentication issues\n• Insufficient privileges\n• Database service problems\n\nCheck the logs for details."
+        return 1
+    }
+    
+    # Parse and display database info
+    IFS=':' read -r db_name db_user db_pass <<< "$db_info"
+    
+    # Debug logging for database info
+    log "Database info received: '$db_info'"
+    log "Parsed - DB Name: '$db_name', DB User: '$db_user', DB Pass: '${db_pass:0:4}...'"
+    
+    # Validate that we have all required database info
+    if [[ -z "$db_name" || -z "$db_user" || -z "$db_pass" ]]; then
+        log "ERROR: Incomplete database information - Name: '$db_name', User: '$db_user', Pass: '${db_pass:+[SET]}'"
+        ui_msg "Database Error" "❌ Database creation returned incomplete information.\n\nReceived: '$db_info'\n\nPlease check the logs for details."
+        return 1
+    fi
+    
+    ui_msg "Step 3 Complete" "✅ Database created successfully!\n\n• Database Name: $db_name\n• Database User: $db_user\n• Database Password: $db_pass\n• Host: localhost\n\n🔒 Credentials saved for your reference."
+    
+    # Download and configure WordPress
+    ui_msg "Step 4/6" "Downloading and configuring WordPress...\n\n• Downloading latest WordPress\n• Extracting files to /var/www/$domain\n• Configuring wp-config.php\n• Setting file permissions\n\n⏳ This process is automatic - please wait..."
+    setup_wordpress_files "$domain" "$db_info" || {
+        ui_msg "WordPress Setup Error" "Failed to download or configure WordPress files."
+        return 1
+    }
+    
+    ui_msg "Step 4 Complete" "✅ WordPress files configured!\n\n• Latest WordPress: Downloaded\n• Configuration: Complete\n• File permissions: Set\n• Upload directory: Created"
+    
+    # Configure web server
+    ui_msg "Step 5/6" "Configuring $web_server web server...\n\n• Creating server configuration\n• Setting up PHP processing\n• Configuring security headers\n• Enabling site\n\n⏳ This process is automatic - please wait..."
+    if [[ "$web_server" == "nginx" ]]; then
+        configure_nginx_wordpress "$domain" || {
+            ui_msg "Nginx Configuration Error" "Failed to configure Nginx. Check configuration syntax."
+            return 1
+        }
+    else
+        configure_apache_wordpress "$domain" || {
+            ui_msg "Apache Configuration Error" "Failed to configure Apache. Check configuration syntax."
+            return 1
+        }
+    fi
+    
+    ui_msg "Step 5 Complete" "✅ $web_server configured successfully!\n\n• Server block: Created\n• PHP processing: Enabled\n• Security headers: Set\n• Site: Active and running"
+    
     # Show completion message
+    ui_msg "Step 6/6" "Finalizing WordPress installation...\n\nPreparing completion summary with all details.\n\n⏳ This process is automatic - please wait..."
     show_wordpress_completion "$domain" "$db_info"
+    
+    ui_msg "Installation Complete!" "🎉 WordPress installation finished successfully!\n\nYour site is ready at: http://$domain\n\nNext steps:\n1. Visit your site to complete WordPress setup\n2. Create your admin account\n3. Choose your theme and plugins\n\nAll details have been saved and displayed in the completion screen."
 }
 
 wordpress_custom_setup() {
@@ -2585,11 +2787,130 @@ wordpress_custom_setup() {
     show_wordpress_completion "$domain" "$db_info"
 }
 
+wordpress_custom_database_setup() {
+    local web_server="$1"
+    log "Starting WordPress custom database setup with $web_server"
+    
+    local info="WordPress Custom Database Setup ($web_server)\n\n"
+    info+="🔧 This setup allows you to:\n"
+    info+="• Choose your own database name\n"
+    info+="• Set custom database username\n"
+    info+="• Define your own password\n"
+    info+="• Understand user management\n\n"
+    info+="🔐 You'll learn about:\n"
+    info+="• ROOT user (administrative access)\n"
+    info+="• WordPress user (application access)\n"
+    info+="• Security best practices\n\n"
+    info+="Continue with custom database setup?"
+    
+    if ! ui_yesno "Custom Database Setup" "$info"; then
+        return
+    fi
+    
+    # Check if prerequisites are installed
+    if ! check_wordpress_prerequisites "$web_server"; then
+        if ui_yesno "Install Prerequisites" "Required packages are missing. Install them now?"; then
+            install_wordpress_prerequisites "$web_server"
+        else
+            ui_msg "Setup Cancelled" "Cannot proceed without required packages."
+            return
+        fi
+    fi
+    
+    # Domain configuration
+    local domain
+    domain=$(ui_input "Domain Name" "Enter your domain name:" "localhost") || return
+    domain=${domain:-localhost}
+    
+    # Custom database setup with detailed explanations
+    local db_info
+    db_info=$(setup_wordpress_database_custom "$domain") || {
+        ui_msg "Database Setup Failed" "Database setup was cancelled or failed. Please try again."
+        return 1
+    }
+    
+    # Parse database info for confirmation
+    IFS=':' read -r db_name db_user db_pass <<< "$db_info"
+    
+    # Confirm setup before proceeding
+    local confirm_msg="🔐 Database Configuration Summary:\n\n"
+    confirm_msg+="• Database Name: $db_name\n"
+    confirm_msg+="• Database User: $db_user\n"
+    confirm_msg+="• Database Password: $db_pass\n"
+    confirm_msg+="• Host: localhost\n\n"
+    confirm_msg+="📁 WordPress will be installed to: /var/www/$domain\n\n"
+    confirm_msg+="Continue with WordPress installation?"
+    
+    if ! ui_yesno "Confirm Installation" "$confirm_msg"; then
+        return
+    fi
+    
+    # WordPress file setup
+    ui_msg "Step 2/4" "Setting up WordPress files...\n\nDownloading and configuring WordPress with your custom database settings.\n\n⏳ This process is automatic - please wait..."
+    setup_wordpress_files "$domain" "$db_info" || {
+        ui_msg "WordPress Setup Error" "Failed to download or configure WordPress files."
+        return 1
+    }
+    
+    # Web server configuration
+    ui_msg "Step 3/4" "Configuring web server...\n\nSetting up $web_server virtual host for $domain.\n\n⏳ This process is automatic - please wait..."
+    if [[ "$web_server" == "nginx" ]]; then
+        configure_nginx_wordpress "$domain" || {
+            ui_msg "Nginx Configuration Error" "Failed to configure Nginx. Please check the logs."
+            return 1
+        }
+    else
+        configure_apache_wordpress "$domain" || {
+            ui_msg "Apache Configuration Error" "Failed to configure Apache. Please check the logs."
+            return 1
+        }
+    fi
+    
+    # Final setup and permissions
+    ui_msg "Step 4/4" "Finalizing installation...\n\nSetting file permissions and restarting services.\n\n⏳ This process is automatic - please wait..."
+    finalize_wordpress_setup "$domain" "$web_server" || {
+        ui_msg "Finalization Error" "WordPress setup completed but some final steps failed."
+    }
+    
+    # Show completion with custom database details
+    show_wordpress_completion_custom "$domain" "$db_info" "$web_server"
+}
+
+show_wordpress_completion_custom() {
+    local domain="$1"
+    local db_info="$2"
+    local web_server="$3"
+    
+    # Parse database info
+    IFS=':' read -r db_name db_user db_pass <<< "$db_info"
+    
+    local completion_msg="🎉 WordPress Installation Complete!\n\n"
+    completion_msg+="🌐 Website Details:\n"
+    completion_msg+="• URL: http://$domain\n"
+    completion_msg+="• Directory: /var/www/$domain\n"
+    completion_msg+="• Web Server: $web_server\n\n"
+    completion_msg+="🔐 Custom Database Configuration:\n"
+    completion_msg+="• Database Name: $db_name\n"
+    completion_msg+="• Database User: $db_user (WordPress-specific)\n"
+    completion_msg+="• Database Password: $db_pass\n"
+    completion_msg+="• Host: localhost\n\n"
+    completion_msg+="👤 User Management Summary:\n"
+    completion_msg+="• ROOT USER: Administrative MariaDB access\n"
+    completion_msg+="• WORDPRESS USER: '$db_user' (limited to '$db_name' database)\n\n"
+    completion_msg+="🔧 Next Steps:\n"
+    completion_msg+="1. Visit http://$domain to complete WordPress setup\n"
+    completion_msg+="2. Use the database credentials above during WordPress installation\n"
+    completion_msg+="3. Consider adding SSL certificate for security\n\n"
+    completion_msg+="📝 Database credentials are saved in wp-config.php"
+    
+    ui_msg "Installation Complete" "$completion_msg"
+}
+
 install_wordpress_prerequisites() {
     local web_server="$1"
     log "Installing WordPress prerequisites for $web_server"
     
-    ui_msg "Installing Prerequisites" "Installing required packages for WordPress...\n\nThis may take a few minutes."
+    ui_msg "Installing Prerequisites" "Installing required packages for WordPress...\n\nThis may take a few minutes.\n\n⏳ This process is automatic - please wait..."
     
     # Common packages
     local packages=("mariadb" "php-mysql" "php-curl" "php-gd" "php-xml" "php-mbstring" "php-zip")
@@ -2616,6 +2937,18 @@ install_wordpress_prerequisites() {
     if [[ "$web_server" == "nginx" ]]; then
         sudo systemctl enable nginx php${PHP_VER}-fpm mariadb 2>&1 | tee -a "$LOGFILE"
         sudo systemctl start nginx php${PHP_VER}-fpm mariadb 2>&1 | tee -a "$LOGFILE"
+        
+        # Verify PHP-FPM is running
+        if ! systemctl is-active --quiet php${PHP_VER}-fpm; then
+            log "ERROR: PHP-FPM failed to start"
+            ui_msg "Service Error" "PHP-FPM failed to start. This will cause 500 errors.\n\nTrying to restart..."
+            sudo systemctl restart php${PHP_VER}-fpm
+            sleep 2
+            if ! systemctl is-active --quiet php${PHP_VER}-fpm; then
+                ui_msg "Critical Error" "PHP-FPM still not running. Check: sudo systemctl status php${PHP_VER}-fpm"
+                return 1
+            fi
+        fi
     else
         sudo systemctl enable apache2 mariadb 2>&1 | tee -a "$LOGFILE"
         sudo systemctl start apache2 mariadb 2>&1 | tee -a "$LOGFILE"
@@ -2651,68 +2984,457 @@ check_wordpress_prerequisites() {
 setup_mariadb_security() {
     log "Setting up MariaDB security"
     
+    # Check if MariaDB is already configured
+    local existing_pass=""
+    if [[ -f "/root/.mysql_root_password" ]]; then
+        existing_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+        log "Found existing MariaDB password file"
+        
+        # Test if existing password works
+        if [[ -n "$existing_pass" ]] && mysql -u root -p"$existing_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+            log "Existing MariaDB password is valid, skipping setup"
+            return 0
+        else
+            log "Existing password doesn't work, reconfiguring MariaDB"
+        fi
+    fi
+    
     # Generate random root password
     local root_pass
     root_pass=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 20)
     
-    # Secure installation
-    sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${root_pass}';" 2>/dev/null || true
+    # First, check if MariaDB is using unix_socket authentication
+    local auth_plugin
+    auth_plugin=$(sudo mysql -e "SELECT plugin FROM mysql.user WHERE User='root' AND Host='localhost';" 2>/dev/null | tail -n +2 | head -n 1)
+    
+    # Configure root user for password authentication
+    if [[ "$auth_plugin" == "unix_socket" ]] || [[ -z "$auth_plugin" ]]; then
+        # Change from unix_socket to mysql_native_password
+        sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${root_pass}';" 2>/dev/null || {
+            # If that fails, try creating the user
+            sudo mysql -e "CREATE USER IF NOT EXISTS 'root'@'localhost' IDENTIFIED BY '${root_pass}';" 2>/dev/null || true
+            sudo mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;" 2>/dev/null || true
+        }
+    else
+        # For existing installations, we might need to reset the password
+        log "Attempting to reset existing MariaDB root password"
+        
+        # Try multiple methods to set the password
+        if sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$root_pass';" 2>/dev/null; then
+            log "Password set using ALTER USER"
+        elif sudo mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$root_pass');" 2>/dev/null; then
+            log "Password set using SET PASSWORD"
+        elif sudo mysql -e "UPDATE mysql.user SET Password=PASSWORD('$root_pass') WHERE User='root' AND Host='localhost';" 2>/dev/null; then
+            log "Password set using UPDATE"
+        else
+            log "All password setting methods failed, trying to reset authentication plugin"
+            sudo mysql -e "UPDATE mysql.user SET plugin='mysql_native_password', Password=PASSWORD('$root_pass') WHERE User='root' AND Host='localhost';" 2>/dev/null
+        fi
+    fi
+    
+    # Secure installation - clean up
     sudo mysql -e "DELETE FROM mysql.user WHERE User='';" 2>/dev/null || true
     sudo mysql -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" 2>/dev/null || true
     sudo mysql -e "DROP DATABASE IF EXISTS test;" 2>/dev/null || true
     sudo mysql -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';" 2>/dev/null || true
     sudo mysql -e "FLUSH PRIVILEGES;" 2>/dev/null || true
     
-    # Save root password
-    echo "$root_pass" | sudo tee /root/.mysql_root_password > /dev/null
-    sudo chmod 600 /root/.mysql_root_password
+    # Verify the password works
+    if mysql -u root -p"$root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+        # Save root password and display to user
+        echo "$root_pass" | sudo tee /root/.mysql_root_password > /dev/null
+        sudo chmod 600 /root/.mysql_root_password
+        
+        # Display password to user immediately
+        ui_msg "MariaDB Root Password Generated" "🔐 MariaDB Root Password Created!\n\n📋 ROOT PASSWORD: $root_pass\n\n📝 Important:\n• This password has been saved to /root/.mysql_root_password\n• Copy this password now for your records\n• You can view it later in Database Management > Show Credentials\n\n🔧 Access Methods:\n• Command line: mysql -u root -p'$root_pass'\n• Sudo access: sudo mysql"
+        
+        # Log credentials (non-blocking)
+        log "MariaDB Root Password Set: $root_pass"
+        log "Password saved to: /root/.mysql_root_password"
+        log "Password displayed to user during setup"
+    else
+        log "MariaDB Setup Warning: Password authentication setup may have failed"
+    fi
     
     log "MariaDB security setup completed"
 }
 
 setup_wordpress_database() {
     local domain="$1"
-    local db_name="wp_${domain//[^a-zA-Z0-9]/_}_$(date +%s)"
-    local db_user="wpuser_$(date +%s)"
-    local db_pass
-    db_pass=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 20)
     
-    log "Creating WordPress database: $db_name"
+    # Prompt user for database configuration
+    ui_msg "WordPress Database Configuration" "🔐 WordPress Database Setup\n\nYou can customize your database settings or use auto-generated values.\n\nCustom settings allow you to:\n• Choose meaningful database names\n• Set your own passwords\n• Maintain consistent naming\n\nAuto-generated settings provide:\n• Unique, secure credentials\n• No naming conflicts\n• Quick setup" >/dev/tty
     
-    # Create database and user
-    sudo mysql -e "CREATE DATABASE ${db_name} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>&1 | tee -a "$LOGFILE"
-    sudo mysql -e "CREATE USER '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';" 2>&1 | tee -a "$LOGFILE"
-    sudo mysql -e "GRANT ALL PRIVILEGES ON ${db_name}.* TO '${db_user}'@'localhost';" 2>&1 | tee -a "$LOGFILE"
-    sudo mysql -e "FLUSH PRIVILEGES;" 2>&1 | tee -a "$LOGFILE"
+    local use_custom=false
+    if ui_yesno "Database Configuration" "Do you want to customize database settings?\n\n• YES: Choose database name, user, and password\n• NO: Use auto-generated secure credentials" >/dev/tty; then
+        use_custom=true
+    fi
     
-    echo "${db_name}:${db_user}:${db_pass}"
+    local db_name db_user db_pass
+    
+    if [[ "$use_custom" == "true" ]]; then
+        # Custom database configuration
+        ui_msg "Custom Database Setup" "🔧 Custom Database Configuration\n\nPlease provide your preferred database settings.\n\nDatabase names should:\n• Be descriptive (e.g., mysite_wp, blog_db)\n• Use only letters, numbers, and underscores\n• Be unique on this server" >/dev/tty
+        
+        # Get database name
+        while true; do
+            db_name=$(ui_input "Database Name" "Enter database name for WordPress:" "wp_${domain//[^a-zA-Z0-9]/_}") || return
+            db_name=${db_name:-"wp_${domain//[^a-zA-Z0-9]/_}"}
+            
+            # Validate database name
+            if [[ "$db_name" =~ ^[a-zA-Z0-9_]+$ ]] && [[ ${#db_name} -le 64 ]]; then
+                break
+            else
+                ui_msg "Invalid Database Name" "Database name must:\n• Contain only letters, numbers, and underscores\n• Be 64 characters or less\n• Not be empty\n\nExample: wp_mysite, blog_database" >/dev/tty
+            fi
+        done
+        
+        # Get database user
+        while true; do
+            db_user=$(ui_input "Database User" "Enter database username:" "wp_user_${domain//[^a-zA-Z0-9]/_}") || return
+            db_user=${db_user:-"wp_user_${domain//[^a-zA-Z0-9]/_}"}
+            
+            # Validate username
+            if [[ "$db_user" =~ ^[a-zA-Z0-9_]+$ ]] && [[ ${#db_user} -le 32 ]]; then
+                break
+            else
+                ui_msg "Invalid Username" "Username must:\n• Contain only letters, numbers, and underscores\n• Be 32 characters or less\n• Not be empty\n\nExample: wp_user, mysite_user" >/dev/tty
+            fi
+        done
+        
+        # Get database password
+        db_pass=$(ui_input "Database Password" "Enter database password (leave empty for auto-generated):" "") || return
+        if [[ -z "$db_pass" ]]; then
+            db_pass=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 20)
+            ui_msg "Auto-Generated Password" "🔐 Password auto-generated for security:\n\nPassword: $db_pass\n\n📝 Please save this password - you'll need it for WordPress setup!" >/dev/tty
+        fi
+    else
+        # Auto-generated configuration
+        db_name="wp_${domain//[^a-zA-Z0-9]/_}_$(date +%s)"
+        db_user="wpuser_$(date +%s)"
+        db_pass=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 20)
+        
+        ui_msg "Auto-Generated Credentials" "🔐 Secure database credentials generated:\n\n• Database: $db_name\n• User: $db_user\n• Password: $db_pass\n\n📝 These will be automatically configured in WordPress!" >/dev/tty
+    fi
+    
+    log "Creating WordPress database: $db_name for domain: $domain"
+    log "Database user: $db_user"
+    
+    # Check MariaDB service first
+    if ! systemctl is-active --quiet mariadb; then
+        log "ERROR: MariaDB service is not running"
+        return 1
+    fi
+    
+    # Ensure MariaDB root access for database operations
+    local root_pass
+    local auth_method="sudo"
+    
+    ui_msg "Database Access" "🔐 Checking MariaDB root access...\n\nThis is required to create the WordPress database and user." >/dev/tty
+    
+    # First, try to get saved root password
+    if [[ -f "/root/.mysql_root_password" ]]; then
+        root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+        if [[ -n "$root_pass" ]]; then
+            # Test if password authentication works
+            if mysql -u root -p"$root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+                auth_method="password"
+                log "Using saved root password for database operations"
+                ui_msg "Root Access" "✅ MariaDB root access verified using saved credentials." >/dev/tty
+            else
+                log "Saved password authentication failed"
+                root_pass=""
+            fi
+        fi
+    fi
+    
+    # If password auth failed, try sudo
+    if [[ "$auth_method" != "password" ]]; then
+        if sudo mysql -e "SELECT 1;" >/dev/null 2>&1; then
+            auth_method="sudo"
+            log "Using sudo authentication for database operations"
+            ui_msg "Root Access" "✅ MariaDB root access verified using sudo." >/dev/tty
+        else
+            log "Sudo authentication also failed"
+            # Need to prompt for root password
+            ui_msg "Root Password Required" "🔑 MariaDB root access is required to create the WordPress database.\n\nPlease enter the MariaDB root password, or we can attempt to reset it." >/dev/tty
+            
+            local max_attempts=3
+            local attempt=1
+            
+            while [[ $attempt -le $max_attempts ]]; do
+                root_pass=$(ui_input "MariaDB Root Password" "Enter MariaDB root password (attempt $attempt/$max_attempts):" "" "password") || {
+                    if ui_yesno "Reset Root Password" "Would you like to attempt resetting the MariaDB root password instead?\n\n⚠️  This will stop MariaDB temporarily." >/dev/tty; then
+                        if reset_mariadb_root_password; then
+                            # Try to get the new password
+                            if [[ -f "/root/.mysql_root_password" ]]; then
+                                root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+                                if mysql -u root -p"$root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+                                    auth_method="password"
+                                    ui_msg "Root Access" "✅ MariaDB root password reset successfully." >/dev/tty
+                                    break
+                                fi
+                            fi
+                        fi
+                        ui_msg "Reset Failed" "❌ Failed to reset MariaDB root password. Please try entering the password manually." >/dev/tty
+                        continue
+                    else
+                        return 1
+                    fi
+                }
+                
+                if [[ -n "$root_pass" ]] && mysql -u root -p"$root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+                    auth_method="password"
+                    # Save the working password
+                    echo "$root_pass" | sudo tee /root/.mysql_root_password >/dev/null
+                    sudo chmod 600 /root/.mysql_root_password
+                    ui_msg "Root Access" "✅ MariaDB root access verified with provided password." >/dev/tty
+                    break
+                else
+                    ui_msg "Authentication Failed" "❌ Invalid password. Please try again." >/dev/tty
+                    ((attempt++))
+                fi
+            done
+            
+            if [[ $attempt -gt $max_attempts ]]; then
+                ui_msg "Access Failed" "❌ Failed to establish MariaDB root access after $max_attempts attempts.\n\nWordPress installation cannot continue without database access." >/dev/tty
+                return 1
+            fi
+        fi
+    fi
+    
+    log "Authentication method: $auth_method"
+    
+    # Function to execute MySQL commands with proper error handling
+    execute_mysql_cmd() {
+        local cmd="$1"
+        local operation="$2"
+        local result
+        
+        if [[ "$auth_method" == "password" ]]; then
+            if result=$(mysql -u root -p"$root_pass" -e "$cmd" 2>&1); then
+                log "SUCCESS: $operation completed with password auth"
+                return 0
+            else
+                log "FAILED: $operation with password auth: $result"
+                # Try sudo fallback
+                if result=$(sudo mysql -e "$cmd" 2>&1); then
+                    log "SUCCESS: $operation completed with sudo fallback"
+                    return 0
+                else
+                    log "FAILED: $operation with sudo fallback: $result"
+                    return 1
+                fi
+            fi
+        else
+            if result=$(sudo mysql -e "$cmd" 2>&1); then
+                log "SUCCESS: $operation completed with sudo"
+                return 0
+            else
+                log "FAILED: $operation with sudo: $result"
+                return 1
+            fi
+        fi
+    }
+    
+    # Create database
+    log "Creating database: $db_name"
+    execute_mysql_cmd "CREATE DATABASE IF NOT EXISTS \`${db_name}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" "Database creation" || {
+        log "ERROR: Failed to create database $db_name"
+        return 1
+    }
+    
+    # Create user
+    log "Creating database user: $db_user"
+    execute_mysql_cmd "CREATE USER IF NOT EXISTS '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';" "User creation" || {
+        log "ERROR: Failed to create user $db_user"
+        return 1
+    }
+    
+    # Grant privileges
+    log "Granting privileges to user: $db_user on database: $db_name"
+    execute_mysql_cmd "GRANT ALL PRIVILEGES ON \`${db_name}\`.* TO '${db_user}'@'localhost';" "Grant privileges" || {
+        log "ERROR: Failed to grant privileges"
+        return 1
+    }
+    
+    # Flush privileges
+    log "Flushing privileges"
+    execute_mysql_cmd "FLUSH PRIVILEGES;" "Flush privileges" || {
+        log "ERROR: Failed to flush privileges"
+        return 1
+    }
+    
+    # Verify database creation
+    log "Verifying database creation"
+    local db_exists
+    if [[ "$auth_method" == "password" ]]; then
+        db_exists=$(mysql -u root -p"$root_pass" -e "SHOW DATABASES LIKE '${db_name}';" 2>/dev/null | tail -n +2)
+    else
+        db_exists=$(sudo mysql -e "SHOW DATABASES LIKE '${db_name}';" 2>/dev/null | tail -n +2)
+    fi
+    
+    if [[ -n "$db_exists" ]]; then
+        log "SUCCESS: Database $db_name verified to exist"
+        
+        # Test WordPress user connection
+        log "Testing WordPress user connection"
+        if mysql -u "$db_user" -p"$db_pass" -e "USE \`${db_name}\`; SELECT 1;" >/dev/null 2>&1; then
+            log "SUCCESS: WordPress user can connect to database"
+            echo "${db_name}:${db_user}:${db_pass}"
+            return 0
+        else
+            log "ERROR: WordPress user cannot connect to database"
+            return 1
+        fi
+    else
+        log "ERROR: Database $db_name was not created or cannot be verified"
+        return 1
+    fi
 }
 
 setup_wordpress_database_custom() {
     local domain="$1"
     
+    # Display user management explanation
+    ui_msg "Database User Management" "🔐 WordPress Database Setup\n\n📋 User Management Explanation:\n\n• ROOT USER: Administrative access to MariaDB\n  - Username: root\n  - Used for: Creating databases, managing users\n  - Authentication: Password or sudo access\n\n• WORDPRESS USER: Dedicated user for each WordPress site\n  - Username: Custom (e.g., wp_user_sitename)\n  - Used for: WordPress application database access\n  - Authentication: Password only\n  - Privileges: Limited to specific database only\n\n🎯 This setup follows security best practices:\n- Separation of administrative and application access\n- Minimal privileges for WordPress users\n- Unique credentials per site"
+    
     local db_name
-    db_name=$(ui_input "Database Name" "WordPress database name:" "wp_${domain//[^a-zA-Z0-9]/_}") || return
+    db_name=$(ui_input "Database Name" "Enter WordPress database name:\n\n💡 Suggestions:\n• wp_${domain//[^a-zA-Z0-9]/_}\n• ${domain//[^a-zA-Z0-9]/_}_wp\n• custom_name_wp" "wp_${domain//[^a-zA-Z0-9]/_}") || return
     
-    local db_user
-    db_user=$(ui_input "Database User" "WordPress database user:" "wp_user") || return
-    
-    local db_pass
-    db_pass=$(ui_input "Database Password" "Database password (leave empty for auto-generated):" "") || return
-    
-    if [[ -z "$db_pass" ]]; then
-        db_pass=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 20)
+    # Validate database name
+    if [[ ! "$db_name" =~ ^[a-zA-Z0-9_]+$ ]]; then
+        ui_msg "Invalid Name" "Database name can only contain letters, numbers, and underscores."
+        return 1
     fi
     
-    log "Creating custom WordPress database: $db_name"
+    local db_user
+    db_user=$(ui_input "Database User" "Enter WordPress database username:\n\n💡 Suggestions:\n• wp_user_${domain//[^a-zA-Z0-9]/_}\n• ${domain//[^a-zA-Z0-9]/_}_user\n• wpuser_$(date +%s)" "wp_user_${domain//[^a-zA-Z0-9]/_}") || return
     
-    # Create database and user
-    sudo mysql -e "CREATE DATABASE ${db_name} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>&1 | tee -a "$LOGFILE"
-    sudo mysql -e "CREATE USER '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';" 2>&1 | tee -a "$LOGFILE"
-    sudo mysql -e "GRANT ALL PRIVILEGES ON ${db_name}.* TO '${db_user}'@'localhost';" 2>&1 | tee -a "$LOGFILE"
-    sudo mysql -e "FLUSH PRIVILEGES;" 2>&1 | tee -a "$LOGFILE"
+    # Validate username
+    if [[ ! "$db_user" =~ ^[a-zA-Z0-9_]+$ ]]; then
+        ui_msg "Invalid Username" "Username can only contain letters, numbers, and underscores."
+        return 1
+    fi
     
-    echo "${db_name}:${db_user}:${db_pass}"
+    local db_pass
+    db_pass=$(ui_input "Database Password" "Enter database password:\n\n🔒 Password Requirements:\n• Minimum 8 characters\n• Mix of letters, numbers, symbols\n• Avoid spaces and quotes\n\n💡 Leave empty for auto-generated secure password" "") || return
+    
+    if [[ -z "$db_pass" ]]; then
+        db_pass=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9!@#$%^&*' | head -c 16)
+        ui_msg "Generated Password" "🔐 Auto-generated secure password:\n\n$db_pass\n\n📝 Please save this password securely!"
+    else
+        # Validate password strength
+        if [[ ${#db_pass} -lt 8 ]]; then
+            ui_msg "Weak Password" "Password must be at least 8 characters long."
+            return 1
+        fi
+    fi
+    
+    log "Creating custom WordPress database: $db_name with user: $db_user"
+    
+    # Check MariaDB service first
+    if ! systemctl is-active --quiet mariadb; then
+        ui_msg "Service Error" "MariaDB service is not running. Please start MariaDB first."
+        return 1
+    fi
+    
+    # Get root authentication method
+    local root_pass
+    local auth_method="sudo"
+    if [[ -f "/root/.mysql_root_password" ]]; then
+        root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+        if [[ -n "$root_pass" ]] && mysql -u root -p"$root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+            auth_method="password"
+        fi
+    fi
+    
+    # Function to execute MySQL commands with proper error handling
+    execute_mysql_cmd() {
+        local cmd="$1"
+        local operation="$2"
+        local result
+        
+        if [[ "$auth_method" == "password" ]]; then
+            if result=$(mysql -u root -p"$root_pass" -e "$cmd" 2>&1); then
+                log "SUCCESS: $operation completed with password auth"
+                return 0
+            else
+                log "FAILED: $operation with password auth: $result"
+                ui_msg "Database Error" "Failed: $operation\n\nError: $result\n\nTrying alternative authentication..."
+                # Try sudo fallback
+                if result=$(sudo mysql -e "$cmd" 2>&1); then
+                    log "SUCCESS: $operation completed with sudo fallback"
+                    return 0
+                else
+                    log "FAILED: $operation with sudo fallback: $result"
+                    ui_msg "Database Error" "Failed: $operation\n\nError: $result"
+                    return 1
+                fi
+            fi
+        else
+            if result=$(sudo mysql -e "$cmd" 2>&1); then
+                log "SUCCESS: $operation completed with sudo"
+                return 0
+            else
+                log "FAILED: $operation with sudo: $result"
+                ui_msg "Database Error" "Failed: $operation\n\nError: $result"
+                return 1
+            fi
+        fi
+    }
+    
+    # Check if database already exists
+    local existing_db
+    if [[ "$auth_method" == "password" ]]; then
+        existing_db=$(mysql -u root -p"$root_pass" -e "SHOW DATABASES LIKE '${db_name}';" 2>/dev/null | tail -n +2)
+    else
+        existing_db=$(sudo mysql -e "SHOW DATABASES LIKE '${db_name}';" 2>/dev/null | tail -n +2)
+    fi
+    
+    if [[ -n "$existing_db" ]]; then
+        if ! ui_yesno "Database Exists" "Database '$db_name' already exists.\n\nDo you want to use the existing database?\n\n⚠️  WARNING: This will create a new user with access to the existing database."; then
+            return 1
+        fi
+    else
+        # Create database
+        execute_mysql_cmd "CREATE DATABASE \`${db_name}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" "Database creation" || return 1
+    fi
+    
+    # Check if user already exists
+    local existing_user
+    if [[ "$auth_method" == "password" ]]; then
+        existing_user=$(mysql -u root -p"$root_pass" -e "SELECT User FROM mysql.user WHERE User='${db_user}' AND Host='localhost';" 2>/dev/null | tail -n +2)
+    else
+        existing_user=$(sudo mysql -e "SELECT User FROM mysql.user WHERE User='${db_user}' AND Host='localhost';" 2>/dev/null | tail -n +2)
+    fi
+    
+    if [[ -n "$existing_user" ]]; then
+        if ui_yesno "User Exists" "User '$db_user' already exists.\n\nDo you want to update the password and grant access to '$db_name'?"; then
+            # Update existing user password
+            execute_mysql_cmd "ALTER USER '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';" "User password update" || return 1
+        else
+            return 1
+        fi
+    else
+        # Create new user
+        execute_mysql_cmd "CREATE USER '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';" "User creation" || return 1
+    fi
+    
+    # Grant privileges
+    execute_mysql_cmd "GRANT ALL PRIVILEGES ON \`${db_name}\`.* TO '${db_user}'@'localhost';" "Grant privileges" || return 1
+    
+    # Flush privileges
+    execute_mysql_cmd "FLUSH PRIVILEGES;" "Flush privileges" || return 1
+    
+    # Test WordPress user connection
+    if mysql -u "$db_user" -p"$db_pass" -e "USE \`${db_name}\`; SELECT 1;" >/dev/null 2>&1; then
+        ui_msg "Database Setup Complete" "✅ WordPress Database Setup Successful!\n\n🔐 Database Credentials:\n• Database Name: $db_name\n• Username: $db_user\n• Password: $db_pass\n• Host: localhost\n\n👤 User Management Summary:\n• ROOT USER: Administrative access (existing)\n• WORDPRESS USER: '$db_user' (dedicated for this site)\n• Database: '$db_name' (exclusive access)\n\n🔒 Security: WordPress user has minimal privileges"
+        echo "${db_name}:${db_user}:${db_pass}"
+    else
+        ui_msg "Connection Test Failed" "Database and user created but connection test failed.\n\nPlease check the credentials manually."
+        return 1
+    fi
 }
 
 setup_wordpress_files() {
@@ -2725,28 +3447,71 @@ setup_wordpress_files() {
     # Parse database info
     IFS=':' read -r db_name db_user db_pass <<< "$db_info"
     
-    # Create site directory
+    # Create site directory with proper initial permissions
     sudo mkdir -p "$site_dir"
-    sudo chown "$USER:$USER" "$site_dir"
     
     # Download WordPress
-    ui_msg "Downloading WordPress" "Downloading latest WordPress..."
+    ui_msg "Downloading WordPress" "Downloading latest WordPress...\n\n⏳ This process is automatic - please wait..."
     wget -q https://wordpress.org/latest.tar.gz -O /tmp/wordpress.tar.gz || {
         ui_msg "Download Error" "Failed to download WordPress. Please check your internet connection."
         return 1
     }
     
     tar -xzf /tmp/wordpress.tar.gz -C /tmp
-    rsync -a /tmp/wordpress/ "$site_dir/"
+    sudo rsync -a /tmp/wordpress/ "$site_dir/"
     rm -rf /tmp/wordpress /tmp/wordpress.tar.gz
     
-    # Configure WordPress
-    cp "$site_dir/wp-config-sample.php" "$site_dir/wp-config.php"
+    # Configure WordPress with sudo
+    sudo cp "$site_dir/wp-config-sample.php" "$site_dir/wp-config.php"
     
-    # Database configuration
-    sed -i "s/database_name_here/${db_name}/" "$site_dir/wp-config.php"
-    sed -i "s/username_here/${db_user}/" "$site_dir/wp-config.php"
-    sed -i "s/password_here/${db_pass}/" "$site_dir/wp-config.php"
+    # Database configuration - escape special characters in passwords
+    local escaped_db_name="${db_name//\'/\\\'}"
+    local escaped_db_user="${db_user//\'/\\\'}"
+    local escaped_db_pass="${db_pass//\'/\\\'}"
+    
+    # Use more robust sed replacements with different delimiters (with sudo)
+    sudo sed -i "s|database_name_here|${escaped_db_name}|g" "$site_dir/wp-config.php"
+    sudo sed -i "s|username_here|${escaped_db_user}|g" "$site_dir/wp-config.php"
+    sudo sed -i "s|password_here|${escaped_db_pass}|g" "$site_dir/wp-config.php"
+    sudo sed -i "s|localhost|localhost|g" "$site_dir/wp-config.php"
+    
+    # Verify database configuration was applied (using fixed-string grep to avoid regex issues)
+    if grep -F "$escaped_db_name" "$site_dir/wp-config.php" >/dev/null 2>&1 && \
+       grep -F "$escaped_db_user" "$site_dir/wp-config.php" >/dev/null 2>&1 && \
+       grep -F "$escaped_db_pass" "$site_dir/wp-config.php" >/dev/null 2>&1; then
+        log "Database configuration applied successfully to wp-config.php"
+        
+        # Test database connection
+        if mysql -u"$db_user" -p"$db_pass" -h"localhost" -e "USE \`$db_name\`; SELECT 1;" >/dev/null 2>&1; then
+            log "Database connection test successful"
+        else
+            log "WARNING: Database connection test failed - WordPress may have connection issues"
+            ui_msg "Database Warning" "⚠️ Database configuration applied but connection test failed.\n\nThis may cause WordPress installation issues.\n\nPlease verify:\n• Database '$db_name' exists\n• User '$db_user' has access\n• Password is correct\n\nContinuing with installation..."
+        fi
+    else
+        log "WARNING: Database configuration may not have been applied correctly"
+        # Try alternative method with PHP-style replacement (with sudo)
+        sudo tee /tmp/wp-db-config.php > /dev/null << EOF
+<?php
+\$config_content = file_get_contents('$site_dir/wp-config.php');
+\$config_content = str_replace('database_name_here', '$escaped_db_name', \$config_content);
+\$config_content = str_replace('username_here', '$escaped_db_user', \$config_content);
+\$config_content = str_replace('password_here', '$escaped_db_pass', \$config_content);
+file_put_contents('$site_dir/wp-config.php', \$config_content);
+echo "Database configuration updated via PHP";
+?>
+EOF
+        sudo php /tmp/wp-db-config.php
+        sudo rm -f /tmp/wp-db-config.php
+        
+        # Test database connection after PHP method
+        if mysql -u"$db_user" -p"$db_pass" -h"localhost" -e "USE \`$db_name\`; SELECT 1;" >/dev/null 2>&1; then
+            log "Database connection test successful after PHP method"
+        else
+            log "ERROR: Database connection test failed after both methods"
+            ui_msg "Database Error" "❌ Database configuration failed!\n\nWordPress will not be able to connect to the database.\n\nPlease check:\n• Database '$db_name' exists\n• User '$db_user' has proper permissions\n• Password is correct\n• MariaDB is running\n\nYou may need to recreate the database and user."
+        fi
+    fi
     
     # Add security keys
     local salts
@@ -2755,14 +3520,44 @@ setup_wordpress_files() {
         salts="// Security keys could not be fetched automatically"
     }
     
-    # Replace the placeholder keys
-    sed -i '/AUTH_KEY/,/NONCE_SALT/d' "$site_dir/wp-config.php"
-    sed -i "/\/\*\* MySQL settings/i\\$salts" "$site_dir/wp-config.php"
+    # Replace the placeholder keys using a temporary file to avoid sed escaping issues
+    if [[ -n "$salts" ]]; then
+        # Create temporary file with salts
+        echo "$salts" > /tmp/wp-salts.txt
+        
+        # Remove existing placeholder keys
+        sudo sed -i '/AUTH_KEY/,/NONCE_SALT/d' "$site_dir/wp-config.php"
+        
+        # Insert new keys before MySQL settings using a more robust method
+        sudo awk '
+            /\/\*\* MySQL settings/ {
+                while ((getline line < "/tmp/wp-salts.txt") > 0) {
+                    print line
+                }
+                close("/tmp/wp-salts.txt")
+                print ""
+            }
+            { print }
+        ' "$site_dir/wp-config.php" > /tmp/wp-config-new.php
+        
+        sudo mv /tmp/wp-config-new.php "$site_dir/wp-config.php"
+        rm -f /tmp/wp-salts.txt
+    else
+        log "Skipping security keys insertion due to fetch failure"
+    fi
     
     # Set proper permissions
     sudo chown -R www-data:www-data "$site_dir"
     sudo find "$site_dir" -type d -exec chmod 755 {} \;
     sudo find "$site_dir" -type f -exec chmod 644 {} \;
+    
+    # Ensure wp-config.php has correct permissions
+    sudo chmod 600 "$site_dir/wp-config.php"
+    
+    # Create uploads directory with proper permissions
+    sudo mkdir -p "$site_dir/wp-content/uploads"
+    sudo chown -R www-data:www-data "$site_dir/wp-content/uploads"
+    sudo chmod -R 755 "$site_dir/wp-content/uploads"
     
     log "WordPress files setup completed"
 }
@@ -2809,6 +3604,12 @@ server {
         fastcgi_pass unix:/var/run/php/php${PHP_VER}-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
+        
+        # Additional PHP settings for WordPress
+        fastcgi_read_timeout 300;
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 4 256k;
+        fastcgi_busy_buffers_size 256k;
     }
     
     # Security: Block access to sensitive files
@@ -2978,44 +3779,101 @@ show_wordpress_completion() {
     # Parse database info
     IFS=':' read -r db_name db_user db_pass <<< "$db_info"
     
-    # Save credentials
+    # Save credentials with comprehensive details
     local creds_file="$BACKUP_DIR/wordpress-${domain}-$(date +%Y%m%d-%H%M%S).txt"
     cat > "$creds_file" <<EOF
-WordPress Installation Complete
+WordPress Installation Complete - Full Details
 ═══════════════════════════════════════════════════════════════
+Installation Date: $(date)
 Domain: $domain
 Site Directory: /var/www/$domain
+
+DATABASE CREDENTIALS:
+═══════════════════════════════════════════════════════════════
 Database Name: $db_name
 Database User: $db_user
 Database Password: $db_pass
+Database Host: localhost
+Database Port: 3306
 
-WordPress Admin Setup:
+SITE ACCESS:
+═══════════════════════════════════════════════════════════════
+Site URL: http://$domain
+Admin URL: http://$domain/wp-admin/
+WordPress Setup: http://$domain/wp-admin/install.php
+
+SYSTEM INFORMATION:
+═══════════════════════════════════════════════════════════════
+Web Server: $(if systemctl is-active --quiet nginx; then echo "Nginx"; elif systemctl is-active --quiet apache2; then echo "Apache"; else echo "Unknown"; fi)
+PHP Version: ${PHP_VER}
+Database: MariaDB
+Site Directory: /var/www/$domain
+Config File: /var/www/$domain/wp-config.php
+
+NEXT STEPS:
+═══════════════════════════════════════════════════════════════
 1. Visit: http://$domain
 2. Complete the WordPress installation wizard
-3. Create your admin account
+3. Create your admin account with strong password
+4. Configure site title and description
+5. Choose your theme and install plugins
 
-Next Steps:
-- Consider setting up SSL with Let's Encrypt
-- Configure WordPress security hardening
-- Install essential plugins
-- Set up backups
+SECURITY RECOMMENDATIONS:
+═══════════════════════════════════════════════════════════════
+- Set up SSL certificate with Let's Encrypt
+- Install security plugins (Wordfence, etc.)
+- Configure regular backups
+- Update WordPress core and plugins regularly
+- Use strong passwords for all accounts
 
-Installation completed: $(date)
+TROUBLESHOOTING:
+═══════════════════════════════════════════════════════════════
+If you encounter 500 errors:
+• Check PHP-FPM: sudo systemctl status php${PHP_VER}-fpm
+• Check web server: sudo systemctl status nginx (or apache2)
+• Check error logs: sudo tail -f /var/log/nginx/error.log
+• Verify file permissions: ls -la /var/www/$domain
+
+Support: Keep this file safe - it contains all your installation details!
 EOF
     
-    local completion_msg="🎉 WordPress Installation Complete!\n\n"
-    completion_msg+="Your WordPress site is ready at:\n"
-    completion_msg+="http://$domain\n\n"
-    completion_msg+="Database Details:\n"
-    completion_msg+="• Name: $db_name\n"
-    completion_msg+="• User: $db_user\n"
-    completion_msg+="• Password: $db_pass\n\n"
-    completion_msg+="📝 Credentials saved to:\n$creds_file\n\n"
-    completion_msg+="🔗 Visit your site to complete the WordPress setup wizard!"
+    # Enhanced completion message with all details
+    local completion_msg="🎉 WORDPRESS INSTALLATION COMPLETE! 🎉\n\n"
+    completion_msg+="═══════════════════════════════════════════════════════════════\n"
+    completion_msg+="🌐 SITE ACCESS:\n"
+    completion_msg+="   Site URL: http://$domain\n"
+    completion_msg+="   Admin URL: http://$domain/wp-admin/\n"
+    completion_msg+="   Setup URL: http://$domain/wp-admin/install.php\n\n"
+    completion_msg+="🗄️  DATABASE CREDENTIALS:\n"
+    completion_msg+="   Database Name: $db_name\n"
+    completion_msg+="   Database User: $db_user\n"
+    completion_msg+="   Database Password: $db_pass\n"
+    completion_msg+="   Database Host: localhost\n"
+    completion_msg+="   Database Port: 3306\n\n"
+    completion_msg+="📁 SYSTEM DETAILS:\n"
+    completion_msg+="   Site Directory: /var/www/$domain\n"
+    completion_msg+="   Config File: /var/www/$domain/wp-config.php\n"
+    completion_msg+="   PHP Version: ${PHP_VER}\n"
+    completion_msg+="   Web Server: $(if systemctl is-active --quiet nginx; then echo "Nginx"; elif systemctl is-active --quiet apache2; then echo "Apache"; else echo "Unknown"; fi)\n\n"
+    completion_msg+="📝 CREDENTIALS SAVED TO:\n"
+    completion_msg+="   $creds_file\n\n"
+    completion_msg+="🚀 NEXT STEPS:\n"
+    completion_msg+="   1. Visit http://$domain to start WordPress setup\n"
+    completion_msg+="   2. Complete the 5-minute installation wizard\n"
+    completion_msg+="   3. Create your admin account (use strong password!)\n"
+    completion_msg+="   4. Configure site title and description\n"
+    completion_msg+="   5. Start customizing your site!\n\n"
+    completion_msg+="🔧 TROUBLESHOOTING (if needed):\n"
+    completion_msg+="   • Check PHP-FPM: sudo systemctl status php${PHP_VER}-fpm\n"
+    completion_msg+="   • Check Nginx: sudo systemctl status nginx\n"
+    completion_msg+="   • View error logs: sudo tail -f /var/log/nginx/error.log\n"
+    completion_msg+="   • Check permissions: ls -la /var/www/$domain\n\n"
+    completion_msg+="🔒 SECURITY TIP: Set up SSL with Let's Encrypt after setup!\n"
+    completion_msg+="═══════════════════════════════════════════════════════════════"
     
-    ui_info "WordPress Ready!" "$completion_msg"
+    ui_info "WordPress Installation Complete!" "$completion_msg"
     
-    log "WordPress installation completed for $domain"
+    log "WordPress installation completed for $domain with full details displayed"
 }
 
 wordpress_ssl_setup() {
@@ -3443,8 +4301,12 @@ show_individual_site_management() {
             status_info+="🔒 SSL Certificate: ❌ Not configured\n"
         fi
         
-        # Database connection test
+        # Database connection test and detailed diagnostics
         local db_status="❌"
+        local db_error_msg=""
+        local db_tables_count="0"
+        local wp_tables_exist="❌"
+        
         if [[ -f "$site_dir/wp-config.php" ]]; then
             local db_name db_user db_pass db_host
             db_name=$(grep "DB_NAME" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
@@ -3453,12 +4315,79 @@ show_individual_site_management() {
             db_host=$(grep "DB_HOST" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
             
             if [[ -n "$db_name" && -n "$db_user" ]]; then
-                if mysql -u"$db_user" -p"$db_pass" -h"${db_host:-localhost}" -e "USE $db_name;" 2>/dev/null; then
-                    db_status="✅"
+                # Test database connection
+                local db_test_result
+                if db_test_result=$(mysql -u"$db_user" -p"$db_pass" -h"${db_host:-localhost}" -e "USE \`$db_name\`; SELECT 'Connection OK' as status;" 2>&1); then
+                    if echo "$db_test_result" | grep -q "Connection OK"; then
+                        db_status="✅ Connected"
+                        
+                        # Count tables in database
+                        db_tables_count=$(mysql -u"$db_user" -p"$db_pass" -h"${db_host:-localhost}" -e "USE \`$db_name\`; SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$db_name';" 2>/dev/null | tail -n1)
+                        
+                        # Check for WordPress core tables
+                        local wp_core_tables=$(mysql -u"$db_user" -p"$db_pass" -h"${db_host:-localhost}" -e "USE \`$db_name\`; SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$db_name' AND table_name LIKE '%wp_posts' OR table_name LIKE '%wp_users' OR table_name LIKE '%wp_options';" 2>/dev/null | tail -n1)
+                        if [[ "$wp_core_tables" -ge 3 ]]; then
+                            wp_tables_exist="✅ WordPress tables found"
+                        else
+                            wp_tables_exist="⚠️ WordPress tables missing ($wp_core_tables/3)"
+                        fi
+                    else
+                        db_status="❌ Connection failed"
+                        db_error_msg="Database exists but connection failed"
+                    fi
+                else
+                    db_status="❌ Connection failed"
+                    # Parse error message for common issues
+                    if echo "$db_test_result" | grep -q "Access denied"; then
+                        db_error_msg="Access denied - check credentials"
+                    elif echo "$db_test_result" | grep -q "Unknown database"; then
+                        db_error_msg="Database '$db_name' does not exist"
+                    elif echo "$db_test_result" | grep -q "Can't connect"; then
+                        db_error_msg="Cannot connect to MySQL server"
+                    else
+                        db_error_msg="Connection error: $(echo "$db_test_result" | head -n1)"
+                    fi
+                fi
+            else
+                db_status="❌ Missing credentials"
+                db_error_msg="Database credentials not found in wp-config.php"
+            fi
+        else
+            db_status="❌ No wp-config.php"
+            db_error_msg="WordPress configuration file not found"
+        fi
+        
+        status_info+="🗄️  Database Connection: $db_status\n"
+        if [[ -n "$db_error_msg" ]]; then
+            status_info+="⚠️  Error: $db_error_msg\n"
+        fi
+        
+        # Database credentials and diagnostics (if available)
+        if [[ -f "$site_dir/wp-config.php" ]]; then
+            status_info+="\nDatabase Information:\n"
+            status_info+="───────────────────────────────────────────────────────────\n"
+            status_info+="📊 Database: ${db_name:-❌ Not found}\n"
+            status_info+="👤 User: ${db_user:-❌ Not found}\n"
+            status_info+="🔑 Password: ${db_pass:+✅ Set}${db_pass:-❌ Not found}\n"
+            status_info+="🏠 Host: ${db_host:-localhost}\n"
+            status_info+="📋 Tables Count: $db_tables_count\n"
+            status_info+="🔧 WordPress Tables: $wp_tables_exist\n"
+            
+            # Additional database diagnostics
+            if [[ "$db_status" == "✅ Connected" ]]; then
+                # Check database charset
+                local db_charset=$(mysql -u"$db_user" -p"$db_pass" -h"${db_host:-localhost}" -e "SELECT DEFAULT_CHARACTER_SET_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='$db_name';" 2>/dev/null | tail -n1)
+                status_info+="🔤 Charset: ${db_charset:-unknown}\n"
+                
+                # Check if WordPress is installed (has admin user)
+                local wp_installed=$(mysql -u"$db_user" -p"$db_pass" -h"${db_host:-localhost}" -e "USE \`$db_name\`; SELECT COUNT(*) FROM wp_users WHERE user_login != '';" 2>/dev/null | tail -n1)
+                if [[ "$wp_installed" -gt 0 ]]; then
+                    status_info+="👥 WordPress Users: $wp_installed found\n"
+                else
+                    status_info+="👥 WordPress Users: ❌ No users found (not installed)\n"
                 fi
             fi
         fi
-        status_info+="🗄️  Database Connection: $db_status\n"
         
         # Site accessibility
         local site_accessible="❌"
@@ -3473,10 +4402,29 @@ show_individual_site_management() {
         fi
         status_info+="🌍 Site Accessible: $site_accessible\n"
         
+        # WordPress admin URL and setup status
+        status_info+="\nWordPress Setup:\n"
+        status_info+="───────────────────────────────────────────────────────────\n"
+        status_info+="🔗 Admin URL: http://$site/wp-admin/\n"
+        status_info+="🏠 Site URL: http://$site/\n"
+        
+        # Check if WordPress is configured
+        if [[ -f "$site_dir/wp-config.php" ]]; then
+            local wp_configured="❌"
+            if mysql -u"$db_user" -p"$db_pass" -h"${db_host:-localhost}" -e "SELECT COUNT(*) FROM ${db_name}.wp_options WHERE option_name='siteurl';" 2>/dev/null | grep -q "1"; then
+                wp_configured="✅"
+            fi
+            status_info+="⚙️  WordPress Configured: $wp_configured\n"
+        fi
+        
         local menu_items=(
             "" "(_*_)"
             "view-config" "📄 View Full Web Server Config"
             "edit-config" "✏️  Edit Web Server Config"
+            "wp-config" "⚙️  View/Edit wp-config.php"
+            "test-db" "🗄️  Test Database Connection"
+            "repair-db" "🔧 Repair Database Connection"
+            "" "(_*_)"
             "enable-site" "🔗 Enable/Disable Site"
             "test-site" "🧪 Test Site Accessibility"
             "" "(_*_)"
@@ -3486,7 +4434,7 @@ show_individual_site_management() {
         )
         
         local choice
-        choice=$(ui_menu "Site Management: $site" "$status_info" 25 90 15 "${menu_items[@]}") || break
+        choice=$(ui_menu "Site Management: $site" "$status_info" 35 120 15 "${menu_items[@]}") || break
         
         case "$choice" in
             view-config)
@@ -3509,6 +4457,25 @@ show_individual_site_management() {
                 else
                     ui_error "No configuration file found for $site"
                 fi
+                ;;
+            wp-config)
+                if [[ -f "$site_dir/wp-config.php" ]]; then
+                    local wp_config_content
+                    wp_config_content=$(cat "$site_dir/wp-config.php")
+                    ui_info "WordPress Configuration: $site_dir/wp-config.php" "$wp_config_content"
+                    
+                    if ui_yesno "Edit wp-config.php" "Do you want to edit the WordPress configuration file?"; then
+                        sudo nano "$site_dir/wp-config.php"
+                    fi
+                else
+                    ui_error "wp-config.php not found at $site_dir/wp-config.php"
+                fi
+                ;;
+            test-db)
+                test_wordpress_database_connection "$site"
+                ;;
+            repair-db)
+                repair_wordpress_database_connection "$site"
                 ;;
             enable-site)
                 manage_site_enablement "$site" "$web_server"
@@ -3649,18 +4616,267 @@ setup_wordpress() {
     show_wordpress_setup_menu
 }
 
+# WordPress database testing and repair functions
+test_wordpress_database_connection() {
+    local site="$1"
+    local site_dir="/var/www/$site"
+    
+    log "Testing database connection for WordPress site: $site"
+    
+    if [[ ! -f "$site_dir/wp-config.php" ]]; then
+        ui_error "wp-config.php not found" "Cannot test database connection.\n\nFile not found: $site_dir/wp-config.php"
+        return 1
+    fi
+    
+    # Extract database credentials
+    local db_name db_user db_pass db_host
+    db_name=$(grep "DB_NAME" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+    db_user=$(grep "DB_USER" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+    db_pass=$(grep "DB_PASSWORD" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+    db_host=$(grep "DB_HOST" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+    db_host=${db_host:-localhost}
+    
+    local test_info="🗄️  Database Connection Test\n\n"
+    test_info+="Site: $site\n"
+    test_info+="Database: ${db_name:-❌ Not found}\n"
+    test_info+="User: ${db_user:-❌ Not found}\n"
+    test_info+="Host: $db_host\n\n"
+    
+    if [[ -z "$db_name" || -z "$db_user" || -z "$db_pass" ]]; then
+        test_info+="❌ FAILED: Missing database credentials in wp-config.php\n\n"
+        test_info+="Required credentials not found:\n"
+        [[ -z "$db_name" ]] && test_info+="• DB_NAME is missing\n"
+        [[ -z "$db_user" ]] && test_info+="• DB_USER is missing\n"
+        [[ -z "$db_pass" ]] && test_info+="• DB_PASSWORD is missing\n"
+        ui_info "Database Test Failed" "$test_info"
+        return 1
+    fi
+    
+    # Test connection
+    local db_test_result
+    if db_test_result=$(mysql -u"$db_user" -p"$db_pass" -h"$db_host" -e "USE \`$db_name\`; SELECT 'Connection successful' as status, NOW() as timestamp;" 2>&1); then
+        if echo "$db_test_result" | grep -q "Connection successful"; then
+            test_info+="✅ SUCCESS: Database connection established\n\n"
+            
+            # Additional diagnostics
+            local table_count=$(mysql -u"$db_user" -p"$db_pass" -h"$db_host" -e "USE \`$db_name\`; SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$db_name';" 2>/dev/null | tail -n1)
+            local wp_tables=$(mysql -u"$db_user" -p"$db_pass" -h"$db_host" -e "USE \`$db_name\`; SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$db_name' AND (table_name LIKE '%wp_posts' OR table_name LIKE '%wp_users' OR table_name LIKE '%wp_options');" 2>/dev/null | tail -n1)
+            local user_count=$(mysql -u"$db_user" -p"$db_pass" -h"$db_host" -e "USE \`$db_name\`; SELECT COUNT(*) FROM wp_users;" 2>/dev/null | tail -n1)
+            
+            test_info+="Database Statistics:\n"
+            test_info+="• Total tables: $table_count\n"
+            test_info+="• WordPress core tables: $wp_tables/3\n"
+            test_info+="• WordPress users: $user_count\n\n"
+            
+            if [[ "$wp_tables" -ge 3 && "$user_count" -gt 0 ]]; then
+                test_info+="✅ WordPress appears to be fully installed\n"
+            elif [[ "$wp_tables" -ge 3 ]]; then
+                test_info+="⚠️  WordPress tables exist but no users found\n"
+            else
+                test_info+="⚠️  WordPress tables missing - installation incomplete\n"
+            fi
+            
+            ui_info "Database Test Successful" "$test_info"
+        else
+            test_info+="❌ FAILED: Connection established but database query failed\n\n"
+            test_info+="Error details:\n$db_test_result"
+            ui_info "Database Test Failed" "$test_info"
+        fi
+    else
+        test_info+="❌ FAILED: Cannot connect to database\n\n"
+        
+        # Parse error for common issues
+        if echo "$db_test_result" | grep -q "Access denied"; then
+            test_info+="Error: Access denied\n"
+            test_info+="• Check username and password\n"
+            test_info+="• Verify user has database permissions\n"
+        elif echo "$db_test_result" | grep -q "Unknown database"; then
+            test_info+="Error: Database does not exist\n"
+            test_info+="• Database '$db_name' was not found\n"
+            test_info+="• Check database name spelling\n"
+            test_info+="• Create database if needed\n"
+        elif echo "$db_test_result" | grep -q "Can't connect"; then
+            test_info+="Error: Cannot connect to MySQL server\n"
+            test_info+="• Check if MariaDB/MySQL is running\n"
+            test_info+="• Verify host address: $db_host\n"
+            test_info+="• Check firewall settings\n"
+        else
+            test_info+="Error details:\n$(echo "$db_test_result" | head -n3)\n"
+        fi
+        
+        ui_info "Database Test Failed" "$test_info"
+    fi
+}
+
+repair_wordpress_database_connection() {
+    local site="$1"
+    local site_dir="/var/www/$site"
+    
+    log "Starting database repair for WordPress site: $site"
+    
+    if [[ ! -f "$site_dir/wp-config.php" ]]; then
+        ui_error "wp-config.php not found" "Cannot repair database connection.\n\nFile not found: $site_dir/wp-config.php"
+        return 1
+    fi
+    
+    local repair_info="🔧 Database Connection Repair\n\n"
+    repair_info+="This will attempt to:\n"
+    repair_info+="• Verify database credentials\n"
+    repair_info+="• Test database connectivity\n"
+    repair_info+="• Create missing database if needed\n"
+    repair_info+="• Recreate database user if needed\n"
+    repair_info+="• Fix common connection issues\n\n"
+    repair_info+="Continue with repair?"
+    
+    if ! ui_yesno "Database Repair" "$repair_info"; then
+        return
+    fi
+    
+    # Extract current credentials
+    local db_name db_user db_pass db_host
+    db_name=$(grep "DB_NAME" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+    db_user=$(grep "DB_USER" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+    db_pass=$(grep "DB_PASSWORD" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+    db_host=$(grep "DB_HOST" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+    db_host=${db_host:-localhost}
+    
+    local repair_steps=""
+    local repair_success=true
+    
+    # Step 1: Validate credentials
+    repair_steps+="Step 1: Validating credentials...\n"
+    if [[ -z "$db_name" || -z "$db_user" || -z "$db_pass" ]]; then
+        repair_steps+="❌ Missing credentials in wp-config.php\n"
+        repair_success=false
+    else
+        repair_steps+="✅ Credentials found\n"
+    fi
+    
+    # Step 2: Test MariaDB service
+    repair_steps+="Step 2: Checking MariaDB service...\n"
+    if systemctl is-active --quiet mariadb; then
+        repair_steps+="✅ MariaDB is running\n"
+    else
+        repair_steps+="⚠️  MariaDB is not running - attempting to start...\n"
+        if sudo systemctl start mariadb 2>/dev/null; then
+            repair_steps+="✅ MariaDB started successfully\n"
+        else
+            repair_steps+="❌ Failed to start MariaDB\n"
+            repair_success=false
+        fi
+    fi
+    
+    if [[ "$repair_success" == "true" && -n "$db_name" && -n "$db_user" && -n "$db_pass" ]]; then
+        # Step 3: Test connection with current credentials
+        repair_steps+="Step 3: Testing database connection...\n"
+        if mysql -u"$db_user" -p"$db_pass" -h"$db_host" -e "USE \`$db_name\`;" 2>/dev/null; then
+            repair_steps+="✅ Connection successful - no repair needed\n"
+        else
+            repair_steps+="⚠️  Connection failed - attempting repair...\n"
+            
+            # Step 4: Try to recreate database and user with root access
+            repair_steps+="Step 4: Recreating database and user...\n"
+            
+            # Get root access
+            local root_pass=""
+            if [[ -f "/root/.mysql_root_password" ]]; then
+                root_pass=$(sudo cat "/root/.mysql_root_password" 2>/dev/null | tr -d '\n\r')
+            fi
+            
+            local mysql_cmd=""
+            if [[ -n "$root_pass" ]] && mysql -u root -p"$root_pass" -e "SELECT 1;" 2>/dev/null; then
+                mysql_cmd="mysql -u root -p\"$root_pass\""
+            elif sudo mysql -e "SELECT 1;" 2>/dev/null; then
+                mysql_cmd="sudo mysql"
+            else
+                repair_steps+="❌ Cannot access MariaDB as root\n"
+                repair_success=false
+            fi
+            
+            if [[ -n "$mysql_cmd" ]]; then
+                # Create database
+                if eval "$mysql_cmd -e \"CREATE DATABASE IF NOT EXISTS \\\`$db_name\\\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\"" 2>/dev/null; then
+                    repair_steps+="✅ Database '$db_name' created/verified\n"
+                else
+                    repair_steps+="❌ Failed to create database\n"
+                    repair_success=false
+                fi
+                
+                # Create user and grant privileges
+                if eval "$mysql_cmd -e \"CREATE USER IF NOT EXISTS '$db_user'@'localhost' IDENTIFIED BY '$db_pass';\"" 2>/dev/null; then
+                    repair_steps+="✅ User '$db_user' created/verified\n"
+                else
+                    repair_steps+="❌ Failed to create user\n"
+                    repair_success=false
+                fi
+                
+                if eval "$mysql_cmd -e \"GRANT ALL PRIVILEGES ON \\\`$db_name\\\`.* TO '$db_user'@'localhost'; FLUSH PRIVILEGES;\"" 2>/dev/null; then
+                    repair_steps+="✅ Privileges granted\n"
+                else
+                    repair_steps+="❌ Failed to grant privileges\n"
+                    repair_success=false
+                fi
+                
+                # Final test
+                repair_steps+="Step 5: Final connection test...\n"
+                if mysql -u"$db_user" -p"$db_pass" -h"$db_host" -e "USE \`$db_name\`;" 2>/dev/null; then
+                    repair_steps+="✅ Database connection repaired successfully!\n"
+                else
+                    repair_steps+="❌ Connection still failing after repair\n"
+                    repair_success=false
+                fi
+            fi
+        fi
+    fi
+    
+    # Show repair results
+    if [[ "$repair_success" == "true" ]]; then
+        ui_info "Repair Successful" "✅ Database connection repair completed!\n\n$repair_steps\nYour WordPress site should now be able to connect to the database."
+    else
+        ui_info "Repair Failed" "❌ Database connection repair failed\n\n$repair_steps\nManual intervention may be required. Check the database credentials and MariaDB configuration."
+    fi
+}
+
 # ==============================================================================
 # KEYBOARD LAYOUT CONFIGURATION
 # ==============================================================================
+
+# Function to detect current keyboard layout
+get_current_keyboard_layout() {
+    if [[ -f "$HOME/.config/ultrabunt-keyboard-layout" ]]; then
+        cat "$HOME/.config/ultrabunt-keyboard-layout"
+    else
+        echo "none"
+    fi
+}
 
 show_keyboard_layout_menu() {
     log "Entering show_keyboard_layout_menu function"
     
     while true; do
+        local current_layout
+        current_layout=$(get_current_keyboard_layout)
+        
+        local macbook_status="(_*_)"
+        local thinkpad_status="(_*_)"
+        local generic_status="(_*_)"
+        
+        case "$current_layout" in
+            "macbook")
+                macbook_status="(.Y.)"
+                ;;
+            "thinkpad")
+                thinkpad_status="(.Y.)"
+                ;;
+            "generic")
+                generic_status="(.Y.)"
+                ;;
+        esac
+        
         local menu_items=(
-            "macbook" "(.Y.) MacBook Layout (Cmd as Super, Cmd+Tab switching)"
-            "thinkpad" "(.Y.) ThinkPad Layout (Standard PC layout optimized)"
-            "generic" "(.Y.) Generic Laptop Layout (Standard configuration)"
+            "macbook" "$macbook_status MacBook Layout (Cmd as Super, Cmd+Tab switching)"
+            "thinkpad" "$thinkpad_status ThinkPad Layout (Standard PC layout optimized)"
+            "generic" "$generic_status Generic Laptop Layout (Standard configuration)"
             "" "(_*_)"
             "current-status" "(.Y.) Show Current Keyboard Configuration"
             "reset" "(.Y.) Reset to Ubuntu Defaults"
@@ -3808,24 +5024,31 @@ apply_macbook_keyboard_config() {
     # Create autostart directory if it doesn't exist
     mkdir -p "$HOME/.config/autostart"
     
-    # Create autostart file for keyboard mapping
+    # Create autostart file for MacBook keyboard mapping
     cat > "$HOME/.config/autostart/keyboard-mapping.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Name=Keyboard Mapping
-Exec=/bin/bash -c "setxkbmap -option caps:ctrl_modifier"
+Exec=/bin/bash -c "setxkbmap -option altwin:swap_lalt_lwin"
 X-GNOME-Autostart-enabled=true
 EOF
     
-    # Apply the mapping immediately
-    setxkbmap -option caps:ctrl_modifier 2>/dev/null || log "Warning: Could not apply setxkbmap immediately"
+    # Apply the mapping immediately - swap Alt and Super keys so Command acts like Super
+    setxkbmap -option altwin:swap_lalt_lwin 2>/dev/null || log "Warning: Could not apply setxkbmap immediately"
     
-    # Configure GNOME shortcuts for macOS-like behavior
-    gsettings set org.gnome.desktop.wm.keybindings switch-applications "['<Alt>Tab']" 2>/dev/null || log "Warning: Could not set switch-applications"
-    gsettings set org.gnome.desktop.wm.keybindings switch-windows "['<Alt>grave']" 2>/dev/null || log "Warning: Could not set switch-windows"
+    # Configure GNOME shortcuts for macOS-like behavior using Super (Command) key
+    gsettings set org.gnome.desktop.wm.keybindings switch-applications "['<Super>Tab']" 2>/dev/null || log "Warning: Could not set switch-applications"
+    gsettings set org.gnome.desktop.wm.keybindings switch-windows "['<Super>grave']" 2>/dev/null || log "Warning: Could not set switch-windows"
     
     # Set Super+Space for show applications (like Spotlight)
     gsettings set org.gnome.shell.keybindings toggle-overview "['<Super>space']" 2>/dev/null || log "Warning: Could not set toggle-overview"
+    
+    # Set macOS-style copy/paste shortcuts using Super (Command) key
+    gsettings set org.gnome.desktop.wm.keybindings close "['<Super>w']" 2>/dev/null || log "Warning: Could not set close window"
+    gsettings set org.gnome.settings-daemon.plugins.media-keys terminal "['<Super>t']" 2>/dev/null || log "Warning: Could not set terminal shortcut"
+    
+    # Create a flag file to indicate MacBook layout is active
+    echo "macbook" > "$HOME/.config/ultrabunt-keyboard-layout"
     
     log "MacBook keyboard configuration applied"
 }
@@ -3852,6 +5075,9 @@ EOF
     gsettings set org.gnome.desktop.wm.keybindings switch-applications "['<Alt>Tab']" 2>/dev/null || log "Warning: Could not set switch-applications"
     gsettings set org.gnome.desktop.wm.keybindings switch-windows "['<Alt>grave']" 2>/dev/null || log "Warning: Could not set switch-windows"
     
+    # Create a flag file to indicate ThinkPad layout is active
+    echo "thinkpad" > "$HOME/.config/ultrabunt-keyboard-layout"
+    
     log "ThinkPad keyboard configuration applied"
 }
 
@@ -3868,7 +5094,10 @@ apply_generic_keyboard_config() {
     gsettings set org.gnome.desktop.wm.keybindings switch-applications "['<Alt>Tab']" 2>/dev/null || log "Warning: Could not set switch-applications"
     gsettings set org.gnome.desktop.wm.keybindings switch-windows "['<Alt>grave']" 2>/dev/null || log "Warning: Could not set switch-windows"
     
-    log "Generic keyboard configuration applied"
+    # Create a flag file to indicate generic layout is active
+    echo "generic" > "$HOME/.config/ultrabunt-keyboard-layout"
+    
+    log "Generic laptop keyboard configuration applied"
 }
 
 apply_keyboard_reset() {
@@ -3885,7 +5114,602 @@ apply_keyboard_reset() {
     gsettings reset org.gnome.desktop.wm.keybindings switch-windows 2>/dev/null || log "Warning: Could not reset switch-windows"
     gsettings reset org.gnome.shell.keybindings toggle-overview 2>/dev/null || log "Warning: Could not reset toggle-overview"
     
+    # Remove the layout flag file
+    rm -f "$HOME/.config/ultrabunt-keyboard-layout" 2>/dev/null || true
+    
     log "Keyboard configuration reset to defaults"
+}
+
+# ==============================================================================
+# DATABASE MANAGEMENT FUNCTIONS
+# ==============================================================================
+
+show_database_management_menu() {
+    log "Entering show_database_management_menu function"
+    
+    while true; do
+        local menu_items=()
+        
+        # Check MariaDB status
+        local mariadb_status="🔴 Not Running"
+        if systemctl is-active --quiet mariadb; then
+            mariadb_status="🟢 Running"
+        fi
+        
+        menu_items+=("show-credentials" "(.Y.) Show MariaDB Root Credentials")
+        menu_items+=("reset-root-password" "(.Y.) Reset MariaDB Root Password")
+        menu_items+=("list-databases" "(.Y.) List All Databases")
+        menu_items+=("list-users" "(.Y.) List Database Users")
+        menu_items+=("create-database" "(.Y.) Create New Database")
+        menu_items+=("create-user" "(.Y.) Create Database User")
+        menu_items+=("backup-database" "(.Y.) Backup Database")
+        menu_items+=("service-control" "(.Y.) MariaDB Service Control")
+        
+        # Show logout option if session is active
+        if [[ "$MARIADB_SESSION_ACTIVE" == "true" ]]; then
+            menu_items+=("logout-session" "(.Y.) Logout (Clear Saved Password)")
+        fi
+        
+        menu_items+=("" "(_*_)")
+        menu_items+=("zback" "(Z) Back to Main Menu")
+        
+        local choice
+        choice=$(ui_menu "Database Management" \
+            "MariaDB Status: $mariadb_status\n\nSelect database management option:" \
+            35 120 15 "${menu_items[@]}") || break
+        
+        case "$choice" in
+            show-credentials)
+                show_mariadb_credentials
+                ;;
+            reset-root-password)
+                reset_mariadb_root_password
+                ;;
+            list-databases)
+                list_databases
+                ;;
+            list-users)
+                list_database_users
+                ;;
+            create-database)
+                create_database_interactive
+                ;;
+            create-user)
+                create_database_user_interactive
+                ;;
+            backup-database)
+                backup_database_interactive
+                ;;
+            service-control)
+                mariadb_service_control
+                ;;
+            logout-session)
+                MARIADB_SESSION_ACTIVE=false
+                MARIADB_SESSION_PASSWORD=""
+                ui_msg "Session Cleared" "MariaDB session cleared successfully.\n\nYou will need to re-enter the password for future operations."
+                log "MariaDB session cleared by user"
+                ;;
+            zback|back|"")
+                break
+                ;;
+        esac
+    done
+    
+    log "Exiting show_database_management_menu function"
+}
+
+# Function to prompt for MariaDB root password and test connection
+prompt_mariadb_password() {
+    local password
+    local attempt=1
+    local max_attempts=3
+    
+    # Check if we have a valid session password first
+    if [[ "$MARIADB_SESSION_ACTIVE" == "true" && -n "$MARIADB_SESSION_PASSWORD" ]]; then
+        if mysql -u root -p"$MARIADB_SESSION_PASSWORD" -e "SELECT 1;" >/dev/null 2>&1; then
+            echo "$MARIADB_SESSION_PASSWORD"
+            return 0
+        else
+            # Session password is invalid, reset session
+            MARIADB_SESSION_ACTIVE=false
+            MARIADB_SESSION_PASSWORD=""
+        fi
+    fi
+    
+    while [[ $attempt -le $max_attempts ]]; do
+        password=$(ui_password "MariaDB Root Password" "Enter MariaDB root password (attempt $attempt/$max_attempts):") || return 1
+        
+        if [[ -n "$password" ]] && mysql -u root -p"$password" -e "SELECT 1;" >/dev/null 2>&1; then
+            # Store password in session for future use
+            MARIADB_SESSION_PASSWORD="$password"
+            MARIADB_SESSION_ACTIVE=true
+            echo "$password"
+            return 0
+        else
+            if [[ $attempt -eq $max_attempts ]]; then
+                ui_msg "Authentication Failed" "Failed to authenticate with MariaDB after $max_attempts attempts.\n\nPlease check:\n• Password is correct\n• MariaDB is running\n• Root user exists\n\nTry resetting the root password if needed."
+                return 1
+            fi
+            ui_msg "Invalid Password" "Password incorrect. Please try again.\n\nAttempt $attempt of $max_attempts"
+        fi
+        ((attempt++))
+    done
+    
+    return 1
+}
+
+show_mariadb_credentials() {
+    log "Displaying MariaDB credentials"
+    
+    # Check if password file exists and try to read it
+    if sudo test -f "/root/.mysql_root_password"; then
+        local root_pass
+        root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null | tr -d '\n\r')
+        
+        if [[ -n "$root_pass" ]]; then
+            local creds_msg="🔐 MariaDB Root Credentials\n\n"
+            creds_msg+="• Username: root\n"
+            creds_msg+="• Password: $root_pass\n"
+            creds_msg+="• Host: localhost\n"
+            creds_msg+="• Port: 3306\n\n"
+            creds_msg+="🔧 Access Methods:\n"
+            creds_msg+="• Command line: sudo mysql -u root -p\n"
+            creds_msg+="• With password: mysql -u root -p'$root_pass'\n"
+            creds_msg+="• Direct access: sudo mysql (as root user)\n\n"
+            creds_msg+="📝 Password file: /root/.mysql_root_password\n"
+            creds_msg+="📋 Copy password: $root_pass\n\n"
+            creds_msg+="💡 Tips:\n"
+            creds_msg+="• Use 'sudo mysql' for direct access without password\n"
+            creds_msg+="• Create separate users for applications\n"
+            creds_msg+="• Keep root password secure and backed up"
+            
+            ui_info "MariaDB Credentials" "$creds_msg"
+            log "MariaDB root password displayed successfully"
+        else
+            ui_msg "No Password Found" "Root password file exists but is empty or unreadable.\n\nFile permissions: $(sudo ls -la /root/.mysql_root_password 2>/dev/null || echo 'File not accessible')\n\nYou may need to reset the root password."
+            log "ERROR: Root password file is empty or unreadable"
+        fi
+    else
+        # Check if we can access MariaDB without password (sudo method)
+        if sudo mysql -e "SELECT 1;" >/dev/null 2>&1; then
+            local creds_msg="🔐 MariaDB Root Access Available\n\n"
+            creds_msg+="• Username: root\n"
+            creds_msg+="• Password: Not set (using sudo authentication)\n"
+            creds_msg+="• Host: localhost\n"
+            creds_msg+="• Port: 3306\n\n"
+            creds_msg+="🔧 Access Method:\n"
+            creds_msg+="• Command line: sudo mysql\n\n"
+            creds_msg+="⚠️ Note: No password file found at /root/.mysql_root_password\n"
+            creds_msg+="This means MariaDB is using system authentication.\n\n"
+            creds_msg+="💡 To set a password, use the 'Reset Root Password' option."
+            
+            ui_info "MariaDB Access" "$creds_msg"
+            log "MariaDB accessible via sudo, no password file found"
+        else
+            ui_msg "No Credentials Found" "MariaDB root password file not found and sudo access failed.\n\nThis could mean:\n• MariaDB was not installed through this script\n• Password file was deleted\n• MariaDB security setup was not completed\n• MariaDB service is not running\n\nYou can:\n• Check MariaDB status\n• Reset the root password\n• Reinstall MariaDB"
+            log "ERROR: No MariaDB access method available"
+        fi
+    fi
+}
+
+reset_mariadb_root_password() {
+    log "Resetting MariaDB root password"
+    
+    if ! systemctl is-active --quiet mariadb; then
+        ui_msg "MariaDB Not Running" "MariaDB service is not running.\n\nStart MariaDB first using the service control option."
+        return
+    fi
+    
+    if ui_yesno "Reset Root Password" "This will reset the MariaDB root password.\n\nContinue?"; then
+        # Generate new password
+        local new_pass
+        new_pass=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 20)
+        
+        # Reset password
+        if sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${new_pass}';" 2>/dev/null; then
+            # Save new password
+            echo "$new_pass" | sudo tee /root/.mysql_root_password > /dev/null
+            sudo chmod 600 /root/.mysql_root_password
+            
+            ui_info "Password Reset Complete" "🔐 New MariaDB Root Password:\n\n• Username: root\n• Password: $new_pass\n• Host: localhost\n\n📝 Password saved to: /root/.mysql_root_password\n\n✅ Password reset successful!"
+        else
+            ui_msg "Reset Failed" "Failed to reset MariaDB root password.\n\nThis could be due to:\n• Current password is different\n• MariaDB access issues\n• Permission problems\n\nTry using: sudo mysql_secure_installation"
+        fi
+    fi
+}
+
+list_databases() {
+    log "Listing databases"
+    
+    # Check if MariaDB service is running
+    if ! systemctl is-active --quiet mariadb; then
+        ui_msg "MariaDB Not Running" "MariaDB service is not running.\n\nStart MariaDB first using the service control option."
+        return 1
+    fi
+    
+    # Try to connect and list databases
+    local db_list
+    local root_pass=""
+    
+    # Get root password if available
+    if [[ -f "/root/.mysql_root_password" ]]; then
+        root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+    fi
+    
+    # Try different authentication methods
+    if [[ -n "$root_pass" ]] && mysql -u root -p"$root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+        db_list=$(mysql -u root -p"$root_pass" -e "SHOW DATABASES;" 2>/dev/null | tail -n +2)
+    elif sudo mysql -e "SELECT 1;" >/dev/null 2>&1; then
+        db_list=$(sudo mysql -e "SHOW DATABASES;" 2>/dev/null | tail -n +2)
+    else
+        # Prompt for password if other methods fail
+        local manual_pass
+        if manual_pass=$(prompt_mariadb_password); then
+            db_list=$(mysql -u root -p"$manual_pass" -e "SHOW DATABASES;" 2>/dev/null | tail -n +2)
+        else
+            ui_msg "Database Access Error" "Cannot connect to MariaDB.\n\nThis could be due to:\n• Authentication issues\n• MariaDB not properly configured\n• Permission problems\n\nTry resetting the root password or check MariaDB logs."
+            return 1
+        fi
+    fi
+    
+    if [[ -n "$db_list" ]]; then
+        local db_msg="📊 MariaDB Databases\n\n"
+        db_msg+="Available databases:\n\n"
+        
+        while IFS= read -r db; do
+            if [[ "$db" == "information_schema" || "$db" == "performance_schema" || "$db" == "mysql" || "$db" == "sys" ]]; then
+                db_msg+="• $db (system)\n"
+            else
+                db_msg+="• $db (user)\n"
+            fi
+        done <<< "$db_list"
+        
+        db_msg+="\n💡 System databases are used by MariaDB internally.\n"
+        db_msg+="User databases contain your application data."
+        
+        ui_info "Database List" "$db_msg"
+    else
+        ui_msg "No Access" "Cannot access MariaDB databases.\n\nThis could be due to:\n• MariaDB not running\n• Authentication issues\n• Permission problems"
+    fi
+}
+
+list_database_users() {
+    log "Listing database users"
+    
+    # Check if MariaDB service is running
+    if ! systemctl is-active --quiet mariadb; then
+        ui_msg "MariaDB Not Running" "MariaDB service is not running.\n\nStart MariaDB first using the service control option."
+        return 1
+    fi
+    
+    # Try to connect and list users
+    local user_list
+    local root_pass=""
+    
+    # Get root password if available
+    if [[ -f "/root/.mysql_root_password" ]]; then
+        root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+    fi
+    
+    # Try different authentication methods
+    if [[ -n "$root_pass" ]] && mysql -u root -p"$root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+        user_list=$(mysql -u root -p"$root_pass" -e "SELECT User, Host FROM mysql.user;" 2>/dev/null | tail -n +2)
+    elif sudo mysql -e "SELECT 1;" >/dev/null 2>&1; then
+        user_list=$(sudo mysql -e "SELECT User, Host FROM mysql.user;" 2>/dev/null | tail -n +2)
+    else
+        # Prompt for password if other methods fail
+        local manual_pass
+        if manual_pass=$(prompt_mariadb_password); then
+            user_list=$(mysql -u root -p"$manual_pass" -e "SELECT User, Host FROM mysql.user;" 2>/dev/null | tail -n +2)
+        else
+            ui_msg "Database Access Error" "Cannot connect to MariaDB.\n\nThis could be due to:\n• Authentication issues\n• MariaDB not properly configured\n• Permission problems\n\nTry resetting the root password or check MariaDB logs."
+            return 1
+        fi
+    fi
+    
+    if [[ -n "$user_list" ]]; then
+        local user_msg="👥 MariaDB Users\n\n"
+        user_msg+="Current database users:\n\n"
+        
+        while IFS=$'\t' read -r user host; do
+            if [[ "$user" == "root" ]]; then
+                user_msg+="• $user@$host (administrator)\n"
+            elif [[ "$user" == "mysql.sys" || "$user" == "mysql.session" || "$user" == "mysql.infoschema" ]]; then
+                user_msg+="• $user@$host (system)\n"
+            else
+                user_msg+="• $user@$host (application)\n"
+            fi
+        done <<< "$user_list"
+        
+        user_msg+="\n💡 Root users have full administrative access.\n"
+        user_msg+="Application users should have limited privileges."
+        
+        ui_info "Database Users" "$user_msg"
+    else
+        ui_msg "No Access" "Cannot access MariaDB user list.\n\nThis could be due to:\n• MariaDB not running\n• Authentication issues\n• Permission problems"
+    fi
+}
+
+create_database_interactive() {
+    log "Creating database interactively"
+    
+    if ! systemctl is-active --quiet mariadb; then
+        ui_msg "MariaDB Not Running" "MariaDB service is not running.\n\nStart MariaDB first using the service control option."
+        return
+    fi
+    
+    local db_name
+    db_name=$(ui_input "Database Name" "Enter database name:" "") || return
+    
+    if [[ -z "$db_name" ]]; then
+        ui_msg "Invalid Input" "Database name cannot be empty."
+        return
+    fi
+    
+    # Validate database name
+    if [[ ! "$db_name" =~ ^[a-zA-Z][a-zA-Z0-9_]*$ ]]; then
+        ui_msg "Invalid Name" "Database name must:\n• Start with a letter\n• Contain only letters, numbers, and underscores\n• Not contain spaces or special characters"
+        return
+    fi
+    
+    # Try to create database with different authentication methods
+    local root_pass=""
+    local success=false
+    
+    # Get root password if available
+    if [[ -f "/root/.mysql_root_password" ]]; then
+        root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+    fi
+    
+    # Try different authentication methods
+    if [[ -n "$root_pass" ]] && mysql -u root -p"$root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+        mysql -u root -p"$root_pass" -e "CREATE DATABASE ${db_name} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null && success=true
+    elif sudo mysql -e "SELECT 1;" >/dev/null 2>&1; then
+        sudo mysql -e "CREATE DATABASE ${db_name} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null && success=true
+    else
+        # Prompt for password if other methods fail
+        local manual_pass
+        if manual_pass=$(prompt_mariadb_password); then
+            mysql -u root -p"$manual_pass" -e "CREATE DATABASE ${db_name} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null && success=true
+        fi
+    fi
+    
+    if [[ "$success" == "true" ]]; then
+        ui_info "Database Created" "✅ Database '$db_name' created successfully!\n\n• Name: $db_name\n• Character Set: utf8mb4\n• Collation: utf8mb4_unicode_ci\n\n💡 You can now create users and grant privileges to this database."
+    else
+        ui_msg "Creation Failed" "Failed to create database '$db_name'.\n\nThis could be due to:\n• Database already exists\n• Invalid name format\n• Permission issues\n• MariaDB access problems"
+    fi
+}
+
+create_database_user_interactive() {
+    log "Creating database user interactively"
+    
+    if ! systemctl is-active --quiet mariadb; then
+        ui_msg "MariaDB Not Running" "MariaDB service is not running.\n\nStart MariaDB first using the service control option."
+        return
+    fi
+    
+    local username
+    username=$(ui_input "Username" "Enter username:" "") || return
+    
+    if [[ -z "$username" ]]; then
+        ui_msg "Invalid Input" "Username cannot be empty."
+        return
+    fi
+    
+    local password
+    password=$(ui_input "Password" "Enter password (leave empty for auto-generated):" "") || return
+    
+    if [[ -z "$password" ]]; then
+        password=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 16)
+    fi
+    
+    local database
+    database=$(ui_input "Database" "Enter database name to grant access to (optional):" "") || return
+    
+    # Create user with different authentication methods
+    local root_pass=""
+    local success=false
+    
+    # Get root password if available
+    if [[ -f "/root/.mysql_root_password" ]]; then
+        root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+    fi
+    
+    # Try different authentication methods
+    if [[ -n "$root_pass" ]] && mysql -u root -p"$root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+        mysql -u root -p"$root_pass" -e "CREATE USER '${username}'@'localhost' IDENTIFIED BY '${password}';" 2>/dev/null && success=true
+    elif sudo mysql -e "SELECT 1;" >/dev/null 2>&1; then
+        sudo mysql -e "CREATE USER '${username}'@'localhost' IDENTIFIED BY '${password}';" 2>/dev/null && success=true
+    else
+        # Prompt for password if other methods fail
+        local manual_pass
+        if manual_pass=$(prompt_mariadb_password); then
+            mysql -u root -p"$manual_pass" -e "CREATE USER '${username}'@'localhost' IDENTIFIED BY '${password}';" 2>/dev/null && success=true
+        fi
+    fi
+    
+    # Create user
+    if [[ "$success" == "true" ]]; then
+        local success_msg="✅ User '$username' created successfully!\n\n• Username: $username\n• Password: $password\n• Host: localhost\n"
+        
+        # Grant privileges if database specified
+        if [[ -n "$database" ]]; then
+            if sudo mysql -e "GRANT ALL PRIVILEGES ON ${database}.* TO '${username}'@'localhost';" 2>/dev/null; then
+                sudo mysql -e "FLUSH PRIVILEGES;" 2>/dev/null
+                success_msg+="\n🔐 Privileges granted:\n• Full access to database: $database"
+            else
+                success_msg+="\n⚠️  Could not grant privileges to database: $database"
+            fi
+        else
+            success_msg+="\n💡 No database privileges granted.\nUse GRANT commands to assign specific permissions."
+        fi
+        
+        ui_info "User Created" "$success_msg"
+    else
+        ui_msg "Creation Failed" "Failed to create user '$username'.\n\nThis could be due to:\n• User already exists\n• Invalid username format\n• Permission issues\n• MariaDB access problems"
+    fi
+}
+
+backup_database_interactive() {
+    log "Starting interactive database backup"
+    
+    if ! systemctl is-active --quiet mariadb; then
+        ui_msg "MariaDB Not Running" "MariaDB service is not running.\n\nStart MariaDB first using the service control option."
+        return
+    fi
+    
+    # Get list of databases with different authentication methods
+    local db_list
+    local root_pass=""
+    
+    # Get root password if available
+    if [[ -f "/root/.mysql_root_password" ]]; then
+        root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+    fi
+    
+    # Try different authentication methods
+    if [[ -n "$root_pass" ]] && mysql -u root -p"$root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+        db_list=$(mysql -u root -p"$root_pass" -e "SHOW DATABASES;" 2>/dev/null | tail -n +2 | grep -v -E '^(information_schema|performance_schema|mysql|sys)$')
+    elif sudo mysql -e "SELECT 1;" >/dev/null 2>&1; then
+        db_list=$(sudo mysql -e "SHOW DATABASES;" 2>/dev/null | tail -n +2 | grep -v -E '^(information_schema|performance_schema|mysql|sys)$')
+    else
+        # Prompt for password if other methods fail
+        local manual_pass
+        if manual_pass=$(prompt_mariadb_password); then
+            db_list=$(mysql -u root -p"$manual_pass" -e "SHOW DATABASES;" 2>/dev/null | tail -n +2 | grep -v -E '^(information_schema|performance_schema|mysql|sys)$')
+        else
+            ui_msg "Database Access Error" "Cannot connect to MariaDB to list databases."
+            return
+        fi
+    fi
+    
+    if [[ -z "$db_list" ]]; then
+        ui_msg "No Databases" "No user databases found to backup.\n\nOnly system databases are present."
+        return
+    fi
+    
+    local database
+    database=$(ui_input "Database Name" "Enter database name to backup:\n\nAvailable databases:\n$(echo "$db_list" | sed 's/^/• /')" "") || return
+    
+    if [[ -z "$database" ]]; then
+        ui_msg "Invalid Input" "Database name cannot be empty."
+        return
+    fi
+    
+    # Check if database exists
+    if ! echo "$db_list" | grep -q "^${database}$"; then
+        ui_msg "Database Not Found" "Database '$database' not found.\n\nAvailable databases:\n$(echo "$db_list" | sed 's/^/• /')"
+        return
+    fi
+    
+    local backup_dir="$BACKUP_DIR/database-backups"
+    mkdir -p "$backup_dir"
+    
+    local backup_file="$backup_dir/${database}-$(date +%Y%m%d-%H%M%S).sql"
+    
+    # Perform backup with different authentication methods
+    local backup_success=false
+    
+    # Try different authentication methods for mysqldump
+    if [[ -n "$root_pass" ]] && mysql -u root -p"$root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+        mysqldump -u root -p"$root_pass" "$database" > "$backup_file" 2>/dev/null && backup_success=true
+    elif sudo mysql -e "SELECT 1;" >/dev/null 2>&1; then
+        sudo mysqldump "$database" > "$backup_file" 2>/dev/null && backup_success=true
+    else
+        # Use the manual password if we got one earlier
+        if [[ -n "$manual_pass" ]]; then
+            mysqldump -u root -p"$manual_pass" "$database" > "$backup_file" 2>/dev/null && backup_success=true
+        fi
+    fi
+    
+    if [[ "$backup_success" == "true" ]]; then
+        local file_size
+        file_size=$(du -h "$backup_file" | cut -f1)
+        
+        ui_info "Backup Complete" "✅ Database backup successful!\n\n• Database: $database\n• Backup file: $backup_file\n• File size: $file_size\n• Timestamp: $(date)\n\n💾 Backup saved to:\n$backup_file\n\n💡 To restore:\nmysql $database < $backup_file"
+    else
+        ui_msg "Backup Failed" "Failed to backup database '$database'.\n\nThis could be due to:\n• Database access issues\n• Insufficient disk space\n• Permission problems\n• MariaDB connection issues"
+    fi
+}
+
+mariadb_service_control() {
+    log "MariaDB service control"
+    
+    local status_msg="🔧 MariaDB Service Control\n\n"
+    
+    if systemctl is-active --quiet mariadb; then
+        status_msg+="Current Status: 🟢 Running\n\n"
+    else
+        status_msg+="Current Status: 🔴 Not Running\n\n"
+    fi
+    
+    local menu_items=()
+    menu_items+=("start" "(.Y.) Start MariaDB")
+    menu_items+=("stop" "(.Y.) Stop MariaDB")
+    menu_items+=("restart" "(.Y.) Restart MariaDB")
+    menu_items+=("status" "(.Y.) Show Detailed Status")
+    menu_items+=("enable" "(.Y.) Enable Auto-start")
+    menu_items+=("disable" "(.Y.) Disable Auto-start")
+    menu_items+=("logs" "(.Y.) View Recent Logs")
+    menu_items+=("" "(_*_)")
+    menu_items+=("back" "(B) Back")
+    
+    local choice
+    choice=$(ui_menu "MariaDB Service Control" "$status_msg" \
+        25 80 12 "${menu_items[@]}") || return
+    
+    case "$choice" in
+        start)
+            if sudo systemctl start mariadb 2>/dev/null; then
+                ui_msg "Service Started" "✅ MariaDB service started successfully!"
+            else
+                ui_msg "Start Failed" "❌ Failed to start MariaDB service.\n\nCheck logs for details:\nsudo journalctl -u mariadb -n 20"
+            fi
+            ;;
+        stop)
+            if ui_yesno "Stop MariaDB" "This will stop the MariaDB service.\n\nAll database connections will be terminated.\n\nContinue?"; then
+                if sudo systemctl stop mariadb 2>/dev/null; then
+                    ui_msg "Service Stopped" "✅ MariaDB service stopped successfully!"
+                else
+                    ui_msg "Stop Failed" "❌ Failed to stop MariaDB service."
+                fi
+            fi
+            ;;
+        restart)
+            if sudo systemctl restart mariadb 2>/dev/null; then
+                ui_msg "Service Restarted" "✅ MariaDB service restarted successfully!"
+            else
+                ui_msg "Restart Failed" "❌ Failed to restart MariaDB service.\n\nCheck logs for details:\nsudo journalctl -u mariadb -n 20"
+            fi
+            ;;
+        status)
+            local detailed_status
+            detailed_status=$(sudo systemctl status mariadb 2>/dev/null || echo "Status unavailable")
+            ui_info "MariaDB Status" "$detailed_status"
+            ;;
+        enable)
+            if sudo systemctl enable mariadb 2>/dev/null; then
+                ui_msg "Auto-start Enabled" "✅ MariaDB will now start automatically on boot!"
+            else
+                ui_msg "Enable Failed" "❌ Failed to enable MariaDB auto-start."
+            fi
+            ;;
+        disable)
+            if ui_yesno "Disable Auto-start" "This will prevent MariaDB from starting automatically on boot.\n\nContinue?"; then
+                if sudo systemctl disable mariadb 2>/dev/null; then
+                    ui_msg "Auto-start Disabled" "✅ MariaDB auto-start disabled!"
+                else
+                    ui_msg "Disable Failed" "❌ Failed to disable MariaDB auto-start."
+                fi
+            fi
+            ;;
+        logs)
+            local recent_logs
+            recent_logs=$(sudo journalctl -u mariadb -n 30 --no-pager 2>/dev/null || echo "Logs unavailable")
+            ui_info "MariaDB Logs" "$recent_logs"
+            ;;
+    esac
 }
 
 # ==============================================================================
