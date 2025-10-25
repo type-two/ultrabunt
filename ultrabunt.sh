@@ -310,10 +310,12 @@ choose_installation_method() {
         local choice
         choice=$(ui_menu "Installation Method" "Multiple installation methods available for $base_name.\nChoose your preferred method:" 20 80 10 "${available_methods[@]}")
         
+        # Handle user cancellation gracefully - don't exit script
         if [[ -n "$choice" && "$choice" != "back" ]]; then
             echo "$choice"
             return 0
         else
+            log "User cancelled installation method selection for $base_name"
             return 1
         fi
     fi
@@ -711,6 +713,301 @@ PKG_DESC[iotop]="I/O monitor [APT]"
 PKG_METHOD[iotop]="apt"
 PKG_CATEGORY[iotop]="monitoring"
 
+# Additional Process Monitors
+PACKAGES[bpytop]="bpytop"
+PKG_DESC[bpytop]="Python-based resource monitor (btop predecessor) [APT]"
+PKG_METHOD[bpytop]="apt"
+PKG_CATEGORY[bpytop]="monitoring"
+
+PACKAGES[bashtop]="bashtop"
+PKG_DESC[bashtop]="Bash-based resource monitor (original) [APT]"
+PKG_METHOD[bashtop]="apt"
+PKG_CATEGORY[bashtop]="monitoring"
+
+PACKAGES[bottom]="bottom"
+PKG_DESC[bottom]="Cross-platform graphical process monitor (btm) [APT]"
+PKG_METHOD[bottom]="apt"
+PKG_CATEGORY[bottom]="monitoring"
+
+PACKAGES[gotop]="gotop"
+PKG_DESC[gotop]="Terminal-based graphical activity monitor [SNAP]"
+PKG_METHOD[gotop]="snap"
+PKG_CATEGORY[gotop]="monitoring"
+
+PACKAGES[vtop]="vtop"
+PKG_DESC[vtop]="Visually appealing terminal monitor [NPM]"
+PKG_METHOD[vtop]="npm"
+PKG_CATEGORY[vtop]="monitoring"
+
+PACKAGES[zenith]="zenith"
+PKG_DESC[zenith]="Terminal monitor with zoomable charts [CARGO]"
+PKG_METHOD[zenith]="cargo"
+PKG_CATEGORY[zenith]="monitoring"
+
+PACKAGES[nmon]="nmon"
+PKG_DESC[nmon]="Nigel's Monitor - modular system statistics [APT]"
+PKG_METHOD[nmon]="apt"
+PKG_CATEGORY[nmon]="monitoring"
+
+PACKAGES[atop]="atop"
+PKG_DESC[atop]="Advanced system and process monitor [APT]"
+PKG_METHOD[atop]="apt"
+PKG_CATEGORY[atop]="monitoring"
+
+# I/O, Memory, and Disk Tools
+PACKAGES[iostat]="sysstat"
+PKG_DESC[iostat]="CPU utilization and disk I/O statistics [APT]"
+PKG_METHOD[iostat]="apt"
+PKG_CATEGORY[iostat]="monitoring"
+
+PACKAGES[vmstat]="procps"
+PKG_DESC[vmstat]="Virtual memory, processes, I/O, and CPU activity [APT]"
+PKG_METHOD[vmstat]="apt"
+PKG_CATEGORY[vmstat]="monitoring"
+
+PACKAGES[free]="procps"
+PKG_DESC[free]="Display free and used memory [APT]"
+PKG_METHOD[free]="apt"
+PKG_CATEGORY[free]="monitoring"
+
+# Network Monitoring Tools
+PACKAGES[iftop]="iftop"
+PKG_DESC[iftop]="Real-time bandwidth usage per network interface [APT]"
+PKG_METHOD[iftop]="apt"
+PKG_CATEGORY[iftop]="monitoring"
+
+PACKAGES[nload]="nload"
+PKG_DESC[nload]="Network traffic visualizer with graphical bars [APT]"
+PKG_METHOD[nload]="apt"
+PKG_CATEGORY[nload]="monitoring"
+
+PACKAGES[bmon]="bmon"
+PKG_DESC[bmon]="Interactive bandwidth monitor [APT]"
+PKG_METHOD[bmon]="apt"
+PKG_CATEGORY[bmon]="monitoring"
+
+PACKAGES[iptraf-ng]="iptraf-ng"
+PKG_DESC[iptraf-ng]="Console-based network monitoring utility [APT]"
+PKG_METHOD[iptraf-ng]="apt"
+PKG_CATEGORY[iptraf-ng]="monitoring"
+
+PACKAGES[ss]="iproute2"
+PKG_DESC[ss]="Socket investigation utility (netstat replacement) [APT]"
+PKG_METHOD[ss]="apt"
+PKG_CATEGORY[ss]="monitoring"
+
+# Process and System Information Tools
+PACKAGES[lsof]="lsof"
+PKG_DESC[lsof]="List open files and processes [APT]"
+PKG_METHOD[lsof]="apt"
+PKG_CATEGORY[lsof]="monitoring"
+
+PACKAGES[sar]="sysstat"
+PKG_DESC[sar]="System Activity Reporter - historical monitoring [APT]"
+PKG_METHOD[sar]="apt"
+PKG_CATEGORY[sar]="monitoring"
+
+PACKAGES[mpstat]="sysstat"
+PKG_DESC[mpstat]="Individual or combined CPU processor statistics [APT]"
+PKG_METHOD[mpstat]="apt"
+PKG_CATEGORY[mpstat]="monitoring"
+
+PACKAGES[pidstat]="sysstat"
+PKG_DESC[pidstat]="Per-process CPU, memory, and I/O statistics [APT]"
+PKG_METHOD[pidstat]="apt"
+PKG_CATEGORY[pidstat]="monitoring"
+
+# GPU Monitoring Tools
+PACKAGES[nvtop]="nvtop"
+PKG_DESC[nvtop]="htop-like utility for monitoring NVIDIA GPUs [APT]"
+PKG_METHOD[nvtop]="apt"
+PKG_CATEGORY[nvtop]="monitoring"
+
+PACKAGES[radeontop]="radeontop"
+PKG_DESC[radeontop]="TUI utility for monitoring AMD GPUs [APT]"
+PKG_METHOD[radeontop]="apt"
+# System Information Tools
+PACKAGES[ps]="procps"
+PKG_DESC[ps]="Standard process status command - reports a snapshot of current processes (non-interactive)"
+PKG_METHOD[ps]="apt"
+PKG_CATEGORY[ps]="monitoring"
+
+PKG_CATEGORY[radeontop]="monitoring"
+
+# Additional GPU Monitoring Tool
+PACKAGES[qmasa]="qmasa"
+PKG_DESC[qmasa]="Terminal-based tool for displaying general GPU usage stats on Linux [Cargo]"
+PKG_METHOD[qmasa]="cargo"
+PKG_CATEGORY[qmasa]="monitoring"
+
+# Additional Process Monitoring Tool
+PACKAGES[gtop]="gtop"
+PKG_DESC[gtop]="System monitoring dashboard for the terminal, written in Node.js [NPM]"
+PKG_METHOD[gtop]="npm"
+PKG_CATEGORY[gtop]="monitoring"
+
+# Additional System Utilities
+PACKAGES[pv]="pv"
+PKG_DESC[pv]="Pipe Viewer - monitor progress of data through a pipeline with progress bar [APT]"
+PKG_METHOD[pv]="apt"
+PKG_CATEGORY[pv]="monitoring"
+
+PACKAGES[tree]="tree"
+PKG_DESC[tree]="Display directory structure in tree format [APT]"
+PKG_METHOD[tree]="apt"
+PKG_CATEGORY[tree]="monitoring"
+
+PACKAGES[ncdu]="ncdu"
+PKG_DESC[ncdu]="NCurses Disk Usage - interactive disk usage analyzer [APT]"
+PKG_METHOD[ncdu]="apt"
+PKG_CATEGORY[ncdu]="monitoring"
+
+PACKAGES[duf]="duf"
+PKG_DESC[duf]="Disk Usage/Free Utility - better 'df' alternative with colors [APT]"
+PKG_METHOD[duf]="apt"
+PKG_CATEGORY[duf]="monitoring"
+
+PACKAGES[dust]="dust"
+PKG_DESC[dust]="More intuitive version of du written in Rust [Cargo]"
+PKG_METHOD[dust]="cargo"
+PKG_CATEGORY[dust]="monitoring"
+
+PACKAGES[fd-find]="fd-find"
+PKG_DESC[fd-find]="Simple, fast and user-friendly alternative to 'find' [APT]"
+PKG_METHOD[fd-find]="apt"
+PKG_CATEGORY[fd-find]="monitoring"
+
+PACKAGES[ripgrep]="ripgrep"
+PKG_DESC[ripgrep]="Recursively search directories for regex patterns (rg command) [APT]"
+PKG_METHOD[ripgrep]="apt"
+PKG_CATEGORY[ripgrep]="monitoring"
+
+PACKAGES[bat]="bat"
+PKG_DESC[bat]="Cat clone with syntax highlighting and Git integration [APT]"
+PKG_METHOD[bat]="apt"
+PKG_CATEGORY[bat]="monitoring"
+
+PACKAGES[exa]="exa"
+PKG_DESC[exa]="Modern replacement for 'ls' with colors and Git status [APT]"
+PKG_METHOD[exa]="apt"
+PKG_CATEGORY[exa]="monitoring"
+
+PACKAGES[bandwhich]="bandwhich"
+PKG_DESC[bandwhich]="Terminal bandwidth utilization tool by process [Cargo]"
+PKG_METHOD[bandwhich]="cargo"
+PKG_CATEGORY[bandwhich]="monitoring"
+
+PACKAGES[procs]="procs"
+PKG_DESC[procs]="Modern replacement for ps written in Rust [Cargo]"
+PKG_METHOD[procs]="cargo"
+PKG_CATEGORY[procs]="monitoring"
+
+PACKAGES[tokei]="tokei"
+PKG_DESC[tokei]="Count lines of code quickly [Cargo]"
+PKG_METHOD[tokei]="cargo"
+PKG_CATEGORY[tokei]="monitoring"
+
+PACKAGES[hyperfine]="hyperfine"
+PKG_DESC[hyperfine]="Command-line benchmarking tool [APT]"
+PKG_METHOD[hyperfine]="apt"
+PKG_CATEGORY[hyperfine]="monitoring"
+
+PACKAGES[fzf]="fzf"
+PKG_DESC[fzf]="Command-line fuzzy finder [APT]"
+PKG_METHOD[fzf]="apt"
+PKG_CATEGORY[fzf]="monitoring"
+
+PACKAGES[jq]="jq"
+PKG_DESC[jq]="Lightweight and flexible command-line JSON processor [APT]"
+PKG_METHOD[jq]="apt"
+PKG_CATEGORY[jq]="monitoring"
+
+PACKAGES[yq]="yq"
+PKG_DESC[yq]="Command-line YAML processor (jq wrapper for YAML files) [Snap]"
+PKG_METHOD[yq]="snap"
+PKG_CATEGORY[yq]="monitoring"
+
+PACKAGES[delta]="git-delta"
+PKG_DESC[delta]="Syntax-highlighting pager for git and diff output [APT]"
+PKG_METHOD[delta]="apt"
+PKG_CATEGORY[delta]="monitoring"
+
+# DATABASE MANAGEMENT TOOLS
+PACKAGES[phpmyadmin]="phpmyadmin"
+PKG_DESC[phpmyadmin]="Web-based MySQL/MariaDB administration tool [CUSTOM]"
+PKG_METHOD[phpmyadmin]="custom"
+PKG_CATEGORY[phpmyadmin]="database"
+
+PACKAGES[adminer]="adminer"
+PKG_DESC[adminer]="Full-featured database management tool in a single PHP file [CUSTOM]"
+PKG_METHOD[adminer]="custom"
+PKG_CATEGORY[adminer]="database"
+
+PACKAGES[dbeaver-ce]="dbeaver-ce"
+PKG_DESC[dbeaver-ce]="Universal database tool and SQL client (Community Edition) [Snap]"
+PKG_METHOD[dbeaver-ce]="snap"
+PKG_CATEGORY[dbeaver-ce]="database"
+
+PACKAGES[dbeaver-ce-flatpak]="io.dbeaver.DBeaverCommunity"
+PKG_DESC[dbeaver-ce-flatpak]="Universal database tool and SQL client (Community Edition) [Flatpak]"
+PKG_METHOD[dbeaver-ce-flatpak]="flatpak"
+PKG_CATEGORY[dbeaver-ce-flatpak]="database"
+
+PACKAGES[mysql-workbench-community]="mysql-workbench-community"
+PKG_DESC[mysql-workbench-community]="Visual database design tool for MySQL [APT]"
+PKG_METHOD[mysql-workbench-community]="apt"
+PKG_CATEGORY[mysql-workbench-community]="database"
+
+PACKAGES[pgadmin4]="pgadmin4"
+PKG_DESC[pgadmin4]="Web-based PostgreSQL administration and development platform [APT]"
+PKG_METHOD[pgadmin4]="apt"
+PKG_CATEGORY[pgadmin4]="database"
+
+PACKAGES[sqlitebrowser]="sqlitebrowser"
+PKG_DESC[sqlitebrowser]="High quality, visual, open source tool to create, design, and edit SQLite databases [APT]"
+PKG_METHOD[sqlitebrowser]="apt"
+PKG_CATEGORY[sqlitebrowser]="database"
+
+PACKAGES[mycli]="mycli"
+PKG_DESC[mycli]="Command line interface for MySQL with auto-completion and syntax highlighting [APT]"
+PKG_METHOD[mycli]="apt"
+PKG_CATEGORY[mycli]="database"
+
+PACKAGES[pgcli]="pgcli"
+PKG_DESC[pgcli]="Command line interface for PostgreSQL with auto-completion and syntax highlighting [APT]"
+PKG_METHOD[pgcli]="apt"
+PKG_CATEGORY[pgcli]="database"
+
+PACKAGES[litecli]="litecli"
+PKG_DESC[litecli]="Command-line client for SQLite databases with auto-completion and syntax highlighting [APT]"
+PKG_METHOD[litecli]="apt"
+PKG_CATEGORY[litecli]="database"
+
+PACKAGES[redis-tools]="redis-tools"
+PKG_DESC[redis-tools]="Command-line tools for Redis key-value store [APT]"
+PKG_METHOD[redis-tools]="apt"
+PKG_CATEGORY[redis-tools]="database"
+
+PACKAGES[mongodb-compass]="mongodb-compass"
+PKG_DESC[mongodb-compass]="GUI for MongoDB - explore and manipulate your data [Snap]"
+PKG_METHOD[mongodb-compass]="snap"
+PKG_CATEGORY[mongodb-compass]="database"
+
+PACKAGES[postbird]="postbird"
+PKG_DESC[postbird]="Cross-platform PostgreSQL GUI client [Snap]"
+PKG_METHOD[postbird]="snap"
+PKG_CATEGORY[postbird]="database"
+
+PACKAGES[beekeeper-studio]="beekeeper-studio"
+PKG_DESC[beekeeper-studio]="Modern and easy to use SQL client for MySQL, Postgres, SQLite, SQL Server, and more [Snap]"
+PKG_METHOD[beekeeper-studio]="snap"
+PKG_CATEGORY[beekeeper-studio]="database"
+
+PACKAGES[tableplus]="tableplus"
+PKG_DESC[tableplus]="Modern, native tool with elegant UI for relational databases [Snap]"
+PKG_METHOD[tableplus]="snap"
+PKG_CATEGORY[tableplus]="database"
+
 # SECURITY
 PACKAGES[ufw]="ufw"
 PKG_DESC[ufw]="Uncomplicated Firewall [APT]"
@@ -1022,6 +1319,28 @@ PKG_METHOD[inkscape-flatpak]="flatpak"
 PKG_CATEGORY[inkscape-flatpak]="multimedia"
 PKG_DEPS[inkscape-flatpak]="flatpak"
 
+# Drawing and Creative Tools
+PACKAGES[webcamize]="webcamize"
+PKG_DESC[webcamize]="Webcam effects and virtual camera tool [APT]"
+PKG_METHOD[webcamize]="apt"
+PKG_CATEGORY[webcamize]="multimedia"
+
+PACKAGES[durdraw]="durdraw"
+PKG_DESC[durdraw]="ASCII art drawing and animation tool [PIP]"
+PKG_METHOD[durdraw]="pip"
+PKG_CATEGORY[durdraw]="multimedia"
+
+PACKAGES[pastel]="pastel"
+PKG_DESC[pastel]="Command-line tool for color manipulation and palette generation [APT]"
+PKG_METHOD[pastel]="apt"
+PKG_CATEGORY[pastel]="multimedia"
+
+# Disk Management Tools
+PACKAGES[dysk]="dysk"
+PKG_DESC[dysk]="Modern disk usage analyzer with colorful output [CARGO]"
+PKG_METHOD[dysk]="cargo"
+PKG_CATEGORY[dysk]="system"
+
 # ==============================================================================
 # CATEGORY DEFINITIONS
 # ==============================================================================
@@ -1036,6 +1355,7 @@ CATEGORIES=(
     "editors:Editors & IDEs"
     "browsers:Web Browsers"
     "monitoring:System Monitoring"
+    "database:Database Management"
     "security:Security Tools"
     "system:System Tools"
     "office:Office & Productivity"
@@ -1093,15 +1413,44 @@ install_snap_package() {
     local pkg="$1"
     log "Installing $pkg via Snap..."
     
+    # Check if snapd is running
+    if ! systemctl is-active --quiet snapd; then
+        log "Starting snapd service..."
+        sudo systemctl start snapd
+        sleep 2
+    fi
+    
+    # Wait for snap to be ready
+    log "Waiting for snap to be ready..."
+    timeout 30 sudo snap wait system seed.loaded || {
+        log "Warning: Snap system not fully ready, proceeding anyway..."
+    }
+    
     # Packages that require classic confinement
     case "$pkg" in
         ghostty)
-            sudo snap install "$pkg" --classic 2>&1 | tee -a "$LOGFILE"
+            log "Installing $pkg with classic confinement..."
+            timeout 300 sudo snap install "$pkg" --classic 2>&1 | tee -a "$LOGFILE"
+            local exit_code=${PIPESTATUS[0]}
             ;;
         *)
-            sudo snap install "$pkg" 2>&1 | tee -a "$LOGFILE"
+            log "Installing $pkg..."
+            timeout 300 sudo snap install "$pkg" 2>&1 | tee -a "$LOGFILE"
+            local exit_code=${PIPESTATUS[0]}
             ;;
     esac
+    
+    # Check installation result
+    if [ $exit_code -eq 124 ]; then
+        log "ERROR: Snap installation timed out after 5 minutes"
+        return 1
+    elif [ $exit_code -ne 0 ]; then
+        log "ERROR: Snap installation failed with exit code $exit_code"
+        return 1
+    fi
+    
+    log "Successfully installed $pkg via Snap"
+    return 0
 }
 
 remove_snap_package() {
@@ -1120,6 +1469,82 @@ remove_flatpak_package() {
     local pkg="$1"
     log "Removing $pkg via Flatpak..."
     flatpak uninstall -y "$pkg" 2>&1 | tee -a "$LOGFILE"
+}
+
+install_npm_package() {
+    local pkg="$1"
+    log "Installing $pkg via NPM..."
+    
+    # Ensure Node.js and npm are installed
+    if ! command -v npm >/dev/null 2>&1; then
+        ui_msg "Node.js Required" "Installing Node.js and npm first...\n\n⏳ This process is automatic - please wait..."
+        install_nodejs
+        if [[ $? -ne 0 ]]; then
+            log_error "Failed to install Node.js/npm prerequisite"
+            return 1
+        fi
+    fi
+    
+    sudo npm install -g "$pkg" 2>&1 | tee -a "$LOGFILE"
+}
+
+remove_npm_package() {
+    local pkg="$1"
+    log "Removing $pkg via NPM..."
+    sudo npm uninstall -g "$pkg" 2>&1 | tee -a "$LOGFILE"
+}
+
+install_pip_package() {
+    local pkg="$1"
+    log "Installing $pkg via pip..."
+    
+    # Ensure Python3 and pip are installed
+    if ! command -v pip3 >/dev/null 2>&1; then
+        ui_msg "Python3 Required" "Installing Python3 and pip first...\n\n⏳ This process is automatic - please wait..."
+        apt_update
+        install_apt_package "python3-pip"
+        if [[ $? -ne 0 ]]; then
+            log_error "Failed to install Python3/pip prerequisite"
+            return 1
+        fi
+    fi
+    
+    pip3 install --user "$pkg" 2>&1 | tee -a "$LOGFILE"
+}
+
+remove_pip_package() {
+    local pkg="$1"
+    log "Removing $pkg via pip..."
+    pip3 uninstall -y "$pkg" 2>/dev/null || true
+}
+
+install_cargo_package() {
+    local pkg="$1"
+    log "Installing $pkg via Cargo..."
+    
+    # Ensure Rust and Cargo are installed
+    if ! command -v cargo >/dev/null 2>&1; then
+        ui_msg "Rust Required" "Installing Rust and Cargo first...\n\n⏳ This process is automatic - please wait..."
+        
+        # Install Rust via rustup
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 2>&1 | tee -a "$LOGFILE"
+        
+        # Source the cargo environment
+        source "$HOME/.cargo/env" 2>/dev/null || true
+        
+        if ! command -v cargo >/dev/null 2>&1; then
+            log_error "Failed to install Rust/Cargo prerequisite"
+            return 1
+        fi
+    fi
+    
+    cargo install "$pkg" 2>&1 | tee -a "$LOGFILE"
+}
+
+remove_cargo_package() {
+    local pkg="$1"
+    log "Removing $pkg via Cargo..."
+    cargo uninstall "$pkg" 2>&1 | tee -a "$LOGFILE"
 }
 
 # ==============================================================================
@@ -1393,6 +1818,399 @@ remove_gollama() {
     sudo rm -f /usr/local/bin/gollama
 }
 
+install_phpmyadmin() {
+    log "Installing phpMyAdmin with non-interactive configuration..."
+    
+    # Ensure MariaDB/MySQL is running and properly configured
+    if ! systemctl is-active --quiet mariadb && ! systemctl is-active --quiet mysql; then
+        ui_msg "Database Required" "MariaDB/MySQL must be installed and running first.\n\nInstall MariaDB from the Web Stack category, then try phpMyAdmin again."
+        return 1
+    fi
+    
+    # Check if MySQL root password is set, if not, set it up
+    local mysql_root_pass=""
+    if [[ -f "/root/.mysql_root_password" ]]; then
+        mysql_root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+    fi
+    
+    # If no root password file exists, try to set up MySQL security
+    if [[ -z "$mysql_root_pass" ]]; then
+        log "Setting up MySQL root authentication..."
+        
+        # Generate a random password for MySQL root
+        mysql_root_pass=$(openssl rand -base64 32)
+        
+        # Try to set root password using various methods
+        if mysql -u root -e "SELECT 1;" 2>/dev/null; then
+            # Root can login without password, set one
+            mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$mysql_root_pass';" 2>/dev/null || \
+            mysql -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_pass');" 2>/dev/null || \
+            mysql -u root -e "UPDATE mysql.user SET Password=PASSWORD('$mysql_root_pass') WHERE User='root'; FLUSH PRIVILEGES;" 2>/dev/null
+            
+            # Save the password
+            echo "$mysql_root_pass" | sudo tee /root/.mysql_root_password > /dev/null
+            sudo chmod 600 /root/.mysql_root_password
+        else
+            ui_msg "MySQL Setup Required" "MySQL root password needs to be configured.\n\nPlease run the MariaDB installation from Web Stack first, or manually configure MySQL root access."
+            return 1
+        fi
+    fi
+    
+    # Pre-configure phpMyAdmin with the MySQL root password
+    echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | sudo debconf-set-selections
+    echo "phpmyadmin phpmyadmin/app-password-confirm password " | sudo debconf-set-selections
+    echo "phpmyadmin phpmyadmin/mysql/admin-pass password $mysql_root_pass" | sudo debconf-set-selections
+    echo "phpmyadmin phpmyadmin/mysql/app-pass password " | sudo debconf-set-selections
+    echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect " | sudo debconf-set-selections
+    
+    # Install phpMyAdmin non-interactively
+    apt_update
+    if sudo DEBIAN_FRONTEND=noninteractive apt-get install -y phpmyadmin php-mbstring php-zip php-gd php-json php-curl 2>&1 | tee -a "$LOGFILE"; then
+        
+        # Detect web server and configure accordingly
+        local web_server=""
+        if systemctl is-active --quiet nginx; then
+            web_server="nginx"
+        elif systemctl is-active --quiet apache2; then
+            web_server="apache2"
+        fi
+        
+        case "$web_server" in
+            nginx)
+                # Configure phpMyAdmin for Nginx (fix variable expansion)
+                local nginx_config="/etc/nginx/sites-available/phpmyadmin"
+                sudo tee "$nginx_config" > /dev/null << EOF
+server {
+    listen 80;
+    server_name phpmyadmin.localhost;
+    root /usr/share/phpmyadmin;
+    index index.php index.html index.htm;
+
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php${PHP_VER}-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+EOF
+                # Enable the site
+                sudo ln -sf "$nginx_config" /etc/nginx/sites-enabled/
+                if sudo nginx -t 2>/dev/null; then
+                    sudo systemctl reload nginx
+                    ui_msg "phpMyAdmin Installed" "✅ phpMyAdmin installed successfully!\n\n🌐 Access via: http://phpmyadmin.localhost\n📁 Files located at: /usr/share/phpmyadmin\n🔑 MySQL root password saved to: /root/.mysql_root_password\n\n⚠️  Note: Configure your hosts file or DNS to point phpmyadmin.localhost to this server."
+                else
+                    ui_msg "phpMyAdmin Installed" "✅ phpMyAdmin installed successfully!\n\n📁 Files located at: /usr/share/phpmyadmin\n🔑 MySQL root password saved to: /root/.mysql_root_password\n\n⚠️  Nginx configuration has errors. Please check manually."
+                fi
+                ;;
+            apache2)
+                # Configure phpMyAdmin for Apache
+                sudo ln -sf /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
+                sudo a2enconf phpmyadmin
+                sudo systemctl reload apache2
+                ui_msg "phpMyAdmin Installed" "✅ phpMyAdmin installed successfully!\n\n🌐 Access via: http://localhost/phpmyadmin\n📁 Files located at: /usr/share/phpmyadmin\n🔑 MySQL root password saved to: /root/.mysql_root_password\n\n🔧 Apache configuration enabled automatically."
+                ;;
+            *)
+                ui_msg "phpMyAdmin Installed" "✅ phpMyAdmin installed successfully!\n\n📁 Files located at: /usr/share/phpmyadmin\n🔑 MySQL root password saved to: /root/.mysql_root_password\n\n⚠️  Manual web server configuration required:\n• For Nginx: Configure server block\n• For Apache: Enable phpmyadmin.conf\n• Access via your web server setup"
+                ;;
+        esac
+        
+        log "phpMyAdmin installed successfully"
+        return 0
+    else
+        log_error "Failed to install phpMyAdmin"
+        return 1
+    fi
+}
+
+install_adminer() {
+    log "Installing Adminer with database credential integration..."
+    
+    # Ensure web server is available
+    local web_server=""
+    if systemctl is-active --quiet nginx; then
+        web_server="nginx"
+    elif systemctl is-active --quiet apache2; then
+        web_server="apache2"
+    else
+        ui_msg "Web Server Required" "A web server (Nginx or Apache) must be installed and running first.\n\nInstall a web server from the Web Stack category, then try Adminer again."
+        return 1
+    fi
+    
+    # Install PHP if not already installed
+    if ! command -v php >/dev/null 2>&1; then
+        ui_msg "PHP Required" "PHP must be installed first.\n\nInstall PHP from the Web Stack category, then try Adminer again."
+        return 1
+    fi
+    
+    # Create adminer directory
+    local adminer_dir="/var/www/adminer"
+    sudo mkdir -p "$adminer_dir"
+    
+    # Download latest Adminer
+    log "Downloading latest Adminer..."
+    if sudo wget -O "$adminer_dir/index.php" "https://www.adminer.org/latest.php" 2>&1 | tee -a "$LOGFILE"; then
+        sudo chown -R www-data:www-data "$adminer_dir"
+        sudo chmod 644 "$adminer_dir/index.php"
+        
+        # Configure web server
+        case "$web_server" in
+            nginx)
+                # Configure Adminer for Nginx
+                local nginx_config="/etc/nginx/sites-available/adminer"
+                sudo tee "$nginx_config" > /dev/null << EOF
+server {
+    listen 80;
+    server_name adminer.localhost;
+    root $adminer_dir;
+    index index.php;
+
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php${PHP_VER}-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+EOF
+                # Enable the site
+                sudo ln -sf "$nginx_config" /etc/nginx/sites-enabled/
+                if sudo nginx -t 2>/dev/null; then
+                    sudo systemctl reload nginx
+                    show_adminer_success_message "nginx"
+                else
+                    ui_msg "Adminer Installed" "✅ Adminer installed successfully!\n\n📁 Files located at: $adminer_dir\n\n⚠️  Nginx configuration has errors. Please check manually."
+                fi
+                ;;
+            apache2)
+                # Configure Adminer for Apache
+                local apache_config="/etc/apache2/sites-available/adminer.conf"
+                sudo tee "$apache_config" > /dev/null << EOF
+<VirtualHost *:80>
+    ServerName adminer.localhost
+    DocumentRoot $adminer_dir
+    
+    <Directory $adminer_dir>
+        AllowOverride All
+        Require all granted
+    </Directory>
+    
+    ErrorLog \${APACHE_LOG_DIR}/adminer_error.log
+    CustomLog \${APACHE_LOG_DIR}/adminer_access.log combined
+</VirtualHost>
+EOF
+                sudo a2ensite adminer.conf
+                sudo systemctl reload apache2
+                show_adminer_success_message "apache2"
+                ;;
+        esac
+        
+        log "Adminer installed successfully"
+        return 0
+    else
+        log_error "Failed to download Adminer"
+        return 1
+    fi
+}
+
+show_adminer_success_message() {
+    local web_server="$1"
+    local access_url=""
+    local config_note=""
+    
+    case "$web_server" in
+        nginx)
+            access_url="http://adminer.localhost"
+            config_note="⚠️  Note: Configure your hosts file or DNS to point adminer.localhost to this server."
+            ;;
+        apache2)
+            access_url="http://adminer.localhost"
+            config_note="🔧 Apache virtual host configured automatically."
+            ;;
+    esac
+    
+    # Get database credentials if available
+    local creds_info=""
+    if [[ -f "/root/.mysql_root_password" ]]; then
+        local root_pass
+        root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+        if [[ -n "$root_pass" ]]; then
+            creds_info="\n🔑 Available Database Credentials:\n"
+            creds_info+="• Server: localhost\n"
+            creds_info+="• Username: root\n"
+            creds_info+="• Password: $root_pass\n"
+            creds_info+="• Database: (select from dropdown)\n\n"
+            creds_info+="💡 These credentials are also available in Database Management > Show Credentials"
+        fi
+    elif sudo mysql -e "SELECT 1;" >/dev/null 2>&1; then
+        creds_info="\n🔑 Database Access Available:\n"
+        creds_info+="• Server: localhost\n"
+        creds_info+="• Username: root\n"
+        creds_info+="• Password: (leave empty - using system auth)\n"
+        creds_info+="• Database: (select from dropdown)\n\n"
+        creds_info+="💡 Or set a password in Database Management > Reset Root Password"
+    fi
+    
+    ui_msg "Adminer Installed" "✅ Adminer installed successfully!\n\n🌐 Access via: $access_url\n📁 Files located at: /var/www/adminer$creds_info\n\n$config_note"
+}
+
+remove_adminer() {
+    log "Removing Adminer..."
+    
+    # Remove Apache configuration if exists
+    if [[ -f /etc/apache2/sites-enabled/adminer.conf ]]; then
+        sudo a2dissite adminer.conf
+        sudo systemctl reload apache2 2>/dev/null || true
+    fi
+    
+    # Remove Nginx configuration if exists
+    if [[ -f /etc/nginx/sites-enabled/adminer ]]; then
+        sudo rm -f /etc/nginx/sites-enabled/adminer
+        sudo nginx -t && sudo systemctl reload nginx 2>/dev/null || true
+    fi
+    
+    # Remove the files
+    if sudo rm -rf /var/www/adminer 2>&1 | tee -a "$LOGFILE"; then
+        log "Successfully removed Adminer"
+        return 0
+    else
+        log "ERROR: Failed to remove Adminer"
+        return 1
+    fi
+}
+
+remove_phpmyadmin() {
+    log "Removing phpMyAdmin..."
+    
+    # Set debconf to non-interactive mode
+    export DEBIAN_FRONTEND=noninteractive
+    
+    # Preseed debconf to handle removal prompts automatically
+    log "Preseeding debconf for non-interactive removal..."
+    sudo debconf-set-selections << EOF
+phpmyadmin phpmyadmin/dbconfig-remove boolean true
+phpmyadmin phpmyadmin/purge boolean true
+phpmyadmin phpmyadmin/dbconfig-upgrade boolean true
+phpmyadmin phpmyadmin/remove-error select ignore
+phpmyadmin phpmyadmin/database-removal-error select ignore
+phpmyadmin phpmyadmin/mysql/admin-user string root
+phpmyadmin phpmyadmin/mysql/admin-pass password 
+phpmyadmin phpmyadmin/internal/skip-preseed boolean true
+EOF
+    
+    # Remove Apache configuration if exists
+    if [[ -f /etc/apache2/conf-enabled/phpmyadmin.conf ]]; then
+        log "Removing Apache phpMyAdmin configuration..."
+        sudo a2disconf phpmyadmin 2>/dev/null || true
+        sudo systemctl reload apache2 2>/dev/null || true
+    fi
+    
+    # Remove Nginx configuration if exists
+    if [[ -f /etc/nginx/sites-enabled/phpmyadmin ]]; then
+        log "Removing Nginx phpMyAdmin configuration..."
+        sudo rm -f /etc/nginx/sites-enabled/phpmyadmin
+        sudo rm -f /etc/nginx/sites-available/phpmyadmin 2>/dev/null || true
+        sudo nginx -t && sudo systemctl reload nginx 2>/dev/null || true
+    fi
+    
+    # Stop any phpMyAdmin related services
+    sudo systemctl stop apache2 2>/dev/null || true
+    sudo systemctl stop nginx 2>/dev/null || true
+    
+    # Try to stop MySQL/MariaDB to avoid database connection issues
+    log "Temporarily stopping database services to avoid connection errors..."
+    sudo systemctl stop mysql 2>/dev/null || true
+    sudo systemctl stop mariadb 2>/dev/null || true
+    
+    # Force remove the package with all configurations
+    log "Removing phpMyAdmin package and configurations..."
+    
+    # First attempt: Standard removal with ignore database errors
+    if sudo apt-get remove --purge -y phpmyadmin phpmyadmin-* 2>&1 | tee -a "$LOGFILE"; then
+        log "Package removal completed successfully"
+    else
+        log "Standard removal failed, attempting force cleanup..."
+        
+        # Second attempt: Force removal bypassing debconf
+        sudo DEBIAN_FRONTEND=noninteractive apt-get remove --purge -y --force-yes phpmyadmin phpmyadmin-* 2>/dev/null || true
+        
+        # Third attempt: Direct dpkg force removal
+        sudo dpkg --remove --force-remove-reinstreq phpmyadmin 2>/dev/null || true
+        sudo dpkg --purge --force-remove-reinstreq phpmyadmin 2>/dev/null || true
+        
+        # Fourth attempt: Manual cleanup of all phpMyAdmin files
+        log "Performing manual cleanup of phpMyAdmin files..."
+        sudo rm -rf /etc/phpmyadmin 2>/dev/null || true
+        sudo rm -rf /usr/share/phpmyadmin 2>/dev/null || true
+        sudo rm -rf /var/lib/phpmyadmin 2>/dev/null || true
+        sudo rm -rf /etc/apache2/conf-available/phpmyadmin.conf 2>/dev/null || true
+        sudo rm -rf /etc/apache2/conf-enabled/phpmyadmin.conf 2>/dev/null || true
+        
+        # Remove from dpkg status if still listed
+        sudo dpkg --force-all --purge phpmyadmin 2>/dev/null || true
+    fi
+    
+    # Clean up debconf database entries
+    log "Cleaning up debconf entries..."
+    sudo debconf-communicate << EOF || true
+PURGE phpmyadmin
+EOF
+    
+    # Additional debconf cleanup
+    sudo debconf-show phpmyadmin 2>/dev/null | while read line; do
+        key=$(echo "$line" | cut -d: -f1 | tr -d ' ')
+        sudo debconf-set-selections <<< "$key PURGE" 2>/dev/null || true
+    done
+    
+    # Remove any remaining configuration files
+    sudo rm -rf /etc/phpmyadmin 2>/dev/null || true
+    sudo rm -rf /usr/share/phpmyadmin 2>/dev/null || true
+    sudo rm -rf /var/lib/phpmyadmin 2>/dev/null || true
+    
+    # Clean up package cache
+    sudo apt-get autoremove -y 2>/dev/null || true
+    sudo apt-get autoclean 2>/dev/null || true
+    
+    # Restart database services
+    log "Restarting database services..."
+    if systemctl is-enabled mysql 2>/dev/null; then
+        sudo systemctl start mysql 2>/dev/null || true
+    fi
+    if systemctl is-enabled mariadb 2>/dev/null; then
+        sudo systemctl start mariadb 2>/dev/null || true
+    fi
+    
+    # Restart web servers
+    if systemctl is-enabled apache2 2>/dev/null; then
+        sudo systemctl start apache2 2>/dev/null || true
+    fi
+    if systemctl is-enabled nginx 2>/dev/null; then
+        sudo systemctl start nginx 2>/dev/null || true
+    fi
+    
+    # Reset DEBIAN_FRONTEND
+    unset DEBIAN_FRONTEND
+    
+    log "phpMyAdmin removal completed successfully"
+    return 0
+}
+
 # ==============================================================================
 # BUNTAGE MANAGEMENT DISPATCHER
 # ==============================================================================
@@ -1423,6 +2241,18 @@ install_package() {
             install_snap_package "$pkg"
             install_result=$?
             ;;
+        npm)
+            install_npm_package "$pkg"
+            install_result=$?
+            ;;
+        pip)
+            install_pip_package "$pkg"
+            install_result=$?
+            ;;
+        cargo)
+            install_cargo_package "$pkg"
+            install_result=$?
+            ;;
         flatpak)
             if ! is_apt_installed "flatpak"; then
                 ui_msg "Flatpak Required" "Installing Flatpak first...\n\n⏳ This process is automatic - please wait..."
@@ -1446,6 +2276,8 @@ install_package() {
                 n8n) install_n8n; install_result=$? ;;
                 gollama) install_gollama; install_result=$? ;;
                 discord-deb) install_discord-deb; install_result=$? ;;
+                phpmyadmin) install_phpmyadmin; install_result=$? ;;
+                adminer) install_adminer; install_result=$? ;;
                 *) log_error "Unknown custom installer: $name"; install_result=1 ;;
             esac
             ;;
@@ -1478,6 +2310,14 @@ remove_package() {
             remove_snap_package "$pkg"
             remove_result=$?
             ;;
+        npm)
+            remove_npm_package "$pkg"
+            remove_result=$?
+            ;;
+        cargo)
+            remove_cargo_package "$pkg"
+            remove_result=$?
+            ;;
         flatpak)
             remove_flatpak_package "$pkg"
             remove_result=$?
@@ -1495,6 +2335,8 @@ remove_package() {
                 n8n) remove_n8n; remove_result=$? ;;
                 gollama) remove_gollama; remove_result=$? ;;
                 discord-deb) remove_discord-deb; remove_result=$? ;;
+                phpmyadmin) remove_phpmyadmin; remove_result=$? ;;
+                adminer) remove_adminer; remove_result=$? ;;
                 *) log_error "Unknown custom remover: $name"; remove_result=1 ;;
             esac
             ;;
@@ -1616,6 +2458,20 @@ is_package_installed() {
                         result=1
                     fi
                     ;;
+                phpmyadmin)
+                    if is_apt_installed "phpmyadmin"; then
+                        result=0
+                    else
+                        result=1
+                    fi
+                    ;;
+                adminer)
+                    if [[ -f "/var/www/adminer/index.php" ]]; then
+                        result=0
+                    else
+                        result=1
+                    fi
+                    ;;
                 *) 
                     log "WARNING: Unknown custom buntage '$name'"
                     result=1
@@ -1716,10 +2572,12 @@ show_category_menu() {
         
         log "Adding additional menu items..."
         menu_items+=("" "(_*_)")
+        menu_items+=("wordpress-setup" "(.Y.) WordPress Management")
+        menu_items+=("php-settings" "(.Y.) PHP Configuration")
         menu_items+=("system-info" "(.Y.) System Information")
         menu_items+=("keyboard-layout" "(.Y.) Keyboard Layout Configuration")
-        menu_items+=("wordpress-setup" "(.Y.) WordPress Installation")
         menu_items+=("database-management" "(.Y.) Database Management")
+        menu_items+=("log-viewer" "(.Y.) Log Viewer")
         menu_items+=("bulk-ops" "(.Y.) Bulk Operations")
         menu_items+=("quit" "(Q) Exit Installer")
         
@@ -1771,10 +2629,22 @@ show_category_menu() {
                     ui_msg "Error" "Failed to display WordPress setup menu. Please check the logs."
                 }
                 ;;
+            php-settings)
+                show_php_settings_menu || {
+                    log "ERROR: show_php_settings_menu failed"
+                    ui_msg "Error" "Failed to display PHP settings menu. Please check the logs."
+                }
+                ;;
             database-management)
                 show_database_management_menu || {
                     log "ERROR: show_database_management_menu failed"
                     ui_msg "Error" "Failed to display database management menu. Please check the logs."
+                }
+                ;;
+            log-viewer)
+                show_log_viewer_menu || {
+                    log "ERROR: show_log_viewer_menu failed"
+                    ui_msg "Error" "Failed to display log viewer menu. Please check the logs."
                 }
                 ;;
             bulk-ops) 
@@ -2564,6 +3434,8 @@ show_wordpress_setup_menu() {
     
     while true; do
         local menu_items=(
+            "status" "(.Y.) 📊 Manage WordPress Sites"
+            "" "(_*_)"
             "quick-nginx" "(.Y.) 🚀 Quick Setup (Nginx + WordPress)"
             "quick-apache" "(.Y.) 🚀 Quick Setup (Apache + WordPress)"
             "" "(_*_)"
@@ -2575,13 +3447,12 @@ show_wordpress_setup_menu() {
             "ssl-setup" "(.Y.) 🔒 Add SSL Certificate (Let's Encrypt)"
             "wp-security" "(.Y.) 🛡️  WordPress Security Hardening"
             "" "(_*_)"
-            "status" "(.Y.) 📊 Show WordPress Sites Status"
             "zback" "(Z) ← Back to Main Menu"
         )
         
         local choice
-        choice=$(ui_menu "WordPress Installation" \
-            "Choose your WordPress installation method:\n\n🚀 Quick Setup: Auto-generated database credentials\n⚙️  Custom Setup: Choose site directory\n🔧 Custom Database: Choose database name, user, and password" \
+        choice=$(ui_menu "WordPress Management" \
+            "Manage your WordPress installations:\n\n📊 Manage Sites: View, configure, and troubleshoot existing WordPress sites\n🚀 Quick Setup: Auto-generated database credentials\n⚙️  Custom Setup: Choose site directory\n🔧 Custom Database: Choose database name, user, and password" \
             22 90 14 "${menu_items[@]}") || break
         
         case "$choice" in
@@ -4616,6 +5487,398 @@ setup_wordpress() {
     show_wordpress_setup_menu
 }
 
+# PHP Configuration Management Functions
+show_php_settings_menu() {
+    log "Entering PHP settings management menu"
+    
+    while true; do
+        local current_settings=""
+        local php_ini_path=""
+        
+        # Find PHP ini file - more comprehensive search
+        local php_ini_candidates=(
+            "/etc/php/8.3/apache2/php.ini"
+            "/etc/php/8.2/apache2/php.ini"
+            "/etc/php/8.1/apache2/php.ini"
+            "/etc/php/8.0/apache2/php.ini"
+            "/etc/php/7.4/apache2/php.ini"
+            "/etc/php/8.3/fpm/php.ini"
+            "/etc/php/8.2/fpm/php.ini"
+            "/etc/php/8.1/fpm/php.ini"
+            "/etc/php/8.0/fpm/php.ini"
+            "/etc/php/7.4/fpm/php.ini"
+            "/etc/php/8.3/cli/php.ini"
+            "/etc/php/8.2/cli/php.ini"
+            "/etc/php/8.1/cli/php.ini"
+            "/etc/php/8.0/cli/php.ini"
+            "/etc/php/7.4/cli/php.ini"
+        )
+        
+        # Check predefined candidates first
+        for candidate in "${php_ini_candidates[@]}"; do
+            if [[ -f "$candidate" ]]; then
+                php_ini_path="$candidate"
+                break
+            fi
+        done
+        
+        # If not found, try to find any PHP ini file
+        if [[ -z "$php_ini_path" ]]; then
+            php_ini_path=$(find /etc/php -name "php.ini" 2>/dev/null | head -n1)
+        fi
+        
+        # Last resort - check common locations
+        if [[ -z "$php_ini_path" ]]; then
+            local fallback_paths=(
+                "/etc/php.ini"
+                "/usr/local/etc/php.ini"
+                "/opt/php/etc/php.ini"
+            )
+            for fallback in "${fallback_paths[@]}"; do
+                if [[ -f "$fallback" ]]; then
+                    php_ini_path="$fallback"
+                    break
+                fi
+            done
+        fi
+        
+        if [[ -z "$php_ini_path" || ! -f "$php_ini_path" ]]; then
+            local error_msg="🚫 PHP Configuration Not Found\n\n"
+            error_msg+="Could not locate php.ini file in common locations:\n\n"
+            error_msg+="• /etc/php/*/apache2/php.ini\n"
+            error_msg+="• /etc/php/*/fpm/php.ini\n"
+            error_msg+="• /etc/php/*/cli/php.ini\n"
+            error_msg+="• /etc/php.ini\n\n"
+            error_msg+="Please ensure PHP is installed:\n"
+            error_msg+="sudo apt update && sudo apt install php"
+            
+            ui_error "PHP Configuration Not Found" "$error_msg"
+            return 1
+        fi
+        
+        # Get current PHP settings with better error handling
+        local upload_max=$(grep "^[[:space:]]*upload_max_filesize" "$php_ini_path" 2>/dev/null | cut -d'=' -f2 | tr -d ' ' | tail -n1)
+        local post_max=$(grep "^[[:space:]]*post_max_size" "$php_ini_path" 2>/dev/null | cut -d'=' -f2 | tr -d ' ' | tail -n1)
+        local memory_limit=$(grep "^[[:space:]]*memory_limit" "$php_ini_path" 2>/dev/null | cut -d'=' -f2 | tr -d ' ' | tail -n1)
+        local max_exec=$(grep "^[[:space:]]*max_execution_time" "$php_ini_path" 2>/dev/null | cut -d'=' -f2 | tr -d ' ' | tail -n1)
+        local max_input=$(grep "^[[:space:]]*max_input_time" "$php_ini_path" 2>/dev/null | cut -d'=' -f2 | tr -d ' ' | tail -n1)
+        
+        # Set defaults if not found
+        [[ -z "$upload_max" ]] && upload_max="Not set"
+        [[ -z "$post_max" ]] && post_max="Not set"
+        [[ -z "$memory_limit" ]] && memory_limit="Not set"
+        [[ -z "$max_exec" ]] && max_exec="Not set"
+        [[ -z "$max_input" ]] && max_input="Not set"
+        
+        current_settings="🐘 PHP Configuration Management\n\n"
+        current_settings+="📁 Configuration File: $php_ini_path\n\n"
+        current_settings+="📊 Current Settings:\n"
+        current_settings+="• Upload Max Filesize: $upload_max\n"
+        current_settings+="• Post Max Size: $post_max\n"
+        current_settings+="• Memory Limit: $memory_limit\n"
+        current_settings+="• Max Execution Time: $max_exec\n"
+        current_settings+="• Max Input Time: $max_input\n\n"
+        current_settings+="💡 Recommended for large file uploads:\n"
+        current_settings+="• Upload Max Filesize: 8G\n"
+        current_settings+="• Post Max Size: 8G\n"
+        current_settings+="• Memory Limit: 8G\n"
+        current_settings+="• Max Execution Time: 300\n"
+        current_settings+="• Max Input Time: 300"
+        
+        local menu_items=(
+            "optimize-uploads" "🚀 Optimize for Large File Uploads (8G)"
+            "custom-settings" "⚙️  Custom PHP Settings"
+            "view-config" "📄 View Full php.ini File"
+            "restart-services" "🔄 Restart Web Services"
+            "back" "← Back to Main Menu"
+        )
+        
+        local choice
+        choice=$(ui_menu "PHP Settings Management" "$current_settings" 20 80 8 "${menu_items[@]}") || break
+        
+        case "$choice" in
+            optimize-uploads)
+                optimize_php_for_uploads "$php_ini_path"
+                ;;
+            custom-settings)
+                configure_custom_php_settings "$php_ini_path"
+                ;;
+            view-config)
+                view_php_config "$php_ini_path"
+                ;;
+            restart-services)
+                restart_web_services
+                ;;
+            back)
+                break
+                ;;
+        esac
+    done
+}
+
+optimize_php_for_uploads() {
+    local php_ini_path="$1"
+    
+    log "Optimizing PHP settings for large file uploads"
+    
+    local optimization_info="🚀 PHP Upload Optimization\n\n"
+    optimization_info+="This will configure PHP for large file uploads:\n\n"
+    optimization_info+="📤 Upload Settings:\n"
+    optimization_info+="• upload_max_filesize = 8G\n"
+    optimization_info+="• post_max_size = 8G\n\n"
+    optimization_info+="💾 Memory & Performance:\n"
+    optimization_info+="• memory_limit = 8G\n"
+    optimization_info+="• max_execution_time = 300\n"
+    optimization_info+="• max_input_time = 300\n\n"
+    optimization_info+="⚠️  This will modify: $php_ini_path\n\n"
+    optimization_info+="Continue with optimization?"
+    
+    if ! ui_yesno "PHP Upload Optimization" "$optimization_info"; then
+        return
+    fi
+    
+    # Backup current php.ini
+    local backup_file="$BACKUP_DIR/php.ini.backup.$(date +%Y%m%d_%H%M%S)"
+    if sudo cp "$php_ini_path" "$backup_file" 2>/dev/null; then
+        log "PHP configuration backed up to: $backup_file"
+    else
+        ui_error "Backup Failed" "Could not create backup of php.ini file.\n\nOperation cancelled for safety."
+        return 1
+    fi
+    
+    # Apply optimizations
+    local temp_file="/tmp/php_optimization.tmp"
+    
+    # Create sed script for all modifications
+    cat > "$temp_file" << 'EOF'
+# Update or add upload_max_filesize
+/^[[:space:]]*upload_max_filesize[[:space:]]*=/ c\
+upload_max_filesize = 8G
+# Update or add post_max_size
+/^[[:space:]]*post_max_size[[:space:]]*=/ c\
+post_max_size = 8G
+# Update or add memory_limit
+/^[[:space:]]*memory_limit[[:space:]]*=/ c\
+memory_limit = 8G
+# Update or add max_execution_time
+/^[[:space:]]*max_execution_time[[:space:]]*=/ c\
+max_execution_time = 300
+# Update or add max_input_time
+/^[[:space:]]*max_input_time[[:space:]]*=/ c\
+max_input_time = 300
+EOF
+    
+    # Apply changes
+    if sudo sed -i -f "$temp_file" "$php_ini_path" 2>/dev/null; then
+        # Verify settings were applied, if not, append them
+        local settings_to_check=(
+            "upload_max_filesize = 8G"
+            "post_max_size = 8G" 
+            "memory_limit = 8G"
+            "max_execution_time = 300"
+            "max_input_time = 300"
+        )
+        
+        for setting in "${settings_to_check[@]}"; do
+            local key="${setting%% =*}"
+            if ! grep -q "^[[:space:]]*$key[[:space:]]*=" "$php_ini_path" 2>/dev/null; then
+                echo "$setting" | sudo tee -a "$php_ini_path" >/dev/null
+            fi
+        done
+        
+        rm -f "$temp_file"
+        
+        ui_info "Optimization Complete" "✅ PHP has been optimized for large file uploads!\n\n📁 Configuration: $php_ini_path\n💾 Backup: $backup_file\n\n🔄 Web services need to be restarted for changes to take effect.\n\nRestart services now?"
+        
+        if ui_yesno "Restart Services" "Restart Apache/Nginx and PHP-FPM to apply changes?"; then
+            restart_web_services
+        fi
+    else
+        rm -f "$temp_file"
+        ui_error "Optimization Failed" "Could not modify PHP configuration.\n\nPlease check file permissions and try again."
+        return 1
+    fi
+}
+
+configure_custom_php_settings() {
+    local php_ini_path="$1"
+    
+    log "Configuring custom PHP settings"
+    
+    local custom_info="⚙️  Custom PHP Settings\n\n"
+    custom_info+="Configure individual PHP parameters:\n\n"
+    custom_info+="📁 File: $php_ini_path\n\n"
+    custom_info+="Select a setting to modify:"
+    
+    local menu_items=(
+        "upload_max" "📤 Upload Max Filesize"
+        "post_max" "📮 Post Max Size"
+        "memory_limit" "💾 Memory Limit"
+        "max_execution" "⏱️  Max Execution Time"
+        "max_input" "⏲️  Max Input Time"
+        "back" "← Back"
+    )
+    
+    while true; do
+        local choice
+        choice=$(ui_menu "Custom PHP Settings" "$custom_info" 16 70 8 "${menu_items[@]}") || break
+        
+        case "$choice" in
+            upload_max)
+                modify_php_setting "$php_ini_path" "upload_max_filesize" "Upload Max Filesize" "8G" "Maximum size for uploaded files (e.g., 8G, 512M, 100M)"
+                ;;
+            post_max)
+                modify_php_setting "$php_ini_path" "post_max_size" "Post Max Size" "8G" "Maximum size for POST data (e.g., 8G, 512M, 100M)"
+                ;;
+            memory_limit)
+                modify_php_setting "$php_ini_path" "memory_limit" "Memory Limit" "8G" "Maximum memory per script (e.g., 8G, 512M, 256M)"
+                ;;
+            max_execution)
+                modify_php_setting "$php_ini_path" "max_execution_time" "Max Execution Time" "300" "Maximum execution time in seconds (e.g., 300, 600, 0 for unlimited)"
+                ;;
+            max_input)
+                modify_php_setting "$php_ini_path" "max_input_time" "Max Input Time" "300" "Maximum input parsing time in seconds (e.g., 300, 600)"
+                ;;
+            back)
+                break
+                ;;
+        esac
+    done
+}
+
+modify_php_setting() {
+    local php_ini_path="$1"
+    local setting_key="$2"
+    local setting_name="$3"
+    local default_value="$4"
+    local description="$5"
+    
+    local current_value=$(grep "^[[:space:]]*$setting_key[[:space:]]*=" "$php_ini_path" 2>/dev/null | cut -d'=' -f2 | tr -d ' ' || echo "Not set")
+    
+    local input_info="⚙️  Configure $setting_name\n\n"
+    input_info+="📁 File: $php_ini_path\n"
+    input_info+="🔧 Setting: $setting_key\n"
+    input_info+="📊 Current Value: $current_value\n\n"
+    input_info+="💡 Description: $description\n\n"
+    input_info+="Enter new value (or press Cancel to abort):"
+    
+    local new_value
+    new_value=$(ui_inputbox "$setting_name Configuration" "$input_info" "$default_value") || return
+    
+    if [[ -z "$new_value" ]]; then
+        ui_error "Invalid Input" "Value cannot be empty."
+        return 1
+    fi
+    
+    # Backup and modify
+    local backup_file="$BACKUP_DIR/php.ini.backup.$(date +%Y%m%d_%H%M%S)"
+    if sudo cp "$php_ini_path" "$backup_file" 2>/dev/null; then
+        if grep -q "^[[:space:]]*$setting_key[[:space:]]*=" "$php_ini_path" 2>/dev/null; then
+            # Update existing setting
+            sudo sed -i "s/^[[:space:]]*$setting_key[[:space:]]*=.*/$setting_key = $new_value/" "$php_ini_path"
+        else
+            # Add new setting
+            echo "$setting_key = $new_value" | sudo tee -a "$php_ini_path" >/dev/null
+        fi
+        
+        ui_info "Setting Updated" "✅ $setting_name updated successfully!\n\n🔧 Setting: $setting_key\n📊 New Value: $new_value\n💾 Backup: $backup_file\n\n🔄 Restart web services to apply changes."
+    else
+        ui_error "Update Failed" "Could not modify PHP configuration.\n\nPlease check file permissions."
+        return 1
+    fi
+}
+
+view_php_config() {
+    local php_ini_path="$1"
+    
+    log "Viewing PHP configuration file"
+    
+    if [[ -f "$php_ini_path" ]]; then
+        local config_content
+        config_content=$(sudo cat "$php_ini_path" 2>/dev/null | head -n 100)
+        
+        ui_info "PHP Configuration: $php_ini_path" "$config_content\n\n(Showing first 100 lines)\n\nFull file path: $php_ini_path"
+        
+        if ui_yesno "Edit php.ini" "Do you want to edit the PHP configuration file with nano?"; then
+            sudo nano "$php_ini_path"
+        fi
+    else
+        ui_error "File Not Found" "PHP configuration file not found at: $php_ini_path"
+    fi
+}
+
+restart_web_services() {
+    log "Restarting web services to apply PHP configuration changes"
+    
+    local restart_info="🔄 Restart Web Services\n\n"
+    restart_info+="This will restart the following services to apply PHP configuration changes:\n\n"
+    restart_info+="🌐 Web Server:\n"
+    
+    # Detect web server
+    local web_services=()
+    if systemctl is-active --quiet apache2 2>/dev/null; then
+        restart_info+="• Apache2 (active)\n"
+        web_services+=("apache2")
+    fi
+    if systemctl is-active --quiet nginx 2>/dev/null; then
+        restart_info+="• Nginx (active)\n"
+        web_services+=("nginx")
+    fi
+    
+    restart_info+="🐘 PHP Services:\n"
+    
+    # Detect PHP-FPM services
+    local php_services=()
+    for version in 8.1 8.0 7.4; do
+        if systemctl is-active --quiet "php$version-fpm" 2>/dev/null; then
+            restart_info+="• PHP $version FPM (active)\n"
+            php_services+=("php$version-fpm")
+        fi
+    done
+    
+    if [[ ${#web_services[@]} -eq 0 && ${#php_services[@]} -eq 0 ]]; then
+        ui_error "No Services Found" "No active web or PHP services found to restart."
+        return 1
+    fi
+    
+    restart_info+="⚠️  Services will be briefly unavailable during restart.\n\nContinue?"
+    
+    if ! ui_yesno "Restart Services" "$restart_info"; then
+        return
+    fi
+    
+    local restart_results=""
+    local restart_success=true
+    
+    # Restart web services
+    for service in "${web_services[@]}"; do
+        restart_results+="Restarting $service... "
+        if sudo systemctl restart "$service" 2>/dev/null; then
+            restart_results+="✅ Success\n"
+        else
+            restart_results+="❌ Failed\n"
+            restart_success=false
+        fi
+    done
+    
+    # Restart PHP services
+    for service in "${php_services[@]}"; do
+        restart_results+="Restarting $service... "
+        if sudo systemctl restart "$service" 2>/dev/null; then
+            restart_results+="✅ Success\n"
+        else
+            restart_results+="❌ Failed\n"
+            restart_success=false
+        fi
+    done
+    
+    if [[ "$restart_success" == "true" ]]; then
+        ui_info "Services Restarted" "✅ All services restarted successfully!\n\n$restart_results\n🎉 PHP configuration changes are now active."
+    else
+        ui_info "Restart Issues" "⚠️  Some services failed to restart:\n\n$restart_results\n🔧 Please check service status manually if needed."
+    fi
+}
+
 # WordPress database testing and repair functions
 test_wordpress_database_connection() {
     local site="$1"
@@ -5198,6 +6461,138 @@ show_database_management_menu() {
     log "Exiting show_database_management_menu function"
 }
 
+# LOG VIEWER FUNCTIONS
+show_log_viewer_menu() {
+    log "Entering show_log_viewer_menu function"
+    
+    while true; do
+        local menu_items=()
+        
+        # Always show ultrabunt log
+        menu_items+=("ultrabunt" "(.Y.) Ultrabunt Log (/var/log/ultrabunt.log)")
+        
+        # Check for common service logs and add them if they exist
+        if [[ -f "/var/log/nginx/error.log" ]]; then
+            menu_items+=("nginx-error" "(.Y.) Nginx Error Log")
+        fi
+        
+        if [[ -f "/var/log/nginx/access.log" ]]; then
+            menu_items+=("nginx-access" "(.Y.) Nginx Access Log")
+        fi
+        
+        if [[ -f "/var/log/apache2/error.log" ]]; then
+            menu_items+=("apache-error" "(.Y.) Apache Error Log")
+        fi
+        
+        if [[ -f "/var/log/apache2/access.log" ]]; then
+            menu_items+=("apache-access" "(.Y.) Apache Access Log")
+        fi
+        
+        if [[ -f "/var/log/mysql/error.log" ]]; then
+            menu_items+=("mysql-error" "(.Y.) MySQL Error Log")
+        fi
+        
+        if [[ -f "/var/log/php8.1-fpm.log" ]] || [[ -f "/var/log/php8.2-fpm.log" ]] || [[ -f "/var/log/php8.3-fpm.log" ]]; then
+            menu_items+=("php-fpm" "(.Y.) PHP-FPM Log")
+        fi
+        
+        if [[ -f "/var/log/syslog" ]]; then
+            menu_items+=("syslog" "(.Y.) System Log (syslog)")
+        fi
+        
+        if [[ -f "/var/log/auth.log" ]]; then
+            menu_items+=("auth" "(.Y.) Authentication Log")
+        fi
+        
+        menu_items+=("" "(_*_)")
+        menu_items+=("zback" "(Z) ← Back to Main Menu")
+        
+        local choice
+        choice=$(ui_menu "Log Viewer" \
+            "Select a log file to view:" \
+            20 80 15 "${menu_items[@]}") || break
+        
+        case "$choice" in
+            ultrabunt)
+                view_log_file "/var/log/ultrabunt.log" "Ultrabunt Log"
+                ;;
+            nginx-error)
+                view_log_file "/var/log/nginx/error.log" "Nginx Error Log"
+                ;;
+            nginx-access)
+                view_log_file "/var/log/nginx/access.log" "Nginx Access Log"
+                ;;
+            apache-error)
+                view_log_file "/var/log/apache2/error.log" "Apache Error Log"
+                ;;
+            apache-access)
+                view_log_file "/var/log/apache2/access.log" "Apache Access Log"
+                ;;
+            mysql-error)
+                view_log_file "/var/log/mysql/error.log" "MySQL Error Log"
+                ;;
+            php-fpm)
+                # Find the correct PHP-FPM log file
+                local php_fpm_log=""
+                for version in 8.3 8.2 8.1; do
+                    if [[ -f "/var/log/php${version}-fpm.log" ]]; then
+                        php_fpm_log="/var/log/php${version}-fpm.log"
+                        break
+                    fi
+                done
+                if [[ -n "$php_fpm_log" ]]; then
+                    view_log_file "$php_fpm_log" "PHP-FPM Log"
+                fi
+                ;;
+            syslog)
+                view_log_file "/var/log/syslog" "System Log"
+                ;;
+            auth)
+                view_log_file "/var/log/auth.log" "Authentication Log"
+                ;;
+            zback|back|"")
+                break
+                ;;
+        esac
+    done
+    
+    log "Exiting show_log_viewer_menu function"
+}
+
+view_log_file() {
+    local log_file="$1"
+    local log_name="$2"
+    
+    log "Viewing log file: $log_file"
+    
+    if [[ ! -f "$log_file" ]]; then
+        ui_msg "Log Not Found" "The log file $log_file does not exist or is not accessible."
+        return 1
+    fi
+    
+    # Check if file is readable
+    if [[ ! -r "$log_file" ]]; then
+        ui_msg "Permission Denied" "Cannot read $log_file. You may need administrator privileges."
+        return 1
+    fi
+    
+    # Get file size for display
+    local file_size
+    file_size=$(du -h "$log_file" 2>/dev/null | cut -f1)
+    
+    # Show last 100 lines by default
+    local temp_file="/tmp/ultrabunt_log_view_$$"
+    tail -n 100 "$log_file" > "$temp_file" 2>/dev/null
+    
+    if [[ -s "$temp_file" ]]; then
+        ui_msg "$log_name" "File: $log_file\nSize: $file_size\nShowing last 100 lines:\n\n$(cat "$temp_file")\n\n💡 Tip: Use 'tail -f $log_file' to follow live updates"
+    else
+        ui_msg "$log_name" "File: $log_file\nSize: $file_size\n\nThe log file is empty or could not be read."
+    fi
+    
+    rm -f "$temp_file" 2>/dev/null
+}
+
 # Function to prompt for MariaDB root password and test connection
 prompt_mariadb_password() {
     local password
@@ -5725,7 +7120,7 @@ main() {
     log "Dependencies check completed"
     
     log "╔═══════════════════════════════════════════════════════╗"
-    log "║     ULTRABUNT ULTIMATE BUNTSTALLER v4.2.0 STARTED       ║"
+    log "║     ULTRABUNT ULTIMATE BUNTSTALLER v4.2.0 STARTED     ║"
     log "╚═══════════════════════════════════════════════════════╝"
     
     # Update buntage cache
