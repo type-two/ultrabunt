@@ -1827,33 +1827,52 @@ install_phpmyadmin() {
         return 1
     fi
     
-    # Check if MySQL root password is set, if not, set it up
+    # FIRST: Read the MySQL root password from file if it exists
     local mysql_root_pass=""
-    if [[ -f "/root/.mysql_root_password" ]]; then
-        mysql_root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+    if sudo test -f "/root/.mysql_root_password"; then
+        mysql_root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null | tr -d '\n\r')
+        if [[ -n "$mysql_root_pass" ]]; then
+            log "Read MySQL root password from /root/.mysql_root_password"
+        else
+            log "Password file exists but is empty"
+        fi
+    else
+        log "No MySQL root password file found at /root/.mysql_root_password"
     fi
     
-    # If no root password file exists, try to set up MySQL security
+    # If no password file exists, check if we can connect without password
     if [[ -z "$mysql_root_pass" ]]; then
-        log "Setting up MySQL root authentication..."
-        
-        # Generate a random password for MySQL root
-        mysql_root_pass=$(openssl rand -base64 32)
-        
-        # Try to set root password using various methods
-        if mysql -u root -e "SELECT 1;" 2>/dev/null; then
-            # Root can login without password, set one
-            mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$mysql_root_pass';" 2>/dev/null || \
-            mysql -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_pass');" 2>/dev/null || \
-            mysql -u root -e "UPDATE mysql.user SET Password=PASSWORD('$mysql_root_pass') WHERE User='root'; FLUSH PRIVILEGES;" 2>/dev/null
-            
-            # Save the password
-            echo "$mysql_root_pass" | sudo tee /root/.mysql_root_password > /dev/null
-            sudo chmod 600 /root/.mysql_root_password
+        log "No MySQL root password file found, checking if MySQL allows passwordless root access..."
+        if mysql -u root -e "SELECT 1;" >/dev/null 2>&1; then
+            log "MySQL allows passwordless root access, will set a password"
         else
             ui_msg "MySQL Setup Required" "MySQL root password needs to be configured.\n\nPlease run the MariaDB installation from Web Stack first, or manually configure MySQL root access."
             return 1
         fi
+    fi
+    
+    # Now handle MySQL authentication setup
+    if [[ -n "$mysql_root_pass" ]]; then
+        # We have a password, test if it works
+        if mysql -u root -p"$mysql_root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+            log "MySQL root password verified successfully"
+        else
+            log "Existing MySQL root password failed verification"
+            ui_msg "MySQL Authentication Error" "The stored MySQL root password is not working.\n\nPlease reset the MariaDB root password from the Database Management section first."
+            return 1
+        fi
+    else
+        # No password exists, set one up (fresh install scenario)
+        log "Setting up MySQL root authentication for fresh install..."
+        mysql_root_pass=$(openssl rand -base64 32)
+        mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$mysql_root_pass';" 2>/dev/null || \
+        mysql -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_pass');" 2>/dev/null || \
+        mysql -u root -e "UPDATE mysql.user SET Password=PASSWORD('$mysql_root_pass') WHERE User='root'; FLUSH PRIVILEGES;" 2>/dev/null
+        
+        # Save the password
+        echo "$mysql_root_pass" | sudo tee /root/.mysql_root_password > /dev/null
+        sudo chmod 600 /root/.mysql_root_password
+        log "New MySQL root password set and saved"
     fi
     
     # Pre-configure phpMyAdmin with the MySQL root password
