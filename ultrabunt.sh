@@ -857,137 +857,137 @@ PKG_CATEGORY[chromium]="browsers"
 PACKAGES[htop]="htop"
 PKG_DESC[htop]="Interactive process viewer [APT]"
 PKG_METHOD[htop]="apt"
-PKG_CATEGORY[htop]="monitoring"
+PKG_CATEGORY[htop]="system-monitoring"
 
 PACKAGES[btop]="btop"
 PKG_DESC[btop]="Resource monitor with better graphs [APT]"
 PKG_METHOD[btop]="apt"
-PKG_CATEGORY[btop]="monitoring"
+PKG_CATEGORY[btop]="system-monitoring"
 
 PACKAGES[glances]="glances"
 PKG_DESC[glances]="Cross-platform system monitor [APT]"
 PKG_METHOD[glances]="apt"
-PKG_CATEGORY[glances]="monitoring"
+PKG_CATEGORY[glances]="system-monitoring"
 
 PACKAGES[nethogs]="nethogs"
 PKG_DESC[nethogs]="Network bandwidth monitor per process [APT]"
 PKG_METHOD[nethogs]="apt"
-PKG_CATEGORY[nethogs]="monitoring"
+PKG_CATEGORY[nethogs]="network-monitoring"
 
 PACKAGES[iotop]="iotop"
 PKG_DESC[iotop]="I/O monitor [APT]"
 PKG_METHOD[iotop]="apt"
-PKG_CATEGORY[iotop]="monitoring"
+PKG_CATEGORY[iotop]="system-monitoring"
 
 # Additional Process Monitors
 PACKAGES[bpytop]="bpytop"
 PKG_DESC[bpytop]="Python-based resource monitor (btop predecessor) [APT]"
 PKG_METHOD[bpytop]="apt"
-PKG_CATEGORY[bpytop]="monitoring"
+PKG_CATEGORY[bpytop]="system-monitoring"
 
 PACKAGES[bashtop]="bashtop"
 PKG_DESC[bashtop]="Bash-based resource monitor (original) [APT]"
 PKG_METHOD[bashtop]="apt"
-PKG_CATEGORY[bashtop]="monitoring"
+PKG_CATEGORY[bashtop]="system-monitoring"
 
 PACKAGES[bottom]="bottom"
 PKG_DESC[bottom]="Cross-platform graphical process monitor (btm) [APT]"
 PKG_METHOD[bottom]="apt"
-PKG_CATEGORY[bottom]="monitoring"
+PKG_CATEGORY[bottom]="system-monitoring"
 
 PACKAGES[gotop]="gotop"
 PKG_DESC[gotop]="Terminal-based graphical activity monitor [SNAP]"
 PKG_METHOD[gotop]="snap"
-PKG_CATEGORY[gotop]="monitoring"
+PKG_CATEGORY[gotop]="system-monitoring"
 
 PACKAGES[vtop]="vtop"
 PKG_DESC[vtop]="Visually appealing terminal monitor [NPM]"
 PKG_METHOD[vtop]="npm"
-PKG_CATEGORY[vtop]="monitoring"
+PKG_CATEGORY[vtop]="system-monitoring"
 
 PACKAGES[zenith]="zenith"
 PKG_DESC[zenith]="Terminal monitor with zoomable charts [CARGO]"
 PKG_METHOD[zenith]="cargo"
-PKG_CATEGORY[zenith]="monitoring"
+PKG_CATEGORY[zenith]="system-monitoring"
 
 PACKAGES[nmon]="nmon"
 PKG_DESC[nmon]="Nigel's Monitor - modular system statistics [APT]"
 PKG_METHOD[nmon]="apt"
-PKG_CATEGORY[nmon]="monitoring"
+PKG_CATEGORY[nmon]="system-monitoring"
 
 PACKAGES[atop]="atop"
 PKG_DESC[atop]="Advanced system and process monitor [APT]"
 PKG_METHOD[atop]="apt"
-PKG_CATEGORY[atop]="monitoring"
+PKG_CATEGORY[atop]="system-monitoring"
 
 # I/O, Memory, and Disk Tools
 PACKAGES[iostat]="sysstat"
 PKG_DESC[iostat]="CPU utilization and disk I/O statistics [APT]"
 PKG_METHOD[iostat]="apt"
-PKG_CATEGORY[iostat]="monitoring"
+PKG_CATEGORY[iostat]="system-monitoring"
 
 PACKAGES[vmstat]="procps"
 PKG_DESC[vmstat]="Virtual memory, processes, I/O, and CPU activity [APT]"
 PKG_METHOD[vmstat]="apt"
-PKG_CATEGORY[vmstat]="monitoring"
+PKG_CATEGORY[vmstat]="system-monitoring"
 
 PACKAGES[free]="procps"
 PKG_DESC[free]="Display free and used memory [APT]"
 PKG_METHOD[free]="apt"
-PKG_CATEGORY[free]="monitoring"
+PKG_CATEGORY[free]="system-monitoring"
 
 # Network Monitoring Tools
 PACKAGES[iftop]="iftop"
 PKG_DESC[iftop]="Real-time bandwidth usage per network interface [APT]"
 PKG_METHOD[iftop]="apt"
-PKG_CATEGORY[iftop]="monitoring"
+PKG_CATEGORY[iftop]="network-monitoring"
 
 PACKAGES[nload]="nload"
 PKG_DESC[nload]="Network traffic visualizer with graphical bars [APT]"
 PKG_METHOD[nload]="apt"
-PKG_CATEGORY[nload]="monitoring"
+PKG_CATEGORY[nload]="network-monitoring"
 
 PACKAGES[bmon]="bmon"
 PKG_DESC[bmon]="Interactive bandwidth monitor [APT]"
 PKG_METHOD[bmon]="apt"
-PKG_CATEGORY[bmon]="monitoring"
+PKG_CATEGORY[bmon]="network-monitoring"
 
 PACKAGES[iptraf-ng]="iptraf-ng"
 PKG_DESC[iptraf-ng]="Console-based network monitoring utility [APT]"
 PKG_METHOD[iptraf-ng]="apt"
-PKG_CATEGORY[iptraf-ng]="monitoring"
+PKG_CATEGORY[iptraf-ng]="network-monitoring"
 
 PACKAGES[ss]="iproute2"
 PKG_DESC[ss]="Socket investigation utility (netstat replacement) [APT]"
 PKG_METHOD[ss]="apt"
-PKG_CATEGORY[ss]="monitoring"
+PKG_CATEGORY[ss]="network-monitoring"
 
 # Process and System Information Tools
 PACKAGES[lsof]="lsof"
 PKG_DESC[lsof]="List open files and processes [APT]"
 PKG_METHOD[lsof]="apt"
-PKG_CATEGORY[lsof]="monitoring"
+PKG_CATEGORY[lsof]="system-monitoring"
 
 PACKAGES[sar]="sysstat"
 PKG_DESC[sar]="System Activity Reporter - historical monitoring [APT]"
 PKG_METHOD[sar]="apt"
-PKG_CATEGORY[sar]="monitoring"
+PKG_CATEGORY[sar]="system-monitoring"
 
 PACKAGES[mpstat]="sysstat"
 PKG_DESC[mpstat]="Individual or combined CPU processor statistics [APT]"
 PKG_METHOD[mpstat]="apt"
-PKG_CATEGORY[mpstat]="monitoring"
+PKG_CATEGORY[mpstat]="system-monitoring"
 
 PACKAGES[pidstat]="sysstat"
 PKG_DESC[pidstat]="Per-process CPU, memory, and I/O statistics [APT]"
 PKG_METHOD[pidstat]="apt"
-PKG_CATEGORY[pidstat]="monitoring"
+PKG_CATEGORY[pidstat]="system-monitoring"
 
 # GPU Monitoring Tools
 PACKAGES[nvtop]="nvtop"
 PKG_DESC[nvtop]="htop-like utility for monitoring NVIDIA GPUs [APT]"
 PKG_METHOD[nvtop]="apt"
-PKG_CATEGORY[nvtop]="monitoring"
+PKG_CATEGORY[nvtop]="system-monitoring"
 
 PACKAGES[radeontop]="radeontop"
 PKG_DESC[radeontop]="TUI utility for monitoring AMD GPUs [APT]"
@@ -996,92 +996,92 @@ PKG_METHOD[radeontop]="apt"
 PACKAGES[ps]="procps"
 PKG_DESC[ps]="Standard process status command - reports a snapshot of current processes (non-interactive)"
 PKG_METHOD[ps]="apt"
-PKG_CATEGORY[ps]="monitoring"
+PKG_CATEGORY[ps]="system-monitoring"
 
-PKG_CATEGORY[radeontop]="monitoring"
+PKG_CATEGORY[radeontop]="system-monitoring"
 
 # Additional GPU Monitoring Tool
 PACKAGES[qmasa]="qmasa"
 PKG_DESC[qmasa]="Terminal-based tool for displaying general GPU usage stats on Linux [Cargo]"
 PKG_METHOD[qmasa]="cargo"
-PKG_CATEGORY[qmasa]="monitoring"
+PKG_CATEGORY[qmasa]="system-monitoring"
 
 # Additional Process Monitoring Tool
 PACKAGES[gtop]="gtop"
 PKG_DESC[gtop]="System monitoring dashboard for the terminal, written in Node.js [NPM]"
 PKG_METHOD[gtop]="npm"
-PKG_CATEGORY[gtop]="monitoring"
+PKG_CATEGORY[gtop]="system-monitoring"
 
 # Additional System Utilities
 PACKAGES[pv]="pv"
 PKG_DESC[pv]="Pipe Viewer - monitor progress of data through a pipeline with progress bar [APT]"
 PKG_METHOD[pv]="apt"
-PKG_CATEGORY[pv]="monitoring"
+PKG_CATEGORY[pv]="utilities"
 
 PACKAGES[tree]="tree"
 PKG_DESC[tree]="Display directory structure in tree format [APT]"
 PKG_METHOD[tree]="apt"
-PKG_CATEGORY[tree]="monitoring"
+PKG_CATEGORY[tree]="utilities"
 
 PACKAGES[ncdu]="ncdu"
 PKG_DESC[ncdu]="NCurses Disk Usage - interactive disk usage analyzer [APT]"
 PKG_METHOD[ncdu]="apt"
-PKG_CATEGORY[ncdu]="monitoring"
+PKG_CATEGORY[ncdu]="utilities"
 
 PACKAGES[duf]="duf"
 PKG_DESC[duf]="Disk Usage/Free Utility - better 'df' alternative with colors [APT]"
 PKG_METHOD[duf]="apt"
-PKG_CATEGORY[duf]="monitoring"
+PKG_CATEGORY[duf]="utilities"
 
 PACKAGES[dust]="dust"
 PKG_DESC[dust]="More intuitive version of du written in Rust [Cargo]"
 PKG_METHOD[dust]="cargo"
-PKG_CATEGORY[dust]="monitoring"
+PKG_CATEGORY[dust]="utilities"
 
 PACKAGES[fd-find]="fd-find"
 PKG_DESC[fd-find]="Simple, fast and user-friendly alternative to 'find' [APT]"
 PKG_METHOD[fd-find]="apt"
-PKG_CATEGORY[fd-find]="monitoring"
+PKG_CATEGORY[fd-find]="utilities"
 
 PACKAGES[ripgrep]="ripgrep"
 PKG_DESC[ripgrep]="Recursively search directories for regex patterns (rg command) [APT]"
 PKG_METHOD[ripgrep]="apt"
-PKG_CATEGORY[ripgrep]="monitoring"
+PKG_CATEGORY[ripgrep]="utilities"
 
 PACKAGES[bat]="bat"
 PKG_DESC[bat]="Cat clone with syntax highlighting and Git integration [APT]"
 PKG_METHOD[bat]="apt"
-PKG_CATEGORY[bat]="monitoring"
+PKG_CATEGORY[bat]="utilities"
 
 PACKAGES[exa]="exa"
 PKG_DESC[exa]="Modern replacement for 'ls' with colors and Git status [APT]"
 PKG_METHOD[exa]="apt"
-PKG_CATEGORY[exa]="monitoring"
+PKG_CATEGORY[exa]="utilities"
 
 PACKAGES[bandwhich]="bandwhich"
 PKG_DESC[bandwhich]="Terminal bandwidth utilization tool by process [Cargo]"
 PKG_METHOD[bandwhich]="cargo"
-PKG_CATEGORY[bandwhich]="monitoring"
+PKG_CATEGORY[bandwhich]="network-monitoring"
 
 PACKAGES[procs]="procs"
 PKG_DESC[procs]="Modern replacement for ps written in Rust [Cargo]"
 PKG_METHOD[procs]="cargo"
-PKG_CATEGORY[procs]="monitoring"
+PKG_CATEGORY[procs]="system-monitoring"
 
 PACKAGES[tokei]="tokei"
 PKG_DESC[tokei]="Count lines of code quickly [Cargo]"
 PKG_METHOD[tokei]="cargo"
-PKG_CATEGORY[tokei]="monitoring"
+PKG_CATEGORY[tokei]="performance-tools"
 
 PACKAGES[hyperfine]="hyperfine"
 PKG_DESC[hyperfine]="Command-line benchmarking tool [APT]"
 PKG_METHOD[hyperfine]="apt"
-PKG_CATEGORY[hyperfine]="monitoring"
+PKG_CATEGORY[hyperfine]="performance-tools"
 
 PACKAGES[fzf]="fzf"
 PKG_DESC[fzf]="Command-line fuzzy finder [APT]"
 PKG_METHOD[fzf]="apt"
-PKG_CATEGORY[fzf]="monitoring"
+PKG_CATEGORY[fzf]="utilities"
 
 PACKAGES[batcat]="batcat"
 PKG_DESC[batcat]="Enhanced cat command with paging, syntax highlight & Git integration [APT]"
@@ -1111,17 +1111,17 @@ PKG_CATEGORY[silversearcher-ag]="utilities"
 PACKAGES[jq]="jq"
 PKG_DESC[jq]="Lightweight and flexible command-line JSON processor [APT]"
 PKG_METHOD[jq]="apt"
-PKG_CATEGORY[jq]="monitoring"
+PKG_CATEGORY[jq]="utilities"
 
 PACKAGES[yq]="yq"
 PKG_DESC[yq]="Command-line YAML processor (jq wrapper for YAML files) [Snap]"
 PKG_METHOD[yq]="snap"
-PKG_CATEGORY[yq]="monitoring"
+PKG_CATEGORY[yq]="utilities"
 
 PACKAGES[delta]="git-delta"
 PKG_DESC[delta]="Syntax-highlighting pager for git and diff output [APT]"
 PKG_METHOD[delta]="apt"
-PKG_CATEGORY[delta]="monitoring"
+PKG_CATEGORY[delta]="utilities"
 
 # DATABASE MANAGEMENT TOOLS
 PACKAGES[phpmyadmin]="phpmyadmin"
@@ -1237,7 +1237,7 @@ PKG_DEPS[localsend]="snapd"
 PACKAGES[spotify]="spotify"
 PKG_DESC[spotify]="Music streaming service [SNP]"
 PKG_METHOD[spotify]="snap"
-PKG_CATEGORY[spotify]="multimedia"
+PKG_CATEGORY[spotify]="audio"
 
 PACKAGES[postman]="postman"
 PKG_DESC[postman]="API development platform [SNP]"
@@ -1269,12 +1269,12 @@ PKG_CATEGORY[yaak]="dev"
 PACKAGES[obs-studio]="obs-studio"
 PKG_DESC[obs-studio]="OBS Studio streaming/recording [APT]"
 PKG_METHOD[obs-studio]="apt"
-PKG_CATEGORY[obs-studio]="multimedia"
+PKG_CATEGORY[obs-studio]="video"
 
 PACKAGES[vlc]="vlc"
 PKG_DESC[vlc]="VLC media player [APT]"
 PKG_METHOD[vlc]="apt"
-PKG_CATEGORY[vlc]="multimedia"
+PKG_CATEGORY[vlc]="video"
 
 # CLOUD & SYNC
 PACKAGES[rclone]="rclone"
@@ -1342,28 +1342,28 @@ PKG_CATEGORY[ghostty]="terminals"
 PACKAGES[steam]="steam"
 PKG_DESC[steam]="Steam gaming platform [APT]"
 PKG_METHOD[steam]="apt"
-PKG_CATEGORY[steam]="gaming"
+PKG_CATEGORY[steam]="gaming-platforms"
 
 PACKAGES[heroic-launcher]="heroic"
 PKG_DESC[heroic-launcher]="Open-source Epic Games/GOG launcher [SNP]"
 PKG_METHOD[heroic-launcher]="snap"
-PKG_CATEGORY[heroic-launcher]="gaming"
+PKG_CATEGORY[heroic-launcher]="gaming-platforms"
 PKG_DEPS[heroic-launcher]="snapd"
 
 PACKAGES[lutris]="lutris"
 PKG_DESC[lutris]="Gaming on Linux made easy [APT]"
 PKG_METHOD[lutris]="apt"
-PKG_CATEGORY[lutris]="gaming"
+PKG_CATEGORY[lutris]="gaming-platforms"
 
 PACKAGES[gamemode]="gamemode"
 PKG_DESC[gamemode]="Optimize gaming performance [APT]"
 PKG_METHOD[gamemode]="apt"
-PKG_CATEGORY[gamemode]="gaming"
+PKG_CATEGORY[gamemode]="gaming-platforms"
 
 PACKAGES[gimp]="gimp"
 PKG_DESC[gimp]="GIMP image editor [APT]"
 PKG_METHOD[gimp]="apt"
-PKG_CATEGORY[gimp]="multimedia"
+PKG_CATEGORY[gimp]="graphics"
 
 # OFFICE & PRODUCTIVITY
 PACKAGES[libreoffice]="libreoffice"
@@ -1406,17 +1406,17 @@ PKG_CATEGORY[zoom]="communication"
 PACKAGES[audacity]="audacity"
 PKG_DESC[audacity]="Audacity audio editor [APT]"
 PKG_METHOD[audacity]="apt"
-PKG_CATEGORY[audacity]="multimedia"
+PKG_CATEGORY[audacity]="audio"
 
 PACKAGES[blender]="blender"
 PKG_DESC[blender]="Blender 3D creation suite [SNP]"
 PKG_METHOD[blender]="snap"
-PKG_CATEGORY[blender]="multimedia"
+PKG_CATEGORY[blender]="graphics"
 
 PACKAGES[inkscape]="inkscape"
 PKG_DESC[inkscape]="Inkscape vector graphics editor [APT]"
 PKG_METHOD[inkscape]="apt"
-PKG_CATEGORY[inkscape]="multimedia"
+PKG_CATEGORY[inkscape]="graphics"
 
 # AI & MODERN TOOLS
 PACKAGES[ollama]="ollama"
@@ -1517,229 +1517,245 @@ PKG_CATEGORY[coqui-tts]="ai"
 PACKAGES[ffmpeg]="ffmpeg"
 PKG_DESC[ffmpeg]="Complete multimedia processing toolkit [APT]"
 PKG_METHOD[ffmpeg]="apt"
-PKG_CATEGORY[ffmpeg]="multimedia"
+PKG_CATEGORY[ffmpeg]="video"
 
 PACKAGES[yt-dlp]="yt-dlp"
 PKG_DESC[yt-dlp]="Modern YouTube/media downloader (youtube-dl fork) [PIP]"
 PKG_METHOD[yt-dlp]="custom"
-PKG_CATEGORY[yt-dlp]="multimedia"
+PKG_CATEGORY[yt-dlp]="video"
 
 PACKAGES[freetube]="freetube"
 PKG_DESC[freetube]="Privacy-focused YouTube client [FLATPAK]"
 PKG_METHOD[freetube]="flatpak"
-PKG_CATEGORY[freetube]="multimedia"
+PKG_CATEGORY[freetube]="video"
 
 PACKAGES[invidious]="invidious"
 PKG_DESC[invidious]="Alternative YouTube frontend [CUSTOM]"
 PKG_METHOD[invidious]="custom"
-PKG_CATEGORY[invidious]="multimedia"
+PKG_CATEGORY[invidious]="video"
 
 PACKAGES[mpv]="mpv"
 PKG_DESC[mpv]="Minimalist media player [APT]"
 PKG_METHOD[mpv]="apt"
-PKG_CATEGORY[mpv]="multimedia"
+PKG_CATEGORY[mpv]="video"
 
 PACKAGES[kodi]="kodi"
 PKG_DESC[kodi]="Open-source media center [APT]"
 PKG_METHOD[kodi]="apt"
-PKG_CATEGORY[kodi]="multimedia"
+PKG_CATEGORY[kodi]="media-servers"
 
 PACKAGES[stremio]="stremio"
 PKG_DESC[stremio]="Modern media center with streaming [FLATPAK]"
 PKG_METHOD[stremio]="flatpak"
-PKG_CATEGORY[stremio]="multimedia"
+PKG_CATEGORY[stremio]="media-servers"
+
+# MEDIA SERVERS & STREAMING
+PACKAGES[plex]="plexmediaserver"
+PKG_DESC[plex]="Plex Media Server [CUSTOM]"
+PKG_METHOD[plex]="custom"
+PKG_CATEGORY[plex]="media-servers"
+
+PACKAGES[jellyfin]="jellyfin"
+PKG_DESC[jellyfin]="Free media server [APT]"
+PKG_METHOD[jellyfin]="apt"
+PKG_CATEGORY[jellyfin]="media-servers"
+
+PACKAGES[ums]="ums"
+PKG_DESC[ums]="Universal Media Server [CUSTOM]"
+PKG_METHOD[ums]="custom"
+PKG_CATEGORY[ums]="media-servers"
 
 # MUSIC PRODUCTION & AUDIO
 PACKAGES[ardour]="ardour"
 PKG_DESC[ardour]="Professional digital audio workstation [APT]"
 PKG_METHOD[ardour]="apt"
-PKG_CATEGORY[ardour]="multimedia"
+PKG_CATEGORY[ardour]="audio"
 
 PACKAGES[lmms]="lmms"
 PKG_DESC[lmms]="Free pattern-based music production suite [APT]"
 PKG_METHOD[lmms]="apt"
-PKG_CATEGORY[lmms]="multimedia"
+PKG_CATEGORY[lmms]="audio"
 
 PACKAGES[mixxx]="mixxx"
 PKG_DESC[mixxx]="Open-source DJ software [APT]"
 PKG_METHOD[mixxx]="apt"
-PKG_CATEGORY[mixxx]="multimedia"
+PKG_CATEGORY[mixxx]="audio"
 
 # GAMING & EMULATION
 PACKAGES[retroarch]="retroarch"
 PKG_DESC[retroarch]="Multi-system emulator frontend [APT]"
 PKG_METHOD[retroarch]="apt"
-PKG_CATEGORY[retroarch]="gaming"
+PKG_CATEGORY[retroarch]="gaming-emulators"
 
 PACKAGES[retroarch-snap]="retroarch"
 PKG_DESC[retroarch-snap]="Multi-system emulator frontend [SNAP]"
 PKG_METHOD[retroarch-snap]="snap"
-PKG_CATEGORY[retroarch-snap]="gaming"
+PKG_CATEGORY[retroarch-snap]="gaming-emulators"
 
 PACKAGES[retroarch-flatpak]="org.libretro.RetroArch"
 PKG_DESC[retroarch-flatpak]="Multi-system emulator frontend [FLATPAK]"
 PKG_METHOD[retroarch-flatpak]="flatpak"
-PKG_CATEGORY[retroarch-flatpak]="gaming"
+PKG_CATEGORY[retroarch-flatpak]="gaming-emulators"
 
 PACKAGES[mame]="mame"
 PKG_DESC[mame]="Multiple Arcade Machine Emulator [APT]"
 PKG_METHOD[mame]="apt"
-PKG_CATEGORY[mame]="gaming"
+PKG_CATEGORY[mame]="gaming-emulators"
 
 PACKAGES[mame-flatpak]="net.mame.MAME"
 PKG_DESC[mame-flatpak]="Multiple Arcade Machine Emulator [FLATPAK]"
 PKG_METHOD[mame-flatpak]="flatpak"
-PKG_CATEGORY[mame-flatpak]="gaming"
+PKG_CATEGORY[mame-flatpak]="gaming-emulators"
 
 PACKAGES[dolphin-emu]="dolphin-emu"
 PKG_DESC[dolphin-emu]="GameCube and Wii emulator [APT]"
 PKG_METHOD[dolphin-emu]="apt"
-PKG_CATEGORY[dolphin-emu]="gaming"
+PKG_CATEGORY[dolphin-emu]="gaming-emulators"
 
 PACKAGES[dolphin-emu-flatpak]="org.DolphinEmu.dolphin-emu"
 PKG_DESC[dolphin-emu-flatpak]="GameCube and Wii emulator [FLATPAK]"
 PKG_METHOD[dolphin-emu-flatpak]="flatpak"
-PKG_CATEGORY[dolphin-emu-flatpak]="gaming"
+PKG_CATEGORY[dolphin-emu-flatpak]="gaming-emulators"
 
 PACKAGES[pcsx2]="pcsx2"
 PKG_DESC[pcsx2]="PlayStation 2 emulator [APT]"
 PKG_METHOD[pcsx2]="apt"
-PKG_CATEGORY[pcsx2]="gaming"
+PKG_CATEGORY[pcsx2]="gaming-emulators"
 
 PACKAGES[pcsx2-flatpak]="net.pcsx2.PCSX2"
 PKG_DESC[pcsx2-flatpak]="PlayStation 2 emulator [FLATPAK]"
 PKG_METHOD[pcsx2-flatpak]="flatpak"
-PKG_CATEGORY[pcsx2-flatpak]="gaming"
+PKG_CATEGORY[pcsx2-flatpak]="gaming-emulators"
 
 PACKAGES[rpcs3-flatpak]="net.rpcs3.RPCS3"
 PKG_DESC[rpcs3-flatpak]="PlayStation 3 emulator [FLATPAK]"
 PKG_METHOD[rpcs3-flatpak]="flatpak"
-PKG_CATEGORY[rpcs3-flatpak]="gaming"
+PKG_CATEGORY[rpcs3-flatpak]="gaming-emulators"
 
 PACKAGES[yuzu-flatpak]="org.yuzu_emu.yuzu"
 PKG_DESC[yuzu-flatpak]="Nintendo Switch emulator [FLATPAK]"
 PKG_METHOD[yuzu-flatpak]="flatpak"
-PKG_CATEGORY[yuzu-flatpak]="gaming"
+PKG_CATEGORY[yuzu-flatpak]="gaming-emulators"
 
 PACKAGES[cemu-flatpak]="info.cemu.Cemu"
 PKG_DESC[cemu-flatpak]="Wii U emulator [FLATPAK]"
 PKG_METHOD[cemu-flatpak]="flatpak"
-PKG_CATEGORY[cemu-flatpak]="gaming"
+PKG_CATEGORY[cemu-flatpak]="gaming-emulators"
 
 PACKAGES[mednafen]="mednafen"
 PKG_DESC[mednafen]="Multi-system accurate emulator [APT]"
 PKG_METHOD[mednafen]="apt"
-PKG_CATEGORY[mednafen]="gaming"
+PKG_CATEGORY[mednafen]="gaming-emulators"
 
 PACKAGES[duckstation-flatpak]="org.duckstation.DuckStation"
 PKG_DESC[duckstation-flatpak]="PlayStation 1 emulator [FLATPAK]"
 PKG_METHOD[duckstation-flatpak]="flatpak"
-PKG_CATEGORY[duckstation-flatpak]="gaming"
+PKG_CATEGORY[duckstation-flatpak]="gaming-emulators"
 
 PACKAGES[bsnes]="bsnes"
 PKG_DESC[bsnes]="Super Nintendo emulator [APT]"
 PKG_METHOD[bsnes]="apt"
-PKG_CATEGORY[bsnes]="gaming"
+PKG_CATEGORY[bsnes]="gaming-emulators"
 
 PACKAGES[mgba]="mgba-qt"
 PKG_DESC[mgba]="Game Boy Advance emulator [APT]"
 PKG_METHOD[mgba]="apt"
-PKG_CATEGORY[mgba]="gaming"
+PKG_CATEGORY[mgba]="gaming-emulators"
 
 PACKAGES[mgba-snap]="mgba"
 PKG_DESC[mgba-snap]="Game Boy Advance emulator [SNAP]"
 PKG_METHOD[mgba-snap]="snap"
-PKG_CATEGORY[mgba-snap]="gaming"
+PKG_CATEGORY[mgba-snap]="gaming-emulators"
 
 PACKAGES[mgba-flatpak]="io.mgba.mGBA"
 PKG_DESC[mgba-flatpak]="Game Boy Advance emulator [FLATPAK]"
 PKG_METHOD[mgba-flatpak]="flatpak"
-PKG_CATEGORY[mgba-flatpak]="gaming"
+PKG_CATEGORY[mgba-flatpak]="gaming-emulators"
 
 PACKAGES[desmume]="desmume"
 PKG_DESC[desmume]="Nintendo DS emulator [APT]"
 PKG_METHOD[desmume]="apt"
-PKG_CATEGORY[desmume]="gaming"
+PKG_CATEGORY[desmume]="gaming-emulators"
 
 PACKAGES[desmume-flatpak]="org.desmume.DeSmuME"
 PKG_DESC[desmume-flatpak]="Nintendo DS emulator [FLATPAK]"
 PKG_METHOD[desmume-flatpak]="flatpak"
-PKG_CATEGORY[desmume-flatpak]="gaming"
+PKG_CATEGORY[desmume-flatpak]="gaming-emulators"
 
 PACKAGES[citra]="citra"
 PKG_DESC[citra]="Nintendo 3DS emulator [APT]"
 PKG_METHOD[citra]="apt"
-PKG_CATEGORY[citra]="gaming"
+PKG_CATEGORY[citra]="gaming-emulators"
 
 PACKAGES[citra-flatpak]="org.citra_emu.citra"
 PKG_DESC[citra-flatpak]="Nintendo 3DS emulator [FLATPAK]"
 PKG_METHOD[citra-flatpak]="flatpak"
-PKG_CATEGORY[citra-flatpak]="gaming"
+PKG_CATEGORY[citra-flatpak]="gaming-emulators"
 
 PACKAGES[dosbox]="dosbox"
 PKG_DESC[dosbox]="DOS emulator [APT]"
 PKG_METHOD[dosbox]="apt"
-PKG_CATEGORY[dosbox]="gaming"
+PKG_CATEGORY[dosbox]="gaming-emulators"
 
 PACKAGES[dosbox-snap]="dosbox"
 PKG_DESC[dosbox-snap]="DOS emulator [SNAP]"
 PKG_METHOD[dosbox-snap]="snap"
-PKG_CATEGORY[dosbox-snap]="gaming"
+PKG_CATEGORY[dosbox-snap]="gaming-emulators"
 
 PACKAGES[dosbox-flatpak]="com.dosbox.DOSBox"
 PKG_DESC[dosbox-flatpak]="DOS emulator [FLATPAK]"
 PKG_METHOD[dosbox-flatpak]="flatpak"
-PKG_CATEGORY[dosbox-flatpak]="gaming"
+PKG_CATEGORY[dosbox-flatpak]="gaming-emulators"
 
 PACKAGES[mupen64plus]="mupen64plus-qt"
 PKG_DESC[mupen64plus]="Nintendo 64 emulator [APT]"
 PKG_METHOD[mupen64plus]="apt"
-PKG_CATEGORY[mupen64plus]="gaming"
+PKG_CATEGORY[mupen64plus]="gaming-emulators"
 
 PACKAGES[scummvm]="scummvm"
 PKG_DESC[scummvm]="Adventure game engine [APT]"
 PKG_METHOD[scummvm]="apt"
-PKG_CATEGORY[scummvm]="gaming"
+PKG_CATEGORY[scummvm]="gaming-emulators"
 
 PACKAGES[scummvm-snap]="scummvm"
 PKG_DESC[scummvm-snap]="Adventure game engine [SNAP]"
 PKG_METHOD[scummvm-snap]="snap"
-PKG_CATEGORY[scummvm-snap]="gaming"
+PKG_CATEGORY[scummvm-snap]="gaming-emulators"
 
 PACKAGES[scummvm-flatpak]="org.scummvm.ScummVM"
 PKG_DESC[scummvm-flatpak]="Adventure game engine [FLATPAK]"
 PKG_METHOD[scummvm-flatpak]="flatpak"
-PKG_CATEGORY[scummvm-flatpak]="gaming"
+PKG_CATEGORY[scummvm-flatpak]="gaming-emulators"
 
 PACKAGES[qemu]="qemu-system"
 PKG_DESC[qemu]="System hardware emulator [APT]"
 PKG_METHOD[qemu]="apt"
-PKG_CATEGORY[qemu]="gaming"
+PKG_CATEGORY[qemu]="gaming-emulators"
 
 PACKAGES[wine]="wine"
 PKG_DESC[wine]="Windows API compatibility layer [APT]"
 PKG_METHOD[wine]="apt"
-PKG_CATEGORY[wine]="gaming"
+PKG_CATEGORY[wine]="gaming-platforms"
 
 PACKAGES[wine-snap]="wine-platform-runtime"
 PKG_DESC[wine-snap]="Windows API compatibility layer [SNAP]"
 PKG_METHOD[wine-snap]="snap"
-PKG_CATEGORY[wine-snap]="gaming"
+PKG_CATEGORY[wine-snap]="gaming-platforms"
 
 PACKAGES[wine-flatpak]="org.winehq.Wine"
 PKG_DESC[wine-flatpak]="Windows API compatibility layer [FLATPAK]"
 PKG_METHOD[wine-flatpak]="flatpak"
-PKG_CATEGORY[wine-flatpak]="gaming"
+PKG_CATEGORY[wine-flatpak]="gaming-platforms"
 
 PACKAGES[stella]="stella"
 PKG_DESC[stella]="Atari 2600 emulator [APT]"
 PKG_METHOD[stella]="apt"
-PKG_CATEGORY[stella]="gaming"
+PKG_CATEGORY[stella]="gaming-emulators"
 
 PACKAGES[dosbox-staging]="dosbox-staging"
 PKG_DESC[dosbox-staging]="DOS emulator for retro PC games [APT]"
 PKG_METHOD[dosbox-staging]="apt"
-PKG_CATEGORY[dosbox-staging]="gaming"
+PKG_CATEGORY[dosbox-staging]="gaming-emulators"
 
 PACKAGES[n8n]="n8n"
 PKG_DESC[n8n]="Workflow automation tool (self-hosted Zapier alternative) [NPM]"
@@ -1791,31 +1807,31 @@ PKG_DEPS[chromium-flatpak]="flatpak"
 PACKAGES[vlc-snap]="vlc"
 PKG_DESC[vlc-snap]="VLC media player [SNP] - Alternative to APT version"
 PKG_METHOD[vlc-snap]="snap"
-PKG_CATEGORY[vlc-snap]="multimedia"
+PKG_CATEGORY[vlc-snap]="video"
 
 PACKAGES[vlc-flatpak]="org.videolan.VLC"
 PKG_DESC[vlc-flatpak]="VLC media player [FLT] - Alternative to APT version"
 PKG_METHOD[vlc-flatpak]="flatpak"
-PKG_CATEGORY[vlc-flatpak]="multimedia"
+PKG_CATEGORY[vlc-flatpak]="video"
 PKG_DEPS[vlc-flatpak]="flatpak"
 
 # GIMP alternatives
 PACKAGES[gimp-snap]="gimp"
 PKG_DESC[gimp-snap]="GIMP image editor [SNP] - Alternative to APT version"
 PKG_METHOD[gimp-snap]="snap"
-PKG_CATEGORY[gimp-snap]="multimedia"
+PKG_CATEGORY[gimp-snap]="graphics"
 
 PACKAGES[gimp-flatpak]="org.gimp.GIMP"
 PKG_DESC[gimp-flatpak]="GIMP image editor [FLT] - Alternative to APT version"
 PKG_METHOD[gimp-flatpak]="flatpak"
-PKG_CATEGORY[gimp-flatpak]="multimedia"
+PKG_CATEGORY[gimp-flatpak]="graphics"
 PKG_DEPS[gimp-flatpak]="flatpak"
 
 # OBS Studio alternatives
 PACKAGES[obs-studio-flatpak]="com.obsproject.Studio"
 PKG_DESC[obs-studio-flatpak]="OBS Studio streaming/recording [FLT] - Alternative to APT version"
 PKG_METHOD[obs-studio-flatpak]="flatpak"
-PKG_CATEGORY[obs-studio-flatpak]="multimedia"
+PKG_CATEGORY[obs-studio-flatpak]="video"
 PKG_DEPS[obs-studio-flatpak]="flatpak"
 
 # Discord alternatives (APT version)
@@ -1834,41 +1850,41 @@ PKG_DEPS[discord-flatpak]="flatpak"
 PACKAGES[audacity-snap]="audacity"
 PKG_DESC[audacity-snap]="Audacity audio editor [SNP] - Alternative to APT version"
 PKG_METHOD[audacity-snap]="snap"
-PKG_CATEGORY[audacity-snap]="multimedia"
+PKG_CATEGORY[audacity-snap]="audio"
 
 PACKAGES[audacity-flatpak]="org.audacityteam.Audacity"
 PKG_DESC[audacity-flatpak]="Audacity audio editor [FLT] - Alternative to APT version"
 PKG_METHOD[audacity-flatpak]="flatpak"
-PKG_CATEGORY[audacity-flatpak]="multimedia"
+PKG_CATEGORY[audacity-flatpak]="audio"
 PKG_DEPS[audacity-flatpak]="flatpak"
 
 # Inkscape alternatives
 PACKAGES[inkscape-snap]="inkscape"
 PKG_DESC[inkscape-snap]="Inkscape vector graphics [SNP] - Alternative to APT version"
 PKG_METHOD[inkscape-snap]="snap"
-PKG_CATEGORY[inkscape-snap]="multimedia"
+PKG_CATEGORY[inkscape-snap]="graphics"
 
 PACKAGES[inkscape-flatpak]="org.inkscape.Inkscape"
 PKG_DESC[inkscape-flatpak]="Inkscape vector graphics [FLT] - Alternative to APT version"
 PKG_METHOD[inkscape-flatpak]="flatpak"
-PKG_CATEGORY[inkscape-flatpak]="multimedia"
+PKG_CATEGORY[inkscape-flatpak]="graphics"
 PKG_DEPS[inkscape-flatpak]="flatpak"
 
 # Drawing and Creative Tools
 PACKAGES[webcamize]="webcamize"
 PKG_DESC[webcamize]="Webcam effects and virtual camera tool [APT]"
 PKG_METHOD[webcamize]="apt"
-PKG_CATEGORY[webcamize]="multimedia"
+PKG_CATEGORY[webcamize]="graphics"
 
 PACKAGES[durdraw]="durdraw"
 PKG_DESC[durdraw]="ASCII art drawing and animation tool [PIP]"
 PKG_METHOD[durdraw]="pip"
-PKG_CATEGORY[durdraw]="multimedia"
+PKG_CATEGORY[durdraw]="graphics"
 
 PACKAGES[pastel]="pastel"
 PKG_DESC[pastel]="Command-line tool for color manipulation and palette generation [APT]"
 PKG_METHOD[pastel]="apt"
-PKG_CATEGORY[pastel]="multimedia"
+PKG_CATEGORY[pastel]="graphics"
 
 # Disk Management Tools
 PACKAGES[dysk]="dysk"
@@ -2578,6 +2594,69 @@ install_discord-deb() {
 remove_discord-deb() {
     log "Removing Discord (DEB)..."
     remove_apt_package "discord"
+}
+
+install_plex() {
+    log "Installing Plex Media Server..."
+    
+    # Add Plex repository key
+    curl https://downloads.plex.tv/plex-keys/PlexSign.key | sudo apt-key add -
+    
+    # Add Plex repository
+    echo "deb https://downloads.plex.tv/repo/deb public main" | sudo tee /etc/apt/sources.list.d/plexmediaserver.list
+    
+    # Update package list and install Plex
+    if sudo apt update && sudo apt install -y plexmediaserver; then
+        # Enable and start Plex service
+        sudo systemctl enable plexmediaserver
+        sudo systemctl start plexmediaserver
+        ui_msg "Plex Installed" "Plex Media Server installed successfully. Access at http://localhost:32400/web"
+    else
+        log_error "Failed to install Plex Media Server"
+        return 1
+    fi
+}
+
+remove_plex() {
+    log "Removing Plex Media Server..."
+    sudo systemctl stop plexmediaserver 2>/dev/null || true
+    sudo systemctl disable plexmediaserver 2>/dev/null || true
+    remove_apt_package "plexmediaserver"
+    sudo rm -f /etc/apt/sources.list.d/plexmediaserver.list
+    sudo apt-key del 7BB9C367 2>/dev/null || true
+}
+
+install_ums() {
+    log "Installing Universal Media Server (UMS)..."
+    
+    # Check if Java is installed
+    if ! command -v java >/dev/null 2>&1; then
+        log_error "Java is required for UMS. Installing OpenJDK..."
+        sudo apt update && sudo apt install -y openjdk-11-jre
+    fi
+    
+    # Download UMS DEB package
+    local ums_url="https://github.com/UniversalMediaServer/UniversalMediaServer/releases/latest/download/ums.deb"
+    local temp_file="/tmp/ums.deb"
+    
+    if wget -O "$temp_file" "$ums_url" 2>/dev/null; then
+        if sudo dpkg -i "$temp_file" 2>/dev/null || sudo apt-get install -f -y; then
+            rm -f "$temp_file"
+            ui_msg "UMS Installed" "Universal Media Server installed successfully. Access at http://localhost:5001"
+        else
+            log_error "Failed to install UMS DEB package"
+            rm -f "$temp_file"
+            return 1
+        fi
+    else
+        log_error "Failed to download UMS DEB package"
+        return 1
+    fi
+}
+
+remove_ums() {
+    log "Removing Universal Media Server..."
+    remove_apt_package "ums"
 }
 
 install_gollama() {
@@ -3938,6 +4017,8 @@ install_package() {
                 snapraid) install_snapraid; install_result=$? ;;
                 greyhole) install_greyhole; install_result=$? ;;
                 mergerfs) install_mergerfs; install_result=$? ;;
+                plex) install_plex; install_result=$? ;;
+                ums) install_ums; install_result=$? ;;
                 *) log_error "Unknown custom installer: $name"; install_result=1 ;;
             esac
             ;;
@@ -4031,6 +4112,8 @@ remove_package() {
                 snapraid) remove_snapraid; remove_result=$? ;;
                 greyhole) remove_greyhole; remove_result=$? ;;
                 mergerfs) remove_mergerfs; remove_result=$? ;;
+                plex) remove_plex; remove_result=$? ;;
+                ums) remove_ums; remove_result=$? ;;
                 *) log_error "Unknown custom remover: $name"; remove_result=1 ;;
             esac
             ;;

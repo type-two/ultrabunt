@@ -201,7 +201,6 @@ Comprehensive system monitoring and analysis tools:
 - **Htop** - Interactive process viewer [APT]
 - **Btop** - Resource monitor with better graphs [APT]
 - **Glances** - Cross-platform system monitor [APT]
-- **Nethogs** - Network bandwidth monitor per process [APT]
 - **Iotop** - I/O monitor [APT]
 - **Bpytop** - Python-based resource monitor [APT]
 - **Bashtop** - Bash-based resource monitor [APT]
@@ -214,11 +213,6 @@ Comprehensive system monitoring and analysis tools:
 - **Iostat** - CPU utilization and disk I/O statistics [APT]
 - **Vmstat** - Virtual memory, processes, I/O, and CPU activity [APT]
 - **Free** - Display free and used memory [APT]
-- **Iftop** - Real-time bandwidth usage per network interface [APT]
-- **Nload** - Network traffic visualizer with graphical bars [APT]
-- **Bmon** - Interactive bandwidth monitor [APT]
-- **Iptraf-ng** - Console-based network monitoring utility [APT]
-- **SS** - Socket investigation utility [APT]
 - **Lsof** - List open files and processes [APT]
 - **Sar** - System Activity Reporter [APT]
 - **Mpstat** - Individual or combined CPU processor statistics [APT]
@@ -228,9 +222,22 @@ Comprehensive system monitoring and analysis tools:
 - **PS** - Standard process status command [APT]
 - **Qmasa** - Terminal-based GPU usage stats [CARGO]
 - **Gtop** - System monitoring dashboard for terminal [NPM]
-- **Bandwhich** - Terminal bandwidth utilization tool [CARGO]
 - **Procs** - Modern replacement for ps [CARGO]
+
+### 🌐 **Network Monitoring** - *Watch Your Network*
+Network traffic and bandwidth monitoring tools:
+- **Nethogs** - Network bandwidth monitor per process [APT]
+- **Iftop** - Real-time bandwidth usage per network interface [APT]
+- **Nload** - Network traffic visualizer with graphical bars [APT]
+- **Bmon** - Interactive bandwidth monitor [APT]
+- **Iptraf-ng** - Console-based network monitoring utility [APT]
+- **SS** - Socket investigation utility [APT]
+- **Bandwhich** - Terminal bandwidth utilization tool [CARGO]
+
+### ⚡ **Performance Tools** - *Optimize & Benchmark*
+Performance analysis and benchmarking utilities:
 - **Tokei** - Count lines of code quickly [CARGO]
+- **Hyperfine** - Command-line benchmarking tool [APT]
 
 ### 🗄️ **Database Management** - *Data Mastery*
 Database tools and administration:
@@ -282,40 +289,49 @@ Chat, call, and collaborate:
 - **Telegram Desktop** - Telegram messaging app [APT]
 - **Zoom** - Zoom video conferencing [SNAP]
 
-### 🎨 **Multimedia & Graphics** - *Create Beautiful Things*
-Creative tools for artists and creators:
+### 🎨 **Graphics & Design** - *Visual Creativity*
+Image editing and graphic design tools:
+- **GIMP** - GIMP image editor [APT]
+- **GIMP (Snap)** - GIMP image editor [SNAP]
+- **GIMP (Flatpak)** - GIMP image editor [FLATPAK]
+- **Blender** - Blender 3D creation suite [SNAP]
+- **Inkscape** - Inkscape vector graphics editor [APT]
+- **Inkscape (Snap)** - Inkscape vector graphics [SNAP]
+- **Inkscape (Flatpak)** - Inkscape vector graphics [FLATPAK]
+- **Webcamize** - Webcam effects and virtual camera tool [APT]
+- **Durdraw** - ASCII art drawing and animation tool [PIP]
+- **Pastel** - Command-line tool for color manipulation [APT]
+
+### 🎵 **Audio & Music** - *Sound Excellence*
+Audio editing, music production, and streaming:
 - **Spotify** - Music streaming service [SNAP]
+- **Audacity** - Audacity audio editor [APT]
+- **Audacity (Snap)** - Audacity audio editor [SNAP]
+- **Audacity (Flatpak)** - Audacity audio editor [FLATPAK]
+- **Ardour** - Professional digital audio workstation [APT]
+- **LMMS** - Cross-platform music production software [APT]
+- **Mixxx** - Free DJ software [APT]
+
+### 🎬 **Video & Media** - *Visual Storytelling*
+Video editing, streaming, and media tools:
 - **OBS Studio** - OBS Studio streaming/recording [APT]
 - **OBS Studio (Flatpak)** - OBS Studio streaming/recording [FLATPAK]
 - **VLC** - VLC media player [APT]
 - **VLC (Snap)** - VLC media player [SNAP]
 - **VLC (Flatpak)** - VLC media player [FLATPAK]
-- **GIMP** - GIMP image editor [APT]
-- **GIMP (Snap)** - GIMP image editor [SNAP]
-- **GIMP (Flatpak)** - GIMP image editor [FLATPAK]
-- **Audacity** - Audacity audio editor [APT]
-- **Audacity (Snap)** - Audacity audio editor [SNAP]
-- **Audacity (Flatpak)** - Audacity audio editor [FLATPAK]
-- **Blender** - Blender 3D creation suite [SNAP]
-- **Inkscape** - Inkscape vector graphics editor [APT]
-- **Inkscape (Snap)** - Inkscape vector graphics [SNAP]
-- **Inkscape (Flatpak)** - Inkscape vector graphics [FLATPAK]
 - **FFmpeg** - Complete multimedia processing toolkit [APT]
 - **YT-DLP** - Modern YouTube/media downloader [PIP]
 - **FreeTube** - Privacy-focused YouTube client [FLATPAK]
 - **Invidious** - Alternative YouTube frontend [CUSTOM]
 - **MPV** - Minimalist media player [APT]
+
+### 📺 **Media Servers & Streaming** - *Entertainment Hub*
+Media center and streaming server solutions:
 - **Kodi** - Open-source media center [APT]
 - **Stremio** - Modern media center with streaming [FLATPAK]
-- **Webcamize** - Webcam effects and virtual camera tool [APT]
-- **Durdraw** - ASCII art drawing and animation tool [PIP]
-- **Pastel** - Command-line tool for color manipulation [APT]
-
-### 🎵 **Music Production & Audio** - *Create Amazing Sounds*
-Professional audio production tools:
-- **Ardour** - Professional digital audio workstation [APT]
-- **LMMS** - Cross-platform music production software [APT]
-- **Mixxx** - Free DJ software [APT]
+- **Plex Media Server** - Plex Media Server [CUSTOM]
+- **Jellyfin** - Free media server [APT]
+- **Universal Media Server** - Universal Media Server [CUSTOM]
 
 ### ☁️ **Cloud & Sync** - *Data Everywhere*
 Cloud storage and synchronization:
@@ -335,14 +351,15 @@ Beautiful terminal experiences:
 - **Tilix** - Tiling terminal emulator [APT]
 - **Ghostty** - Fast, feature-rich terminal emulator [SNAP]
 
-### 🎮 **Gaming & Emulation** - *Level Up Your Fun*
-Gaming platforms, tools, and emulators:
+### 🎮 **Gaming Platforms** - *Level Up Your Fun*
+Gaming platforms and compatibility tools:
 - **Steam** - Steam gaming platform [APT]
 - **Heroic Launcher** - Open-source Epic Games/GOG launcher [SNAP]
 - **Lutris** - Gaming on Linux made easy [APT]
 - **GameMode** - Optimize gaming performance [APT]
+- **Wine** - Windows API compatibility layer [APT/SNAP/FLATPAK] *(APT or WineHQ PPA preferred)*
 
-### 🎮 **Game Emulators** - *Retro Gaming Paradise*
+### 🕹️ **Gaming Emulators** - *Retro Gaming Paradise*
 Complete emulation suite with multiple installation options:
 
 **Multi-System Emulators:**
@@ -369,7 +386,6 @@ Complete emulation suite with multiple installation options:
 - **DOSBox Staging** - Enhanced DOS emulator [APT]
 - **ScummVM** - Adventure game engine [APT/SNAP/FLATPAK]
 - **QEMU** - System hardware emulator [APT]
-- **Wine** - Windows API compatibility layer [APT/SNAP/FLATPAK] *(APT or WineHQ PPA preferred)*
 
 ---
 
@@ -628,7 +644,7 @@ seriously its just a bunch of terminal stickytaped together go nuts.
 ## 🏆 **CREDITS & ACKNOWLEDGMENTS** 🏆
 
 ### 🎭 **The Sublime Team**
-- **Created with ❤️** by developers who believe software installation should be fun
+- **Created with emoticons** by developers who believe software installation should be bunt
 - **Inspired by** the need for a better Ubuntu setup experience
 - **Powered by** hallucinations and debugging
 
