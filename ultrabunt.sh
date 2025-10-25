@@ -1040,7 +1040,28 @@ PKG_CATEGORY[spotify]="multimedia"
 PACKAGES[postman]="postman"
 PKG_DESC[postman]="API development platform [SNP]"
 PKG_METHOD[postman]="snap"
-PKG_CATEGORY[postman]="development"
+PKG_CATEGORY[postman]="dev"
+
+PACKAGES[bruno]="bruno"
+PKG_DESC[bruno]="Open-source Postman alternative [CUSTOM]"
+PKG_METHOD[bruno]="custom"
+PKG_CATEGORY[bruno]="dev"
+
+PACKAGES[bruno-snap]="bruno"
+PKG_DESC[bruno-snap]="Open-source Postman alternative [SNAP]"
+PKG_METHOD[bruno-snap]="snap"
+PKG_CATEGORY[bruno-snap]="dev"
+
+PACKAGES[bruno-flatpak]="com.usebruno.Bruno"
+PKG_DESC[bruno-flatpak]="Open-source Postman alternative [FLATPAK]"
+PKG_METHOD[bruno-flatpak]="flatpak"
+PKG_CATEGORY[bruno-flatpak]="dev"
+PKG_DEPS[bruno-flatpak]="flatpak"
+
+PACKAGES[yaak]="yaak"
+PKG_DESC[yaak]="Modern API client [DEB]"
+PKG_METHOD[yaak]="custom"
+PKG_CATEGORY[yaak]="dev"
 
 # DESKTOP APPS
 PACKAGES[obs-studio]="obs-studio"
@@ -2230,6 +2251,82 @@ EOF
     return 0
 }
 
+install_bruno() {
+    log "Installing Bruno API client..."
+    
+    # Create keyrings directory
+    sudo mkdir -p /etc/apt/keyrings
+    
+    # Update and install GPG and curl
+    sudo apt update && sudo apt install -y gpg curl
+    
+    # Add the Bruno repository key
+    curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x9FA6017ECABE0266" | gpg --dearmor | sudo tee /etc/apt/keyrings/bruno.gpg > /dev/null
+    
+    # Add the Bruno repository
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/bruno.gpg] http://debian.usebruno.com/ bruno stable" | sudo tee /etc/apt/sources.list.d/bruno.list
+    
+    # Update and install Bruno
+    if sudo apt update && sudo apt install -y bruno; then
+        ui_msg "Bruno Installed" "Bruno API client installed successfully via APT repository."
+        return 0
+    else
+        log_error "Failed to install Bruno via APT"
+        return 1
+    fi
+}
+
+remove_bruno() {
+    log "Removing Bruno..."
+    
+    # Remove the package
+    sudo apt remove --purge -y bruno
+    
+    # Remove repository and key
+    sudo rm -f /etc/apt/sources.list.d/bruno.list
+    sudo rm -f /etc/apt/keyrings/bruno.gpg
+    
+    # Update package list
+    sudo apt update
+    
+    log "Bruno removed successfully"
+    return 0
+}
+
+install_yaak() {
+    log "Installing Yaak API client..."
+    
+    local yaak_url="https://github.com/mountain-loop/yaak/releases/download/v2025.7.3/yaak_2025.7.3_amd64.deb"
+    local temp_file="/tmp/yaak.deb"
+    
+    # Download the .deb file
+    if wget -O "$temp_file" "$yaak_url" 2>/dev/null; then
+        # Install the .deb package
+        if sudo dpkg -i "$temp_file" 2>/dev/null || sudo apt-get install -f -y; then
+            rm -f "$temp_file"
+            ui_msg "Yaak Installed" "Yaak API client installed successfully from GitHub release."
+            return 0
+        else
+            rm -f "$temp_file"
+            log_error "Failed to install Yaak .deb package"
+            return 1
+        fi
+    else
+        log_error "Failed to download Yaak from $yaak_url"
+        return 1
+    fi
+}
+
+remove_yaak() {
+    log "Removing Yaak..."
+    
+    # Remove the package
+    sudo apt remove --purge -y yaak
+    
+    log "Yaak removed successfully"
+    return 0
+}
+
 # ==============================================================================
 # BUNTAGE MANAGEMENT DISPATCHER
 # ==============================================================================
@@ -2297,6 +2394,8 @@ install_package() {
                 discord-deb) install_discord-deb; install_result=$? ;;
                 phpmyadmin) install_phpmyadmin; install_result=$? ;;
                 adminer) install_adminer; install_result=$? ;;
+                bruno) install_bruno; install_result=$? ;;
+                yaak) install_yaak; install_result=$? ;;
                 *) log_error "Unknown custom installer: $name"; install_result=1 ;;
             esac
             ;;
@@ -2356,6 +2455,8 @@ remove_package() {
                 discord-deb) remove_discord-deb; remove_result=$? ;;
                 phpmyadmin) remove_phpmyadmin; remove_result=$? ;;
                 adminer) remove_adminer; remove_result=$? ;;
+                bruno) remove_bruno; remove_result=$? ;;
+                yaak) remove_yaak; remove_result=$? ;;
                 *) log_error "Unknown custom remover: $name"; remove_result=1 ;;
             esac
             ;;
@@ -6599,14 +6700,82 @@ view_log_file() {
     local file_size
     file_size=$(du -h "$log_file" 2>/dev/null | cut -f1)
     
-    # Show last 100 lines by default
-    local temp_file="/tmp/ultrabunt_log_view_$$"
-    tail -n 100 "$log_file" > "$temp_file" 2>/dev/null
+    # Show options for viewing the log
+    local choice
+    choice=$(ui_menu "$log_name" \
+        "File: $log_file (Size: $file_size)\nChoose how to view the log:" \
+        15 70 4 \
+        "last100" "View Last 100 Lines (Scrollable)" \
+        "last500" "View Last 500 Lines (Scrollable)" \
+        "full" "View Full Log File (Scrollable)" \
+        "tail-follow" "Follow Live Updates (tail -f)")
     
-    if [[ -s "$temp_file" ]]; then
-        ui_msg "$log_name" "File: $log_file\nSize: $file_size\nShowing last 100 lines:\n\n$(cat "$temp_file")\n\n💡 Tip: Use 'tail -f $log_file' to follow live updates"
+    case "$choice" in
+        last100)
+            view_log_with_pager "$log_file" "$log_name" 100
+            ;;
+        last500)
+            view_log_with_pager "$log_file" "$log_name" 500
+            ;;
+        full)
+            view_log_with_pager "$log_file" "$log_name" "full"
+            ;;
+        tail-follow)
+            clear
+            echo "=== Following $log_name ==="
+            echo "File: $log_file"
+            echo "Press Ctrl+C to exit"
+            echo "=========================="
+            echo
+            sudo tail -f "$log_file" 2>/dev/null || tail -f "$log_file" 2>/dev/null
+            ;;
+        *)
+            return 0
+            ;;
+    esac
+}
+
+view_log_with_pager() {
+    local log_file="$1"
+    local log_name="$2"
+    local lines="$3"
+    
+    local temp_file="/tmp/ultrabunt_log_view_$$"
+    
+    # Create header with file info
+    {
+        echo "=== $log_name ==="
+        echo "File: $log_file"
+        echo "Size: $(du -h "$log_file" 2>/dev/null | cut -f1)"
+        if [[ "$lines" == "full" ]]; then
+            echo "Showing: Full file"
+        else
+            echo "Showing: Last $lines lines"
+        fi
+        echo "Navigation: Use arrow keys, Page Up/Down, 'q' to quit"
+        echo "=============================================="
+        echo
+    } > "$temp_file"
+    
+    # Add log content
+    if [[ "$lines" == "full" ]]; then
+        sudo cat "$log_file" 2>/dev/null >> "$temp_file" || cat "$log_file" 2>/dev/null >> "$temp_file"
     else
-        ui_msg "$log_name" "File: $log_file\nSize: $file_size\n\nThe log file is empty or could not be read."
+        sudo tail -n "$lines" "$log_file" 2>/dev/null >> "$temp_file" || tail -n "$lines" "$log_file" 2>/dev/null >> "$temp_file"
+    fi
+    
+    # Use less with better options for log viewing
+    if command -v less >/dev/null 2>&1; then
+        # less with: 
+        # -R: handle ANSI colors
+        # -S: don't wrap long lines
+        # -X: don't clear screen on exit
+        # -F: quit if content fits on one screen
+        # +G: start at end of file
+        PAGER=cat less -RSX +G "$temp_file"
+    else
+        # Fallback to more if less is not available
+        more "$temp_file"
     fi
     
     rm -f "$temp_file" 2>/dev/null
