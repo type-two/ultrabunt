@@ -550,6 +550,46 @@ PKG_DESC[golang]="Go programming language [APT]"
 PKG_METHOD[golang]="apt"
 PKG_CATEGORY[golang]="dev"
 
+PACKAGES[rustup]="rustup"
+PKG_DESC[rustup]="Rust toolchain installer [CURL]"
+PKG_METHOD[rustup]="custom"
+PKG_CATEGORY[rustup]="dev"
+
+PACKAGES[poetry]="poetry"
+PKG_DESC[poetry]="Modern Python dependency manager [PIP]"
+PKG_METHOD[poetry]="custom"
+PKG_CATEGORY[poetry]="dev"
+
+PACKAGES[pipx]="pipx"
+PKG_DESC[pipx]="Install Python CLIs in isolated environments [APT]"
+PKG_METHOD[pipx]="apt"
+PKG_CATEGORY[pipx]="dev"
+
+PACKAGES[deno]="deno"
+PKG_DESC[deno]="Secure JS/TS runtime (Node's calmer cousin) [DEB]"
+PKG_METHOD[deno]="custom"
+PKG_CATEGORY[deno]="dev"
+
+PACKAGES[bun]="bun"
+PKG_DESC[bun]="Insanely fast JS runtime + package manager + bundler [SH]"
+PKG_METHOD[bun]="custom"
+PKG_CATEGORY[bun]="dev"
+
+PACKAGES[mkdocs]="mkdocs"
+PKG_DESC[mkdocs]="Static site generator for docs (dev favorite) [PIP]"
+PKG_METHOD[mkdocs]="custom"
+PKG_CATEGORY[mkdocs]="dev"
+
+PACKAGES[insomnia]="insomnia"
+PKG_DESC[insomnia]="Gorgeous API testing tool [DEB]"
+PKG_METHOD[insomnia]="custom"
+PKG_CATEGORY[insomnia]="dev"
+
+PACKAGES[zed]="zed"
+PKG_DESC[zed]="Ultra-fast modern code editor (from Atom devs) [DEB]"
+PKG_METHOD[zed]="custom"
+PKG_CATEGORY[zed]="dev"
+
 # CONTAINERS
 PACKAGES[docker]="docker-ce"
 PKG_DESC[docker]="Docker container platform [DEB]"
@@ -561,6 +601,31 @@ PKG_DESC[docker-compose]="Docker Compose plugin [APT]"
 PKG_METHOD[docker-compose]="apt"
 PKG_CATEGORY[docker-compose]="containers"
 PKG_DEPS[docker-compose]="docker"
+
+PACKAGES[podman]="podman"
+PKG_DESC[podman]="Daemonless container engine [APT]"
+PKG_METHOD[podman]="apt"
+PKG_CATEGORY[podman]="containers"
+
+PACKAGES[minikube]="minikube"
+PKG_DESC[minikube]="Local Kubernetes cluster [DEB]"
+PKG_METHOD[minikube]="custom"
+PKG_CATEGORY[minikube]="containers"
+
+PACKAGES[kind]="kind"
+PKG_DESC[kind]="Kubernetes in Docker [BIN]"
+PKG_METHOD[kind]="custom"
+PKG_CATEGORY[kind]="containers"
+
+PACKAGES[ctop]="ctop"
+PKG_DESC[ctop]="Top-like interface for containers [BIN]"
+PKG_METHOD[ctop]="custom"
+PKG_CATEGORY[ctop]="containers"
+
+PACKAGES[lazydocker]="lazydocker"
+PKG_DESC[lazydocker]="Terminal UI for Docker and Docker Compose [BIN]"
+PKG_METHOD[lazydocker]="custom"
+PKG_CATEGORY[lazydocker]="containers"
 
 # WEB STACK
 PACKAGES[nginx]="nginx"
@@ -638,6 +703,36 @@ PKG_DESC[redis]="Redis in-memory data store [APT]"
 PKG_METHOD[redis]="apt"
 PKG_CATEGORY[redis]="web"
 
+PACKAGES[caddy]="caddy"
+PKG_DESC[caddy]="Fast web server with automatic HTTPS [DEB]"
+PKG_METHOD[caddy]="custom"
+PKG_CATEGORY[caddy]="web"
+
+PACKAGES[pm2]="pm2"
+PKG_DESC[pm2]="Production process manager for Node.js [NPM]"
+PKG_METHOD[pm2]="npm"
+PKG_CATEGORY[pm2]="web"
+
+PACKAGES[ngrok]="ngrok"
+PKG_DESC[ngrok]="Secure tunnels to localhost [BIN]"
+PKG_METHOD[ngrok]="custom"
+PKG_CATEGORY[ngrok]="web"
+
+PACKAGES[mailhog]="mailhog"
+PKG_DESC[mailhog]="Email testing tool [BIN]"
+PKG_METHOD[mailhog]="custom"
+PKG_CATEGORY[mailhog]="web"
+
+PACKAGES[adminmongo]="adminmongo"
+PKG_DESC[adminmongo]="MongoDB admin interface [NPM]"
+PKG_METHOD[adminmongo]="npm"
+PKG_CATEGORY[adminmongo]="web"
+
+PACKAGES[sqlitestudio]="sqlitestudio"
+PKG_DESC[sqlitestudio]="SQLite database manager [SNAP]"
+PKG_METHOD[sqlitestudio]="snap"
+PKG_CATEGORY[sqlitestudio]="web"
+
 # NODE.JS
 PACKAGES[nodejs]="nodejs"
 PKG_DESC[nodejs]="Node.js JavaScript runtime [DEB]"
@@ -659,6 +754,77 @@ PACKAGES[fonts-powerline]="fonts-powerline"
 PKG_DESC[fonts-powerline]="Powerline fonts [APT]"
 PKG_METHOD[fonts-powerline]="apt"
 PKG_CATEGORY[fonts-powerline]="shell"
+
+PACKAGES[oh-my-zsh]="oh-my-zsh"
+PKG_DESC[oh-my-zsh]="Framework for managing Zsh configuration [SCRIPT]"
+PKG_METHOD[oh-my-zsh]="custom"
+PKG_CATEGORY[oh-my-zsh]="shell"
+
+PACKAGES[starship]="starship"
+PKG_DESC[starship]="Cross-shell prompt with customization [BINARY]"
+PKG_METHOD[starship]="custom"
+PKG_CATEGORY[starship]="shell"
+
+PACKAGES[zoxide]="zoxide"
+PKG_DESC[zoxide]="Smarter cd command that learns your habits [BINARY]"
+PKG_METHOD[zoxide]="custom"
+PKG_CATEGORY[zoxide]="shell"
+
+PACKAGES[zsh-autosuggestions]="zsh-autosuggestions"
+PKG_DESC[zsh-autosuggestions]="Fish-like autosuggestions for Zsh [APT]"
+PKG_METHOD[zsh-autosuggestions]="apt"
+PKG_CATEGORY[zsh-autosuggestions]="shell"
+
+# HACKER PLAYGROUND - Fun Terminal Tools
+PACKAGES[cmatrix]="cmatrix"
+PKG_DESC[cmatrix]="Matrix digital rain [APT]"
+PKG_METHOD[cmatrix]="apt"
+PKG_CATEGORY[cmatrix]="fun"
+
+PACKAGES[hollywood]="hollywood"
+PKG_DESC[hollywood]="Turn your terminal into a fake hacking montage [APT]"
+PKG_METHOD[hollywood]="apt"
+PKG_CATEGORY[hollywood]="fun"
+
+PACKAGES[sl]="sl"
+PKG_DESC[sl]="Steam locomotive for when you mistype ls [APT]"
+PKG_METHOD[sl]="apt"
+PKG_CATEGORY[sl]="fun"
+
+PACKAGES[lolcat]="lolcat"
+PKG_DESC[lolcat]="Rainbow text output [APT]"
+PKG_METHOD[lolcat]="apt"
+PKG_CATEGORY[lolcat]="fun"
+
+PACKAGES[toilet]="toilet"
+PKG_DESC[toilet]="Big ASCII banners [APT]"
+PKG_METHOD[toilet]="apt"
+PKG_CATEGORY[toilet]="fun"
+
+PACKAGES[figlet]="figlet"
+PKG_DESC[figlet]="Classic ASCII text art generator [APT]"
+PKG_METHOD[figlet]="apt"
+PKG_CATEGORY[figlet]="fun"
+
+PACKAGES[boxes]="boxes"
+PKG_DESC[boxes]="ASCII box drawings around text [APT]"
+PKG_METHOD[boxes]="apt"
+PKG_CATEGORY[boxes]="fun"
+
+PACKAGES[asciiquarium]="asciiquarium"
+PKG_DESC[asciiquarium]="ASCII aquarium in your terminal [APT]"
+PKG_METHOD[asciiquarium]="apt"
+PKG_CATEGORY[asciiquarium]="fun"
+
+PACKAGES[cowsay]="cowsay"
+PKG_DESC[cowsay]="Talking ASCII cows [APT]"
+PKG_METHOD[cowsay]="apt"
+PKG_CATEGORY[cowsay]="fun"
+
+PACKAGES[fortune]="fortune-mod"
+PKG_DESC[fortune]="Random fortune cookies [APT]"
+PKG_METHOD[fortune]="apt"
+PKG_CATEGORY[fortune]="fun"
 
 # EDITORS & IDEs
 PACKAGES[vscode]="code"
@@ -917,6 +1083,31 @@ PKG_DESC[fzf]="Command-line fuzzy finder [APT]"
 PKG_METHOD[fzf]="apt"
 PKG_CATEGORY[fzf]="monitoring"
 
+PACKAGES[batcat]="batcat"
+PKG_DESC[batcat]="Enhanced cat command with paging, syntax highlight & Git integration [APT]"
+PKG_METHOD[batcat]="apt"
+PKG_CATEGORY[batcat]="utilities"
+
+PACKAGES[micro]="micro"
+PKG_DESC[micro]="Terminal-based text editor that feels like Sublime [APT]"
+PKG_METHOD[micro]="apt"
+PKG_CATEGORY[micro]="utilities"
+
+PACKAGES[atool]="atool"
+PKG_DESC[atool]="Manage archive files (tar, zip, etc.) from terminal [APT]"
+PKG_METHOD[atool]="apt"
+PKG_CATEGORY[atool]="utilities"
+
+PACKAGES[plocate]="plocate"
+PKG_DESC[plocate]="Superfast locate replacement using modern indexing [APT]"
+PKG_METHOD[plocate]="apt"
+PKG_CATEGORY[plocate]="utilities"
+
+PACKAGES[silversearcher-ag]="silversearcher-ag"
+PKG_DESC[silversearcher-ag]="The silver searcher, crazy-fast grep alternative [APT]"
+PKG_METHOD[silversearcher-ag]="apt"
+PKG_CATEGORY[silversearcher-ag]="utilities"
+
 PACKAGES[jq]="jq"
 PKG_DESC[jq]="Lightweight and flexible command-line JSON processor [APT]"
 PKG_METHOD[jq]="apt"
@@ -1025,6 +1216,17 @@ PKG_DESC[flatpak]="Flatpak buntage manager [APT]"
 PKG_METHOD[flatpak]="apt"
 PKG_CATEGORY[flatpak]="system"
 
+# FILE SHARING & NETWORK
+PACKAGES[samba]="samba"
+PKG_DESC[samba]="SMB/CIFS file sharing server [APT]"
+PKG_METHOD[samba]="apt"
+PKG_CATEGORY[samba]="system"
+
+PACKAGES[nfs-kernel-server]="nfs-kernel-server"
+PKG_DESC[nfs-kernel-server]="Network File System server [APT]"
+PKG_METHOD[nfs-kernel-server]="apt"
+PKG_CATEGORY[nfs-kernel-server]="system"
+
 PACKAGES[localsend]="localsend"
 PKG_DESC[localsend]="LocalSend file sharing [SNP]"
 PKG_METHOD[localsend]="snap"
@@ -1099,6 +1301,16 @@ PACKAGES[google-drive-ocamlfuse]="google-drive-ocamlfuse"
 PKG_DESC[google-drive-ocamlfuse]="Google Drive filesystem [APT]"
 PKG_METHOD[google-drive-ocamlfuse]="apt"
 PKG_CATEGORY[google-drive-ocamlfuse]="cloud"
+
+PACKAGES[nextcloud-server]="nextcloud-server"
+PKG_DESC[nextcloud-server]="Self-hosted cloud storage server [SNAP]"
+PKG_METHOD[nextcloud-server]="snap"
+PKG_CATEGORY[nextcloud-server]="cloud"
+
+PACKAGES[seafile]="seafile"
+PKG_DESC[seafile]="Lightweight cloud storage with sync [CUSTOM]"
+PKG_METHOD[seafile]="custom"
+PKG_CATEGORY[seafile]="cloud"
 
 # TERMINALS
 PACKAGES[warp-terminal]="warp-terminal"
@@ -1217,6 +1429,91 @@ PKG_DESC[gollama]="Advanced LLM model management and interaction tool [DEB]"
 PKG_METHOD[gollama]="custom"
 PKG_CATEGORY[gollama]="ai"
 
+PACKAGES[lm-studio]="lm-studio"
+PKG_DESC[lm-studio]="GUI for local LLMs (Ollama compatible) [APPIMAGE]"
+PKG_METHOD[lm-studio]="custom"
+PKG_CATEGORY[lm-studio]="ai"
+
+PACKAGES[text-generation-webui]="text-generation-webui"
+PKG_DESC[text-generation-webui]="Self-hosted interface for local LLMs [GIT]"
+PKG_METHOD[text-generation-webui]="custom"
+PKG_CATEGORY[text-generation-webui]="ai"
+
+PACKAGES[whisper-cpp]="whisper-cpp"
+PKG_DESC[whisper-cpp]="Offline speech-to-text engine [BUILD]"
+PKG_METHOD[whisper-cpp]="custom"
+PKG_CATEGORY[whisper-cpp]="ai"
+
+PACKAGES[comfyui]="comfyui"
+PKG_DESC[comfyui]="Visual Stable Diffusion node-based interface [GIT]"
+PKG_METHOD[comfyui]="custom"
+PKG_CATEGORY[comfyui]="ai"
+
+PACKAGES[invokeai]="invokeai"
+PKG_DESC[invokeai]="Stable Diffusion image generator [PYTHON]"
+PKG_METHOD[invokeai]="custom"
+PKG_CATEGORY[invokeai]="ai"
+
+PACKAGES[lmdeploy]="lmdeploy"
+PKG_DESC[lmdeploy]="Lightweight framework to serve LLMs efficiently [PIP]"
+PKG_METHOD[lmdeploy]="pip"
+PKG_CATEGORY[lmdeploy]="ai"
+
+PACKAGES[koboldcpp]="koboldcpp"
+PKG_DESC[koboldcpp]="LLM interface optimized for story and RP generation [BIN]"
+PKG_METHOD[koboldcpp]="custom"
+PKG_CATEGORY[koboldcpp]="ai"
+
+PACKAGES[automatic1111]="automatic1111"
+PKG_DESC[automatic1111]="Stable Diffusion WebUI - feature-packed interface [GIT]"
+PKG_METHOD[automatic1111]="custom"
+PKG_CATEGORY[automatic1111]="ai"
+
+PACKAGES[fooocus]="fooocus"
+PKG_DESC[fooocus]="Simplified Stable Diffusion frontend - zero-config [GIT]"
+PKG_METHOD[fooocus]="custom"
+PKG_CATEGORY[fooocus]="ai"
+
+PACKAGES[sd-next]="sd-next"
+PKG_DESC[sd-next]="Modernized fork of A1111 with optimizations [GIT]"
+PKG_METHOD[sd-next]="custom"
+PKG_CATEGORY[sd-next]="ai"
+
+PACKAGES[kohya-ss-gui]="kohya-ss-gui"
+PKG_DESC[kohya-ss-gui]="Fine-tune and train models with GUI [GIT]"
+PKG_METHOD[kohya-ss-gui]="custom"
+PKG_CATEGORY[kohya-ss-gui]="ai"
+
+PACKAGES[faster-whisper]="faster-whisper"
+PKG_DESC[faster-whisper]="Optimized Python Whisper with CTranslate2 [PIP]"
+PKG_METHOD[faster-whisper]="pip"
+PKG_CATEGORY[faster-whisper]="ai"
+
+PACKAGES[whisperx]="whisperx"
+PKG_DESC[whisperx]="Whisper with speaker diarization support [PIP]"
+PKG_METHOD[whisperx]="pip"
+PKG_CATEGORY[whisperx]="ai"
+
+PACKAGES[coqui-stt]="coqui-stt"
+PKG_DESC[coqui-stt]="Open-source speech-to-text engine [PIP]"
+PKG_METHOD[coqui-stt]="pip"
+PKG_CATEGORY[coqui-stt]="ai"
+
+PACKAGES[piper-tts]="piper-tts"
+PKG_DESC[piper-tts]="Modern local text-to-speech by Rhasspy [PIP]"
+PKG_METHOD[piper-tts]="pip"
+PKG_CATEGORY[piper-tts]="ai"
+
+PACKAGES[mimic3]="mimic3"
+PKG_DESC[mimic3]="Neural voice synthesis by Mycroft AI [PIP]"
+PKG_METHOD[mimic3]="pip"
+PKG_CATEGORY[mimic3]="ai"
+
+PACKAGES[coqui-tts]="coqui-tts"
+PKG_DESC[coqui-tts]="Deep-learning TTS with voice cloning [PIP]"
+PKG_METHOD[coqui-tts]="pip"
+PKG_CATEGORY[coqui-tts]="ai"
+
 PACKAGES[ffmpeg]="ffmpeg"
 PKG_DESC[ffmpeg]="Complete multimedia processing toolkit [APT]"
 PKG_METHOD[ffmpeg]="apt"
@@ -1226,6 +1523,223 @@ PACKAGES[yt-dlp]="yt-dlp"
 PKG_DESC[yt-dlp]="Modern YouTube/media downloader (youtube-dl fork) [PIP]"
 PKG_METHOD[yt-dlp]="custom"
 PKG_CATEGORY[yt-dlp]="multimedia"
+
+PACKAGES[freetube]="freetube"
+PKG_DESC[freetube]="Privacy-focused YouTube client [FLATPAK]"
+PKG_METHOD[freetube]="flatpak"
+PKG_CATEGORY[freetube]="multimedia"
+
+PACKAGES[invidious]="invidious"
+PKG_DESC[invidious]="Alternative YouTube frontend [CUSTOM]"
+PKG_METHOD[invidious]="custom"
+PKG_CATEGORY[invidious]="multimedia"
+
+PACKAGES[mpv]="mpv"
+PKG_DESC[mpv]="Minimalist media player [APT]"
+PKG_METHOD[mpv]="apt"
+PKG_CATEGORY[mpv]="multimedia"
+
+PACKAGES[kodi]="kodi"
+PKG_DESC[kodi]="Open-source media center [APT]"
+PKG_METHOD[kodi]="apt"
+PKG_CATEGORY[kodi]="multimedia"
+
+PACKAGES[stremio]="stremio"
+PKG_DESC[stremio]="Modern media center with streaming [FLATPAK]"
+PKG_METHOD[stremio]="flatpak"
+PKG_CATEGORY[stremio]="multimedia"
+
+# MUSIC PRODUCTION & AUDIO
+PACKAGES[ardour]="ardour"
+PKG_DESC[ardour]="Professional digital audio workstation [APT]"
+PKG_METHOD[ardour]="apt"
+PKG_CATEGORY[ardour]="multimedia"
+
+PACKAGES[lmms]="lmms"
+PKG_DESC[lmms]="Free pattern-based music production suite [APT]"
+PKG_METHOD[lmms]="apt"
+PKG_CATEGORY[lmms]="multimedia"
+
+PACKAGES[mixxx]="mixxx"
+PKG_DESC[mixxx]="Open-source DJ software [APT]"
+PKG_METHOD[mixxx]="apt"
+PKG_CATEGORY[mixxx]="multimedia"
+
+# GAMING & EMULATION
+PACKAGES[retroarch]="retroarch"
+PKG_DESC[retroarch]="Multi-system emulator frontend [APT]"
+PKG_METHOD[retroarch]="apt"
+PKG_CATEGORY[retroarch]="gaming"
+
+PACKAGES[retroarch-snap]="retroarch"
+PKG_DESC[retroarch-snap]="Multi-system emulator frontend [SNAP]"
+PKG_METHOD[retroarch-snap]="snap"
+PKG_CATEGORY[retroarch-snap]="gaming"
+
+PACKAGES[retroarch-flatpak]="org.libretro.RetroArch"
+PKG_DESC[retroarch-flatpak]="Multi-system emulator frontend [FLATPAK]"
+PKG_METHOD[retroarch-flatpak]="flatpak"
+PKG_CATEGORY[retroarch-flatpak]="gaming"
+
+PACKAGES[mame]="mame"
+PKG_DESC[mame]="Multiple Arcade Machine Emulator [APT]"
+PKG_METHOD[mame]="apt"
+PKG_CATEGORY[mame]="gaming"
+
+PACKAGES[mame-flatpak]="net.mame.MAME"
+PKG_DESC[mame-flatpak]="Multiple Arcade Machine Emulator [FLATPAK]"
+PKG_METHOD[mame-flatpak]="flatpak"
+PKG_CATEGORY[mame-flatpak]="gaming"
+
+PACKAGES[dolphin-emu]="dolphin-emu"
+PKG_DESC[dolphin-emu]="GameCube and Wii emulator [APT]"
+PKG_METHOD[dolphin-emu]="apt"
+PKG_CATEGORY[dolphin-emu]="gaming"
+
+PACKAGES[dolphin-emu-flatpak]="org.DolphinEmu.dolphin-emu"
+PKG_DESC[dolphin-emu-flatpak]="GameCube and Wii emulator [FLATPAK]"
+PKG_METHOD[dolphin-emu-flatpak]="flatpak"
+PKG_CATEGORY[dolphin-emu-flatpak]="gaming"
+
+PACKAGES[pcsx2]="pcsx2"
+PKG_DESC[pcsx2]="PlayStation 2 emulator [APT]"
+PKG_METHOD[pcsx2]="apt"
+PKG_CATEGORY[pcsx2]="gaming"
+
+PACKAGES[pcsx2-flatpak]="net.pcsx2.PCSX2"
+PKG_DESC[pcsx2-flatpak]="PlayStation 2 emulator [FLATPAK]"
+PKG_METHOD[pcsx2-flatpak]="flatpak"
+PKG_CATEGORY[pcsx2-flatpak]="gaming"
+
+PACKAGES[rpcs3-flatpak]="net.rpcs3.RPCS3"
+PKG_DESC[rpcs3-flatpak]="PlayStation 3 emulator [FLATPAK]"
+PKG_METHOD[rpcs3-flatpak]="flatpak"
+PKG_CATEGORY[rpcs3-flatpak]="gaming"
+
+PACKAGES[yuzu-flatpak]="org.yuzu_emu.yuzu"
+PKG_DESC[yuzu-flatpak]="Nintendo Switch emulator [FLATPAK]"
+PKG_METHOD[yuzu-flatpak]="flatpak"
+PKG_CATEGORY[yuzu-flatpak]="gaming"
+
+PACKAGES[cemu-flatpak]="info.cemu.Cemu"
+PKG_DESC[cemu-flatpak]="Wii U emulator [FLATPAK]"
+PKG_METHOD[cemu-flatpak]="flatpak"
+PKG_CATEGORY[cemu-flatpak]="gaming"
+
+PACKAGES[mednafen]="mednafen"
+PKG_DESC[mednafen]="Multi-system accurate emulator [APT]"
+PKG_METHOD[mednafen]="apt"
+PKG_CATEGORY[mednafen]="gaming"
+
+PACKAGES[duckstation-flatpak]="org.duckstation.DuckStation"
+PKG_DESC[duckstation-flatpak]="PlayStation 1 emulator [FLATPAK]"
+PKG_METHOD[duckstation-flatpak]="flatpak"
+PKG_CATEGORY[duckstation-flatpak]="gaming"
+
+PACKAGES[bsnes]="bsnes"
+PKG_DESC[bsnes]="Super Nintendo emulator [APT]"
+PKG_METHOD[bsnes]="apt"
+PKG_CATEGORY[bsnes]="gaming"
+
+PACKAGES[mgba]="mgba-qt"
+PKG_DESC[mgba]="Game Boy Advance emulator [APT]"
+PKG_METHOD[mgba]="apt"
+PKG_CATEGORY[mgba]="gaming"
+
+PACKAGES[mgba-snap]="mgba"
+PKG_DESC[mgba-snap]="Game Boy Advance emulator [SNAP]"
+PKG_METHOD[mgba-snap]="snap"
+PKG_CATEGORY[mgba-snap]="gaming"
+
+PACKAGES[mgba-flatpak]="io.mgba.mGBA"
+PKG_DESC[mgba-flatpak]="Game Boy Advance emulator [FLATPAK]"
+PKG_METHOD[mgba-flatpak]="flatpak"
+PKG_CATEGORY[mgba-flatpak]="gaming"
+
+PACKAGES[desmume]="desmume"
+PKG_DESC[desmume]="Nintendo DS emulator [APT]"
+PKG_METHOD[desmume]="apt"
+PKG_CATEGORY[desmume]="gaming"
+
+PACKAGES[desmume-flatpak]="org.desmume.DeSmuME"
+PKG_DESC[desmume-flatpak]="Nintendo DS emulator [FLATPAK]"
+PKG_METHOD[desmume-flatpak]="flatpak"
+PKG_CATEGORY[desmume-flatpak]="gaming"
+
+PACKAGES[citra]="citra"
+PKG_DESC[citra]="Nintendo 3DS emulator [APT]"
+PKG_METHOD[citra]="apt"
+PKG_CATEGORY[citra]="gaming"
+
+PACKAGES[citra-flatpak]="org.citra_emu.citra"
+PKG_DESC[citra-flatpak]="Nintendo 3DS emulator [FLATPAK]"
+PKG_METHOD[citra-flatpak]="flatpak"
+PKG_CATEGORY[citra-flatpak]="gaming"
+
+PACKAGES[dosbox]="dosbox"
+PKG_DESC[dosbox]="DOS emulator [APT]"
+PKG_METHOD[dosbox]="apt"
+PKG_CATEGORY[dosbox]="gaming"
+
+PACKAGES[dosbox-snap]="dosbox"
+PKG_DESC[dosbox-snap]="DOS emulator [SNAP]"
+PKG_METHOD[dosbox-snap]="snap"
+PKG_CATEGORY[dosbox-snap]="gaming"
+
+PACKAGES[dosbox-flatpak]="com.dosbox.DOSBox"
+PKG_DESC[dosbox-flatpak]="DOS emulator [FLATPAK]"
+PKG_METHOD[dosbox-flatpak]="flatpak"
+PKG_CATEGORY[dosbox-flatpak]="gaming"
+
+PACKAGES[mupen64plus]="mupen64plus-qt"
+PKG_DESC[mupen64plus]="Nintendo 64 emulator [APT]"
+PKG_METHOD[mupen64plus]="apt"
+PKG_CATEGORY[mupen64plus]="gaming"
+
+PACKAGES[scummvm]="scummvm"
+PKG_DESC[scummvm]="Adventure game engine [APT]"
+PKG_METHOD[scummvm]="apt"
+PKG_CATEGORY[scummvm]="gaming"
+
+PACKAGES[scummvm-snap]="scummvm"
+PKG_DESC[scummvm-snap]="Adventure game engine [SNAP]"
+PKG_METHOD[scummvm-snap]="snap"
+PKG_CATEGORY[scummvm-snap]="gaming"
+
+PACKAGES[scummvm-flatpak]="org.scummvm.ScummVM"
+PKG_DESC[scummvm-flatpak]="Adventure game engine [FLATPAK]"
+PKG_METHOD[scummvm-flatpak]="flatpak"
+PKG_CATEGORY[scummvm-flatpak]="gaming"
+
+PACKAGES[qemu]="qemu-system"
+PKG_DESC[qemu]="System hardware emulator [APT]"
+PKG_METHOD[qemu]="apt"
+PKG_CATEGORY[qemu]="gaming"
+
+PACKAGES[wine]="wine"
+PKG_DESC[wine]="Windows API compatibility layer [APT]"
+PKG_METHOD[wine]="apt"
+PKG_CATEGORY[wine]="gaming"
+
+PACKAGES[wine-snap]="wine-platform-runtime"
+PKG_DESC[wine-snap]="Windows API compatibility layer [SNAP]"
+PKG_METHOD[wine-snap]="snap"
+PKG_CATEGORY[wine-snap]="gaming"
+
+PACKAGES[wine-flatpak]="org.winehq.Wine"
+PKG_DESC[wine-flatpak]="Windows API compatibility layer [FLATPAK]"
+PKG_METHOD[wine-flatpak]="flatpak"
+PKG_CATEGORY[wine-flatpak]="gaming"
+
+PACKAGES[stella]="stella"
+PKG_DESC[stella]="Atari 2600 emulator [APT]"
+PKG_METHOD[stella]="apt"
+PKG_CATEGORY[stella]="gaming"
+
+PACKAGES[dosbox-staging]="dosbox-staging"
+PKG_DESC[dosbox-staging]="DOS emulator for retro PC games [APT]"
+PKG_METHOD[dosbox-staging]="apt"
+PKG_CATEGORY[dosbox-staging]="gaming"
 
 PACKAGES[n8n]="n8n"
 PKG_DESC[n8n]="Workflow automation tool (self-hosted Zapier alternative) [NPM]"
@@ -1361,6 +1875,27 @@ PACKAGES[dysk]="dysk"
 PKG_DESC[dysk]="Modern disk usage analyzer with colorful output [CARGO]"
 PKG_METHOD[dysk]="cargo"
 PKG_CATEGORY[dysk]="system"
+
+# STORAGE MANAGEMENT
+PACKAGES[lvm2]="lvm2"
+PKG_DESC[lvm2]="Logical Volume Manager for flexible disk management [APT]"
+PKG_METHOD[lvm2]="apt"
+PKG_CATEGORY[lvm2]="system"
+
+PACKAGES[snapraid]="snapraid"
+PKG_DESC[snapraid]="Parity protection for different sized disks [CUSTOM]"
+PKG_METHOD[snapraid]="custom"
+PKG_CATEGORY[snapraid]="system"
+
+PACKAGES[greyhole]="greyhole"
+PKG_DESC[greyhole]="Samba-based storage pooling with redundancy [CUSTOM]"
+PKG_METHOD[greyhole]="custom"
+PKG_CATEGORY[greyhole]="system"
+
+PACKAGES[mergerfs]="mergerfs"
+PKG_DESC[mergerfs]="Union filesystem for pooling drives [CUSTOM]"
+PKG_METHOD[mergerfs]="custom"
+PKG_CATEGORY[mergerfs]="system"
 
 # ==============================================================================
 # CATEGORY DEFINITIONS
@@ -1619,6 +2154,99 @@ remove_docker() {
     sudo rm -f /etc/apt/keyrings/docker.gpg
 }
 
+install_minikube() {
+    log "Installing Minikube..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="amd64" ;;
+        arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    curl -LO "https://storage.googleapis.com/minikube/releases/latest/minikube-linux-${arch}"
+    sudo install minikube-linux-${arch} /usr/local/bin/minikube
+    rm -f minikube-linux-${arch}
+    
+    ui_msg "Minikube Installed" "Minikube installed successfully."
+}
+
+remove_minikube() {
+    sudo rm -f /usr/local/bin/minikube
+    rm -rf ~/.minikube 2>/dev/null || true
+}
+
+install_kind() {
+    log "Installing Kind..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="amd64" ;;
+        arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-${arch}"
+    chmod +x ./kind
+    sudo mv ./kind /usr/local/bin/kind
+    
+    ui_msg "Kind Installed" "Kind installed successfully."
+}
+
+remove_kind() {
+    sudo rm -f /usr/local/bin/kind
+}
+
+install_ctop() {
+    log "Installing ctop..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="amd64" ;;
+        arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    curl -Lo ctop "https://github.com/bcicen/ctop/releases/latest/download/ctop-0.7.7-linux-${arch}"
+    chmod +x ctop
+    sudo mv ctop /usr/local/bin/ctop
+    
+    ui_msg "ctop Installed" "ctop installed successfully."
+}
+
+remove_ctop() {
+    sudo rm -f /usr/local/bin/ctop
+}
+
+install_lazydocker() {
+    log "Installing LazyDocker..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="x86_64" ;;
+        arm64) arch="armv6" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    local version
+    version=$(curl -s https://api.github.com/repos/jesseduffield/lazydocker/releases/latest | grep -Po '"tag_name": "v\K[^"]*')
+    
+    curl -Lo lazydocker.tar.gz "https://github.com/jesseduffield/lazydocker/releases/latest/download/lazydocker_${version}_Linux_${arch}.tar.gz"
+    tar xf lazydocker.tar.gz lazydocker
+    sudo mv lazydocker /usr/local/bin/
+    rm -f lazydocker.tar.gz
+    
+    ui_msg "LazyDocker Installed" "LazyDocker installed successfully."
+}
+
+remove_lazydocker() {
+    sudo rm -f /usr/local/bin/lazydocker
+}
+
 install_nodejs() {
     log "Installing Node.js ${NODE_LTS} from NodeSource..."
     
@@ -1761,6 +2389,147 @@ remove_yt-dlp() {
     pip3 uninstall -y yt-dlp 2>/dev/null || true
 }
 
+install_invidious() {
+    log "Installing Invidious..."
+    
+    # Check if Docker is installed
+    if ! command -v docker >/dev/null 2>&1; then
+        log_error "Docker is required for Invidious. Please install Docker first."
+        return 1
+    fi
+    
+    # Create invidious directory
+    mkdir -p "$HOME/invidious"
+    cd "$HOME/invidious"
+    
+    # Download docker-compose file
+    if curl -L -o docker-compose.yml https://raw.githubusercontent.com/iv-org/invidious/master/docker-compose.yml; then
+        ui_msg "Invidious Installed" "Invidious Docker setup downloaded to $HOME/invidious. Run 'docker-compose up -d' to start."
+    else
+        log_error "Failed to download Invidious docker-compose file"
+        return 1
+    fi
+}
+
+remove_invidious() {
+    log "Removing Invidious..."
+    if [ -d "$HOME/invidious" ]; then
+        cd "$HOME/invidious"
+        docker-compose down 2>/dev/null || true
+        cd "$HOME"
+        rm -rf "$HOME/invidious"
+    fi
+}
+
+install_seafile() {
+    log "Installing Seafile..."
+    
+    # Check if Docker is installed
+    if ! command -v docker >/dev/null 2>&1; then
+        log_error "Docker is required for Seafile. Please install Docker first."
+        return 1
+    fi
+    
+    # Create seafile directory
+    mkdir -p "$HOME/seafile"
+    cd "$HOME/seafile"
+    
+    # Download docker-compose file for Seafile
+    if curl -L -o docker-compose.yml https://raw.githubusercontent.com/haiwen/seafile-docker/master/docker-compose.yml; then
+        ui_msg "Seafile Installed" "Seafile Docker setup downloaded to $HOME/seafile. Run 'docker-compose up -d' to start."
+    else
+        log_error "Failed to download Seafile docker-compose file"
+        return 1
+    fi
+}
+
+remove_seafile() {
+    log "Removing Seafile..."
+    if [ -d "$HOME/seafile" ]; then
+        cd "$HOME/seafile"
+        docker-compose down 2>/dev/null || true
+        cd "$HOME"
+        rm -rf "$HOME/seafile"
+    fi
+}
+
+install_snapraid() {
+    log "Installing SnapRAID..."
+    
+    # Install dependencies
+    sudo apt update
+    sudo apt install -y build-essential
+    
+    # Download and compile SnapRAID
+    cd /tmp
+    if wget https://github.com/amadvance/snapraid/releases/download/v12.2/snapraid-12.2.tar.gz; then
+        tar -xzf snapraid-12.2.tar.gz
+        cd snapraid-12.2
+        ./configure
+        make
+        sudo make install
+        ui_msg "SnapRAID Installed" "SnapRAID parity protection tool installed successfully."
+    else
+        log_error "Failed to download SnapRAID"
+        return 1
+    fi
+}
+
+remove_snapraid() {
+    log "Removing SnapRAID..."
+    sudo rm -f /usr/local/bin/snapraid
+    sudo rm -f /usr/local/share/man/man1/snapraid.1
+}
+
+install_greyhole() {
+    log "Installing Greyhole..."
+    
+    # Check if Samba is installed
+    if ! command -v smbd >/dev/null 2>&1; then
+        log_error "Samba is required for Greyhole. Please install Samba first."
+        return 1
+    fi
+    
+    # Add Greyhole PPA and install
+    sudo add-apt-repository -y ppa:greyhole/greyhole
+    sudo apt update
+    if sudo apt install -y greyhole; then
+        ui_msg "Greyhole Installed" "Greyhole storage pooling installed. Configure /etc/greyhole.conf before use."
+    else
+        log_error "Failed to install Greyhole"
+        return 1
+    fi
+}
+
+remove_greyhole() {
+    log "Removing Greyhole..."
+    sudo apt remove -y greyhole 2>/dev/null || true
+    sudo add-apt-repository -r ppa:greyhole/greyhole 2>/dev/null || true
+}
+
+install_mergerfs() {
+    log "Installing MergerFS..."
+    
+    # Download and install MergerFS .deb package
+    cd /tmp
+    if wget https://github.com/trapexit/mergerfs/releases/download/2.35.1/mergerfs_2.35.1.ubuntu-jammy_amd64.deb; then
+        if sudo dpkg -i mergerfs_2.35.1.ubuntu-jammy_amd64.deb; then
+            ui_msg "MergerFS Installed" "MergerFS union filesystem installed successfully."
+        else
+            sudo apt install -f -y
+            ui_msg "MergerFS Installed" "MergerFS union filesystem installed successfully."
+        fi
+    else
+        log_error "Failed to download MergerFS"
+        return 1
+    fi
+}
+
+remove_mergerfs() {
+    log "Removing MergerFS..."
+    sudo apt remove -y mergerfs 2>/dev/null || true
+}
+
 install_n8n() {
     log "Installing n8n..."
     
@@ -1837,6 +2606,177 @@ install_gollama() {
 remove_gollama() {
     log "Removing Gollama..."
     sudo rm -f /usr/local/bin/gollama
+}
+
+install_lm-studio() {
+    log "Installing LM Studio..."
+    
+    # Download LM Studio AppImage
+    local lm_studio_url="https://releases.lmstudio.ai/linux/x86/0.3.5/LM_Studio-0.3.5.AppImage"
+    local temp_file="/tmp/LM_Studio.AppImage"
+    
+    if wget -O "$temp_file" "$lm_studio_url" 2>/dev/null; then
+        chmod +x "$temp_file"
+        sudo mv "$temp_file" /usr/local/bin/lm-studio
+        ui_msg "LM Studio Installed" "LM Studio GUI for local LLMs installed successfully.\n\nRun with: lm-studio"
+    else
+        log_error "Failed to download LM Studio"
+        return 1
+    fi
+}
+
+remove_lm-studio() {
+    log "Removing LM Studio..."
+    sudo rm -f /usr/local/bin/lm-studio
+}
+
+install_text-generation-webui() {
+    log "Installing Text Generation WebUI..."
+    
+    # Clone the repository
+    local install_dir="/opt/text-generation-webui"
+    
+    if git clone https://github.com/oobabooga/text-generation-webui.git "$install_dir" 2>/dev/null; then
+        cd "$install_dir"
+        # Install dependencies
+        pip3 install -r requirements.txt 2>/dev/null || true
+        
+        # Create launcher script
+        sudo tee /usr/local/bin/text-generation-webui > /dev/null << 'EOF'
+#!/bin/bash
+cd /opt/text-generation-webui
+python3 server.py "$@"
+EOF
+        sudo chmod +x /usr/local/bin/text-generation-webui
+        
+        ui_msg "Text Generation WebUI Installed" "Text Generation WebUI installed successfully.\n\nRun with: text-generation-webui"
+    else
+        log_error "Failed to clone Text Generation WebUI"
+        return 1
+    fi
+}
+
+remove_text-generation-webui() {
+    log "Removing Text Generation WebUI..."
+    sudo rm -rf /opt/text-generation-webui
+    sudo rm -f /usr/local/bin/text-generation-webui
+}
+
+install_whisper-cpp() {
+    log "Installing Whisper.cpp..."
+    
+    # Install build dependencies
+    install_apt_package "build-essential"
+    install_apt_package "cmake"
+    
+    # Clone and build whisper.cpp
+    local build_dir="/tmp/whisper.cpp"
+    
+    if git clone https://github.com/ggerganov/whisper.cpp.git "$build_dir" 2>/dev/null; then
+        cd "$build_dir"
+        make -j$(nproc) 2>/dev/null
+        
+        # Install binaries
+        sudo cp main /usr/local/bin/whisper-main
+        sudo cp quantize /usr/local/bin/whisper-quantize
+        sudo cp server /usr/local/bin/whisper-server
+        
+        # Create convenience script
+        sudo tee /usr/local/bin/whisper-cpp > /dev/null << 'EOF'
+#!/bin/bash
+whisper-main "$@"
+EOF
+        sudo chmod +x /usr/local/bin/whisper-cpp
+        
+        # Clean up
+        rm -rf "$build_dir"
+        
+        ui_msg "Whisper.cpp Installed" "Whisper.cpp offline speech-to-text installed successfully.\n\nRun with: whisper-cpp"
+    else
+        log_error "Failed to clone Whisper.cpp"
+        return 1
+    fi
+}
+
+remove_whisper-cpp() {
+    log "Removing Whisper.cpp..."
+    sudo rm -f /usr/local/bin/whisper-main
+    sudo rm -f /usr/local/bin/whisper-quantize
+    sudo rm -f /usr/local/bin/whisper-server
+    sudo rm -f /usr/local/bin/whisper-cpp
+}
+
+install_comfyui() {
+    log "Installing ComfyUI..."
+    
+    # Clone ComfyUI repository
+    local install_dir="/opt/ComfyUI"
+    
+    if git clone https://github.com/comfyanonymous/ComfyUI.git "$install_dir" 2>/dev/null; then
+        cd "$install_dir"
+        
+        # Install Python dependencies
+        pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu 2>/dev/null || true
+        pip3 install -r requirements.txt 2>/dev/null || true
+        
+        # Create launcher script
+        sudo tee /usr/local/bin/comfyui > /dev/null << 'EOF'
+#!/bin/bash
+cd /opt/ComfyUI
+python3 main.py "$@"
+EOF
+        sudo chmod +x /usr/local/bin/comfyui
+        
+        ui_msg "ComfyUI Installed" "ComfyUI visual Stable Diffusion interface installed successfully.\n\nRun with: comfyui"
+    else
+        log_error "Failed to clone ComfyUI"
+        return 1
+    fi
+}
+
+remove_comfyui() {
+    log "Removing ComfyUI..."
+    sudo rm -rf /opt/ComfyUI
+    sudo rm -f /usr/local/bin/comfyui
+}
+
+install_invokeai() {
+    log "Installing InvokeAI..."
+    
+    # Install InvokeAI via pip
+    if pip3 install invokeai[xformers] --upgrade 2>/dev/null; then
+        ui_msg "InvokeAI Installed" "InvokeAI Stable Diffusion generator installed successfully.\n\nRun with: invokeai-web"
+    else
+        log_error "Failed to install InvokeAI"
+        return 1
+    fi
+}
+
+remove_invokeai() {
+    log "Removing InvokeAI..."
+    pip3 uninstall -y invokeai 2>/dev/null || true
+}
+
+install_koboldcpp() {
+    log "Installing KoboldCpp..."
+    
+    # Download KoboldCpp binary
+    local kobold_url="https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-linux-x64"
+    local temp_file="/tmp/koboldcpp"
+    
+    if wget -O "$temp_file" "$kobold_url" 2>/dev/null; then
+        chmod +x "$temp_file"
+        sudo mv "$temp_file" /usr/local/bin/koboldcpp
+        ui_msg "KoboldCpp Installed" "KoboldCpp LLM interface installed successfully.\n\nRun with: koboldcpp"
+    else
+        log_error "Failed to download KoboldCpp"
+        return 1
+    fi
+}
+
+remove_koboldcpp() {
+    log "Removing KoboldCpp..."
+    sudo rm -f /usr/local/bin/koboldcpp
 }
 
 install_phpmyadmin() {
@@ -2327,6 +3267,576 @@ remove_yaak() {
     return 0
 }
 
+install_caddy() {
+    log "Installing Caddy web server..."
+    
+    # Install dependencies
+    sudo apt update
+    sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+    
+    # Add Caddy repository key
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+    
+    # Add Caddy repository
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+    
+    # Update and install Caddy
+    sudo apt update
+    install_apt_package "caddy"
+    
+    ui_msg "Caddy Installed" "Caddy web server installed successfully."
+}
+
+remove_caddy() {
+    remove_apt_package "caddy"
+    sudo rm -f /etc/apt/sources.list.d/caddy-stable.list
+    sudo rm -f /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+}
+
+install_ngrok() {
+    log "Installing ngrok..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="amd64" ;;
+        arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    # Download and install ngrok
+    curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+    echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+    sudo apt update
+    install_apt_package "ngrok"
+    
+    ui_msg "ngrok Installed" "ngrok installed successfully. Run 'ngrok config add-authtoken <token>' to authenticate."
+}
+
+remove_ngrok() {
+    remove_apt_package "ngrok"
+    sudo rm -f /etc/apt/sources.list.d/ngrok.list
+    sudo rm -f /etc/apt/trusted.gpg.d/ngrok.asc
+}
+
+install_mailhog() {
+    log "Installing MailHog..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="amd64" ;;
+        arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    # Download MailHog binary
+    curl -Lo mailhog "https://github.com/mailhog/MailHog/releases/latest/download/MailHog_linux_${arch}"
+    chmod +x mailhog
+    sudo mv mailhog /usr/local/bin/mailhog
+    
+    # Create systemd service
+    sudo tee /etc/systemd/system/mailhog.service > /dev/null << EOF
+[Unit]
+Description=MailHog Email Testing Tool
+After=network.target
+
+[Service]
+Type=simple
+User=mailhog
+Group=mailhog
+ExecStart=/usr/local/bin/mailhog
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    
+    # Create mailhog user
+    sudo useradd -r -s /bin/false mailhog 2>/dev/null || true
+    
+    # Enable and start service
+    sudo systemctl daemon-reload
+    sudo systemctl enable mailhog
+    sudo systemctl start mailhog
+    
+    ui_msg "MailHog Installed" "MailHog installed successfully. Web UI available at http://localhost:8025"
+}
+
+remove_mailhog() {
+    sudo systemctl stop mailhog 2>/dev/null || true
+    sudo systemctl disable mailhog 2>/dev/null || true
+    sudo rm -f /etc/systemd/system/mailhog.service
+    sudo rm -f /usr/local/bin/mailhog
+    sudo userdel mailhog 2>/dev/null || true
+    sudo systemctl daemon-reload
+}
+
+remove_rustup() {
+    log "Removing Rustup..."
+    
+    # Remove rustup and all Rust toolchains
+    if command -v rustup >/dev/null 2>&1; then
+        rustup self uninstall -y 2>/dev/null || true
+    fi
+    
+    # Remove any remaining Rust directories
+    rm -rf "$HOME/.rustup" "$HOME/.cargo" 2>/dev/null || true
+    
+    log "Rustup removed successfully"
+    return 0
+}
+
+# AI Image Generation Tools
+install_automatic1111() {
+    log "Installing Automatic1111 Stable Diffusion WebUI..."
+    
+    local install_dir="$HOME/automatic1111"
+    
+    # Install dependencies
+    sudo apt update && sudo apt install -y python3 python3-pip python3-venv git wget
+    
+    # Clone repository
+    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git "$install_dir"
+    cd "$install_dir"
+    
+    # Make webui script executable
+    chmod +x webui.sh
+    
+    # Create desktop entry
+    cat > ~/.local/share/applications/automatic1111.desktop << EOF
+[Desktop Entry]
+Name=Automatic1111 WebUI
+Comment=Stable Diffusion Web Interface
+Exec=bash -c 'cd $install_dir && ./webui.sh'
+Icon=applications-graphics
+Terminal=true
+Type=Application
+Categories=Graphics;Photography;
+EOF
+    
+    ui_msg "Automatic1111 Installed" "Automatic1111 WebUI installed to $install_dir. Run ./webui.sh to start."
+}
+
+remove_automatic1111() {
+    rm -rf "$HOME/automatic1111"
+    rm -f ~/.local/share/applications/automatic1111.desktop
+}
+
+install_fooocus() {
+    log "Installing Fooocus Stable Diffusion frontend..."
+    
+    local install_dir="$HOME/fooocus"
+    
+    # Install dependencies
+    sudo apt update && sudo apt install -y python3 python3-pip python3-venv git
+    
+    # Clone repository
+    git clone https://github.com/lllyasviel/Fooocus.git "$install_dir"
+    cd "$install_dir"
+    
+    # Create virtual environment and install requirements
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements_versions.txt
+    
+    # Create desktop entry
+    cat > ~/.local/share/applications/fooocus.desktop << EOF
+[Desktop Entry]
+Name=Fooocus
+Comment=Simplified Stable Diffusion Frontend
+Exec=bash -c 'cd $install_dir && source venv/bin/activate && python entry_with_update.py'
+Icon=applications-graphics
+Terminal=true
+Type=Application
+Categories=Graphics;Photography;
+EOF
+    
+    ui_msg "Fooocus Installed" "Fooocus installed to $install_dir. Run entry_with_update.py to start."
+}
+
+remove_fooocus() {
+    rm -rf "$HOME/fooocus"
+    rm -f ~/.local/share/applications/fooocus.desktop
+}
+
+install_sd-next() {
+    log "Installing SD.Next (Stable Diffusion Next)..."
+    
+    local install_dir="$HOME/sd-next"
+    
+    # Install dependencies
+    sudo apt update && sudo apt install -y python3 python3-pip python3-venv git
+    
+    # Clone repository
+    git clone https://github.com/vladmandic/automatic.git "$install_dir"
+    cd "$install_dir"
+    
+    # Make launch script executable
+    chmod +x launch.py
+    
+    # Create desktop entry
+    cat > ~/.local/share/applications/sd-next.desktop << EOF
+[Desktop Entry]
+Name=SD.Next
+Comment=Modernized Stable Diffusion WebUI
+Exec=bash -c 'cd $install_dir && python3 launch.py'
+Icon=applications-graphics
+Terminal=true
+Type=Application
+Categories=Graphics;Photography;
+EOF
+    
+    ui_msg "SD.Next Installed" "SD.Next installed to $install_dir. Run launch.py to start."
+}
+
+remove_sd-next() {
+    rm -rf "$HOME/sd-next"
+    rm -f ~/.local/share/applications/sd-next.desktop
+}
+
+install_kohya-ss-gui() {
+    log "Installing Kohya-ss GUI for model training..."
+    
+    local install_dir="$HOME/kohya-ss"
+    
+    # Install dependencies
+    sudo apt update && sudo apt install -y python3 python3-pip python3-venv git build-essential
+    
+    # Clone repository
+    git clone https://github.com/bmaltais/kohya_ss.git "$install_dir"
+    cd "$install_dir"
+    
+    # Make setup script executable
+    chmod +x setup.sh
+    
+    # Create desktop entry
+    cat > ~/.local/share/applications/kohya-ss.desktop << EOF
+[Desktop Entry]
+Name=Kohya-ss GUI
+Comment=Model Training GUI
+Exec=bash -c 'cd $install_dir && ./gui.sh'
+Icon=applications-science
+Terminal=true
+Type=Application
+Categories=Science;Education;
+EOF
+    
+    ui_msg "Kohya-ss GUI Installed" "Kohya-ss GUI installed to $install_dir. Run setup.sh first, then gui.sh."
+}
+
+remove_kohya-ss-gui() {
+    rm -rf "$HOME/kohya-ss"
+    rm -f ~/.local/share/applications/kohya-ss.desktop
+}
+
+# Shell Enhancement Tools
+install_oh-my-zsh() {
+    log "Installing Oh My Zsh..."
+    
+    # Check if zsh is installed
+    if ! command -v zsh >/dev/null 2>&1; then
+        log_error "Zsh is required for Oh My Zsh. Install zsh first."
+        return 1
+    fi
+    
+    # Check if Oh My Zsh is already installed
+    if [[ -d "$HOME/.oh-my-zsh" ]]; then
+        ui_msg "Already Installed" "Oh My Zsh is already installed."
+        return 0
+    fi
+    
+    # Install Oh My Zsh
+    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    
+    ui_msg "Oh My Zsh Installed" "Oh My Zsh installed successfully. Restart your terminal or run 'zsh' to use it."
+}
+
+remove_oh-my-zsh() {
+    log "Removing Oh My Zsh..."
+    
+    if [[ -d "$HOME/.oh-my-zsh" ]]; then
+        # Run the uninstall script if it exists
+        if [[ -f "$HOME/.oh-my-zsh/tools/uninstall.sh" ]]; then
+            sh "$HOME/.oh-my-zsh/tools/uninstall.sh" --unattended 2>/dev/null || true
+        fi
+        
+        # Remove directory if still exists
+        rm -rf "$HOME/.oh-my-zsh"
+        
+        # Restore original shell config if backup exists
+        [[ -f "$HOME/.zshrc.pre-oh-my-zsh" ]] && mv "$HOME/.zshrc.pre-oh-my-zsh" "$HOME/.zshrc"
+    fi
+    
+    log "Oh My Zsh removed successfully"
+}
+
+install_starship() {
+    log "Installing Starship prompt..."
+    
+    # Download and install Starship
+    curl -sS https://starship.rs/install.sh | sh -s -- -y
+    
+    # Add to shell configs if not already present
+    local starship_init='eval "$(starship init zsh)"'
+    
+    # Add to .zshrc if it exists and doesn't already contain starship
+    if [[ -f "$HOME/.zshrc" ]] && ! grep -q "starship init" "$HOME/.zshrc"; then
+        echo "" >> "$HOME/.zshrc"
+        echo "# Starship prompt" >> "$HOME/.zshrc"
+        echo "$starship_init" >> "$HOME/.zshrc"
+    fi
+    
+    # Add to .bashrc if it exists and doesn't already contain starship
+    if [[ -f "$HOME/.bashrc" ]] && ! grep -q "starship init" "$HOME/.bashrc"; then
+        echo "" >> "$HOME/.bashrc"
+        echo "# Starship prompt" >> "$HOME/.bashrc"
+        echo 'eval "$(starship init bash)"' >> "$HOME/.bashrc"
+    fi
+    
+    ui_msg "Starship Installed" "Starship prompt installed successfully. Restart your terminal to see changes."
+}
+
+remove_starship() {
+    log "Removing Starship..."
+    
+    # Remove binary
+    sudo rm -f /usr/local/bin/starship
+    rm -f "$HOME/.cargo/bin/starship"
+    
+    # Remove from shell configs
+    if [[ -f "$HOME/.zshrc" ]]; then
+        sed -i '/starship init/d' "$HOME/.zshrc" 2>/dev/null || true
+        sed -i '/# Starship prompt/d' "$HOME/.zshrc" 2>/dev/null || true
+    fi
+    
+    if [[ -f "$HOME/.bashrc" ]]; then
+        sed -i '/starship init/d' "$HOME/.bashrc" 2>/dev/null || true
+        sed -i '/# Starship prompt/d' "$HOME/.bashrc" 2>/dev/null || true
+    fi
+    
+    # Remove config directory
+    rm -rf "$HOME/.config/starship.toml"
+    
+    log "Starship removed successfully"
+}
+
+install_zoxide() {
+    log "Installing Zoxide..."
+    
+    # Download and install Zoxide
+    curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+    
+    # Add to shell configs if not already present
+    local zoxide_init_zsh='eval "$(zoxide init zsh)"'
+    local zoxide_init_bash='eval "$(zoxide init bash)"'
+    
+    # Add to .zshrc if it exists and doesn't already contain zoxide
+    if [[ -f "$HOME/.zshrc" ]] && ! grep -q "zoxide init" "$HOME/.zshrc"; then
+        echo "" >> "$HOME/.zshrc"
+        echo "# Zoxide - smarter cd" >> "$HOME/.zshrc"
+        echo "$zoxide_init_zsh" >> "$HOME/.zshrc"
+    fi
+    
+    # Add to .bashrc if it exists and doesn't already contain zoxide
+    if [[ -f "$HOME/.bashrc" ]] && ! grep -q "zoxide init" "$HOME/.bashrc"; then
+        echo "" >> "$HOME/.bashrc"
+        echo "# Zoxide - smarter cd" >> "$HOME/.bashrc"
+        echo "$zoxide_init_bash" >> "$HOME/.bashrc"
+    fi
+    
+    ui_msg "Zoxide Installed" "Zoxide installed successfully. Use 'z' instead of 'cd'. Restart terminal to activate."
+}
+
+remove_zoxide() {
+    log "Removing Zoxide..."
+    
+    # Remove binary
+    rm -f "$HOME/.local/bin/zoxide"
+    
+    # Remove from shell configs
+    if [[ -f "$HOME/.zshrc" ]]; then
+        sed -i '/zoxide init/d' "$HOME/.zshrc" 2>/dev/null || true
+        sed -i '/# Zoxide - smarter cd/d' "$HOME/.zshrc" 2>/dev/null || true
+    fi
+    
+    if [[ -f "$HOME/.bashrc" ]]; then
+        sed -i '/zoxide init/d' "$HOME/.bashrc" 2>/dev/null || true
+        sed -i '/# Zoxide - smarter cd/d' "$HOME/.bashrc" 2>/dev/null || true
+    fi
+    
+    # Remove data directory
+    rm -rf "$HOME/.local/share/zoxide"
+    
+    log "Zoxide removed successfully"
+}
+
+install_poetry() {
+    log "Installing Poetry Python dependency manager..."
+    
+    # Install via pip3
+    if pip3 install --user poetry; then
+        # Add to PATH if not already there
+        if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc 2>/dev/null || true
+        fi
+        ui_msg "Poetry Installed" "Poetry Python dependency manager installed successfully via pip3."
+        return 0
+    else
+        log_error "Failed to install Poetry"
+        return 1
+    fi
+}
+
+remove_poetry() {
+    log "Removing Poetry..."
+    pip3 uninstall -y poetry 2>/dev/null || true
+    log "Poetry removed successfully"
+    return 0
+}
+
+install_deno() {
+    log "Installing Deno JS/TS runtime..."
+    
+    local deno_url="https://github.com/denoland/deno/releases/latest/download/deno-x86_64-unknown-linux-gnu.zip"
+    local temp_dir="/tmp/deno_install"
+    local temp_file="$temp_dir/deno.zip"
+    
+    mkdir -p "$temp_dir"
+    
+    # Download and install Deno
+    if wget -O "$temp_file" "$deno_url" 2>/dev/null; then
+        cd "$temp_dir"
+        unzip -q deno.zip
+        sudo mv deno /usr/local/bin/
+        sudo chmod +x /usr/local/bin/deno
+        rm -rf "$temp_dir"
+        ui_msg "Deno Installed" "Deno JS/TS runtime installed successfully."
+        return 0
+    else
+        rm -rf "$temp_dir"
+        log_error "Failed to download Deno"
+        return 1
+    fi
+}
+
+remove_deno() {
+    log "Removing Deno..."
+    sudo rm -f /usr/local/bin/deno
+    log "Deno removed successfully"
+    return 0
+}
+
+install_bun() {
+    log "Installing Bun JS runtime..."
+    
+    # Install via official installer
+    if curl -fsSL https://bun.sh/install | bash; then
+        # Add to PATH if not already there
+        if ! echo "$PATH" | grep -q "$HOME/.bun/bin"; then
+            echo 'export PATH="$HOME/.bun/bin:$PATH"' >> ~/.bashrc
+            echo 'export PATH="$HOME/.bun/bin:$PATH"' >> ~/.zshrc 2>/dev/null || true
+        fi
+        ui_msg "Bun Installed" "Bun JS runtime installed successfully."
+        return 0
+    else
+        log_error "Failed to install Bun"
+        return 1
+    fi
+}
+
+remove_bun() {
+    log "Removing Bun..."
+    rm -rf "$HOME/.bun" 2>/dev/null || true
+    log "Bun removed successfully"
+    return 0
+}
+
+install_mkdocs() {
+    log "Installing MkDocs static site generator..."
+    
+    # Install via pip3
+    if pip3 install --user mkdocs mkdocs-material; then
+        ui_msg "MkDocs Installed" "MkDocs static site generator installed successfully via pip3."
+        return 0
+    else
+        log_error "Failed to install MkDocs"
+        return 1
+    fi
+}
+
+remove_mkdocs() {
+    log "Removing MkDocs..."
+    pip3 uninstall -y mkdocs mkdocs-material 2>/dev/null || true
+    log "MkDocs removed successfully"
+    return 0
+}
+
+install_insomnia() {
+    log "Installing Insomnia API client..."
+    
+    local insomnia_url="https://github.com/Kong/insomnia/releases/latest/download/Insomnia.Core-8.6.1.deb"
+    local temp_file="/tmp/insomnia.deb"
+    
+    # Download the .deb file
+    if wget -O "$temp_file" "$insomnia_url" 2>/dev/null; then
+        # Install the .deb package
+        if sudo dpkg -i "$temp_file" 2>/dev/null || sudo apt-get install -f -y; then
+            rm -f "$temp_file"
+            ui_msg "Insomnia Installed" "Insomnia API client installed successfully."
+            return 0
+        else
+            rm -f "$temp_file"
+            log_error "Failed to install Insomnia .deb package"
+            return 1
+        fi
+    else
+        log_error "Failed to download Insomnia"
+        return 1
+    fi
+}
+
+remove_insomnia() {
+    log "Removing Insomnia..."
+    sudo apt remove --purge -y insomnia 2>/dev/null || true
+    log "Insomnia removed successfully"
+    return 0
+}
+
+install_zed() {
+    log "Installing Zed code editor..."
+    
+    local zed_url="https://zed.dev/api/releases/stable/latest/zed-linux-x86_64.tar.gz"
+    local temp_dir="/tmp/zed_install"
+    local temp_file="$temp_dir/zed.tar.gz"
+    
+    mkdir -p "$temp_dir"
+    
+    # Download and install Zed
+    if wget -O "$temp_file" "$zed_url" 2>/dev/null; then
+        cd "$temp_dir"
+        tar -xzf zed.tar.gz
+        sudo mv zed-linux-x86_64/zed /usr/local/bin/
+        sudo chmod +x /usr/local/bin/zed
+        rm -rf "$temp_dir"
+        ui_msg "Zed Installed" "Zed code editor installed successfully."
+        return 0
+    else
+        rm -rf "$temp_dir"
+        log_error "Failed to download Zed"
+        return 1
+    fi
+}
+
+remove_zed() {
+    log "Removing Zed..."
+    sudo rm -f /usr/local/bin/zed
+    log "Zed removed successfully"
+    return 0
+}
+
 # ==============================================================================
 # BUNTAGE MANAGEMENT DISPATCHER
 # ==============================================================================
@@ -2389,6 +3899,7 @@ install_package() {
                 warp-terminal) install_warp; install_result=$? ;;
                 ollama) install_ollama; install_result=$? ;;
                 yt-dlp) install_yt-dlp; install_result=$? ;;
+                invidious) install_invidious; install_result=$? ;;
                 n8n) install_n8n; install_result=$? ;;
                 gollama) install_gollama; install_result=$? ;;
                 discord-deb) install_discord-deb; install_result=$? ;;
@@ -2396,6 +3907,37 @@ install_package() {
                 adminer) install_adminer; install_result=$? ;;
                 bruno) install_bruno; install_result=$? ;;
                 yaak) install_yaak; install_result=$? ;;
+                rustup) install_rustup; install_result=$? ;;
+                poetry) install_poetry; install_result=$? ;;
+                deno) install_deno; install_result=$? ;;
+                bun) install_bun; install_result=$? ;;
+                mkdocs) install_mkdocs; install_result=$? ;;
+                insomnia) install_insomnia; install_result=$? ;;
+                zed) install_zed; install_result=$? ;;
+                lm-studio) install_lm-studio; install_result=$? ;;
+                text-generation-webui) install_text-generation-webui; install_result=$? ;;
+                whisper-cpp) install_whisper-cpp; install_result=$? ;;
+                comfyui) install_comfyui; install_result=$? ;;
+                invokeai) install_invokeai; install_result=$? ;;
+                koboldcpp) install_koboldcpp; install_result=$? ;;
+                minikube) install_minikube; install_result=$? ;;
+                kind) install_kind; install_result=$? ;;
+                ctop) install_ctop; install_result=$? ;;
+                lazydocker) install_lazydocker; install_result=$? ;;
+                caddy) install_caddy; install_result=$? ;;
+                ngrok) install_ngrok; install_result=$? ;;
+                mailhog) install_mailhog; install_result=$? ;;
+                automatic1111) install_automatic1111; install_result=$? ;;
+                fooocus) install_fooocus; install_result=$? ;;
+                sd-next) install_sd-next; install_result=$? ;;
+                kohya-ss-gui) install_kohya-ss-gui; install_result=$? ;;
+                oh-my-zsh) install_oh-my-zsh; install_result=$? ;;
+                starship) install_starship; install_result=$? ;;
+                zoxide) install_zoxide; install_result=$? ;;
+                seafile) install_seafile; install_result=$? ;;
+                snapraid) install_snapraid; install_result=$? ;;
+                greyhole) install_greyhole; install_result=$? ;;
+                mergerfs) install_mergerfs; install_result=$? ;;
                 *) log_error "Unknown custom installer: $name"; install_result=1 ;;
             esac
             ;;
@@ -2450,6 +3992,7 @@ remove_package() {
                 warp-terminal) remove_warp; remove_result=$? ;;
                 ollama) remove_ollama; remove_result=$? ;;
                 yt-dlp) remove_yt-dlp; remove_result=$? ;;
+                invidious) remove_invidious; remove_result=$? ;;
                 n8n) remove_n8n; remove_result=$? ;;
                 gollama) remove_gollama; remove_result=$? ;;
                 discord-deb) remove_discord-deb; remove_result=$? ;;
@@ -2457,6 +4000,37 @@ remove_package() {
                 adminer) remove_adminer; remove_result=$? ;;
                 bruno) remove_bruno; remove_result=$? ;;
                 yaak) remove_yaak; remove_result=$? ;;
+                rustup) remove_rustup; remove_result=$? ;;
+                poetry) remove_poetry; remove_result=$? ;;
+                deno) remove_deno; remove_result=$? ;;
+                bun) remove_bun; remove_result=$? ;;
+                mkdocs) remove_mkdocs; remove_result=$? ;;
+                insomnia) remove_insomnia; remove_result=$? ;;
+                zed) remove_zed; remove_result=$? ;;
+                lm-studio) remove_lm-studio; remove_result=$? ;;
+                text-generation-webui) remove_text-generation-webui; remove_result=$? ;;
+                whisper-cpp) remove_whisper-cpp; remove_result=$? ;;
+                comfyui) remove_comfyui; remove_result=$? ;;
+                invokeai) remove_invokeai; remove_result=$? ;;
+                koboldcpp) remove_koboldcpp; remove_result=$? ;;
+                minikube) remove_minikube; remove_result=$? ;;
+                kind) remove_kind; remove_result=$? ;;
+                ctop) remove_ctop; remove_result=$? ;;
+                lazydocker) remove_lazydocker; remove_result=$? ;;
+                caddy) remove_caddy; remove_result=$? ;;
+                ngrok) remove_ngrok; remove_result=$? ;;
+                mailhog) remove_mailhog; remove_result=$? ;;
+                automatic1111) remove_automatic1111; remove_result=$? ;;
+                fooocus) remove_fooocus; remove_result=$? ;;
+                sd-next) remove_sd-next; remove_result=$? ;;
+                kohya-ss-gui) remove_kohya-ss-gui; remove_result=$? ;;
+                oh-my-zsh) remove_oh-my-zsh; remove_result=$? ;;
+                starship) remove_starship; remove_result=$? ;;
+                zoxide) remove_zoxide; remove_result=$? ;;
+                seafile) remove_seafile; remove_result=$? ;;
+                snapraid) remove_snapraid; remove_result=$? ;;
+                greyhole) remove_greyhole; remove_result=$? ;;
+                mergerfs) remove_mergerfs; remove_result=$? ;;
                 *) log_error "Unknown custom remover: $name"; remove_result=1 ;;
             esac
             ;;

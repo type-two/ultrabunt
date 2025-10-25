@@ -30,8 +30,8 @@ The **Ultimate Buntstaller** is not just a script - it's a **LIFESTYLE CHOICE**!
 ### 🔥 **FEATURES THAT WILL BLOW YOUR MIND** 🔥
 
 - 🎨 **Beautiful TUI Interface** - Because command lines are for cavemen
-- 🚀 **15 Carefully Curated Categories** - From Core Utilities to Gaming Goodness
-- 🎯 **150+ Hand-Picked Buntages** - Only the finest software makes the cut
+- 🚀 **18 Carefully Curated Categories** - From Core Utilities to Gaming Goodness
+- 🎯 **200+ Hand-Picked Buntages** - Only the finest software makes the cut
 - 🔧 **Multi-Manager Support** - APT, Snap, Flatpak, DEB, NPM, Cargo, PIP, and Custom installations
 - 📊 **Real-time Status Tracking** - See what's installed with fancy icons
 - 🎪 **Bulk Operations** - Install entire categories like a boss
@@ -47,94 +47,7 @@ The **Ultimate Buntstaller** is not just a script - it's a **LIFESTYLE CHOICE**!
 
 ---
 
-## 🗺️ **MENU STRUCTURE OVERVIEW** 🗺️
-
-The Ultimate Buntstaller features an intuitive menu system with the following structure:
-
-### 🏠 **Main Menu**
-- **📦 Browse Buntages** - Browse applications by category
-- **🔍 Search Buntages** - Search for specific applications
-- **ℹ️ System Information** - View detailed system information
-- **⌨️ Keyboard Layout Configuration** - Configure system keyboard layout
-- **🌐 WordPress Setup** - Complete WordPress installation and management
-- **🐘 PHP Settings** - Configure PHP settings and versions
-- **🗄️ Database Management** - MariaDB/MySQL administration
-- **📋 Bulk Operations** - Install/remove multiple packages at once
-- **📊 Log Viewer** - View system and application logs
-- **🚪 Exit Installer** - Exit the application
-
-### 📦 **Browse Buntages Menu**
-When browsing by category, you can select from 15 different categories:
-- 🔧 Core Utilities
-- 💻 Development Tools  
-- 🤖 AI & LLM Tools
-- 🐳 Containers
-- 🌐 Web Stack
-- 🐚 Shell Tools
-- ✏️ Editors & IDEs
-- 🌍 Web Browsers
-- 📊 System Monitoring
-- 🗄️ Database Management
-- 🛡️ Security Tools
-- ⚙️ System Tools
-- 📄 Office & Productivity
-- 💬 Communication
-- 🎨 Multimedia & Graphics
-- ☁️ Cloud & Sync
-- 💻 Terminal Emulators
-- 🎮 Gaming
-
-### 🌐 **WordPress Management**
-- **🆕 Install New WordPress Site** - Set up a new WordPress installation
-- **📋 Manage Existing Sites** - Manage existing WordPress installations
-- **🔧 Individual Site Management** - Detailed management for specific sites
-
-### 🗄️ **Database Management**
-- **🔑 Show MariaDB Credentials** - Display database credentials
-- **🛠️ MariaDB Management** - Advanced database administration
-
-### 📊 **Log Viewer**
-- **📋 System Logs** - View system-level logs
-- **🌐 Web Server Logs** - Apache/Nginx access and error logs
-- **🗄️ Database Logs** - MariaDB/MySQL logs
-- **🐘 PHP Logs** - PHP error and access logs
-- **🔒 Security Logs** - UFW and Fail2ban logs
-
-```
-The Ultimate Buntstaller Menu Structure:
-```
-🏠 Main Menu
-├── 📦 Browse Buntages
-│   ├── 🔧 Core Utilities
-│   ├── 💻 Development Tools
-│   ├── 🤖 AI & LLM Tools
-│   └── ... (15 more categories)
-├── 🔍 Search Buntages
-├── ℹ️ System Information
-├── ⌨️ Keyboard Layout Configuration
-├── 🌐 WordPress Setup
-│   ├── 🆕 Install New WordPress Site
-│   ├── 📋 Manage Existing Sites
-│   └── 🔧 Individual Site Management
-├── 🐘 PHP Settings
-├── 🗄️ Database Management
-│   ├── 🔑 Show MariaDB Credentials
-│   └── 🛠️ MariaDB Management
-├── 📋 Bulk Operations
-│   ├── Install All in Category
-│   ├── Remove All in Category
-│   ├── Update All Installed
-│   └── Clean Cache & Orphans
-├── 📊 Log Viewer
-│   ├── 📋 System Logs
-│   ├── 🌐 Web Server Logs
-│   ├── 🗄️ Database Logs
-│   ├── 🐘 PHP Logs
-│   └── 🔒 Security Logs
-└── 🚪 Exit
-```
-
-## 🎪 **THE MAGNIFICENT 15 BUNTAGE CATEGORIES** 🎪
+## 🎪 **THE MAGNIFICENT 18 BUNTAGE CATEGORIES** 🎪
 
 ### 🔧 **Core Utilities** - *The Foundation of Greatness*
 Essential command-line tools that every developer needs:
@@ -151,6 +64,18 @@ Essential command-line tools that every developer needs:
 - **Bat** - Cat clone with syntax highlighting [APT]
 - **Eza** - Modern ls replacement [APT]
 - **Tldr** - Simplified man pages [APT]
+- **PV** - Pipe Viewer - monitor progress of data through a pipeline [APT]
+- **Duf** - Disk Usage/Free Utility - better 'df' alternative [APT]
+- **Dust** - More intuitive version of du written in Rust [CARGO]
+- **Fd-find** - Simple, fast and user-friendly alternative to 'find' [APT]
+- **Exa** - Modern replacement for 'ls' with colors and Git status [APT]
+- **Hyperfine** - Command-line benchmarking tool [APT]
+- **Delta** - Syntax-highlighting pager for git and diff output [APT]
+- **Micro** - Modern terminal-based text editor [APT]
+- **Atool** - Archive tool wrapper [APT]
+- **Plocate** - Fast locate implementation [APT]
+- **Silversearcher-ag** - Fast text searching tool [APT]
+- **YQ** - Command-line YAML processor [SNAP]
 
 ### 💻 **Development Tools** - *Code Like a Wizard*
 Programming languages and development essentials:
@@ -159,22 +84,53 @@ Programming languages and development essentials:
 - **Python3-venv** - Python virtual environments [APT]
 - **Default-jdk** - Java Development Kit [APT]
 - **Golang** - Go programming language [APT]
-- **Node.js** - Node.js JavaScript runtime [DEB]
+- **Node.js** - Node.js JavaScript runtime [CUSTOM]
 - **NPM** - Node package manager [APT]
+- **Rustup** - Rust toolchain installer [CUSTOM]
+- **Poetry** - Python dependency management [CUSTOM]
+- **Pipx** - Install Python applications in isolated environments [APT]
+- **Deno** - Modern JavaScript/TypeScript runtime [CUSTOM]
+- **Bun** - Fast JavaScript runtime and package manager [CUSTOM]
+- **MkDocs** - Static site generator for documentation [CUSTOM]
+- **Insomnia** - API client and testing tool [CUSTOM]
+- **Zed** - High-performance code editor [CUSTOM]
 - **Postman** - API development platform [SNAP]
-- **Bruno** - Open-source Postman alternative for API testing [APT/SNAP/FLATPAK]
-- **Yaak** - Modern API client and testing tool [DEB]
-- **N8n** - Workflow automation tool (self-hosted Zapier alternative) [NPM]
+- **Bruno** - Open-source Postman alternative for API testing [CUSTOM]
+- **Bruno (Snap)** - Bruno API client [SNAP]
+- **Bruno (Flatpak)** - Bruno API client [FLATPAK]
+- **Yaak** - Modern API client and testing tool [CUSTOM]
 
-### 🤖 **AI & LLM Tools** - *Welcome to the Future*
+### 🤖 **AI & Modern Tools** - *Welcome to the Future*
 Artificial intelligence and machine learning tools:
-- **Ollama** - Local AI model runner (Llama, Mistral, etc.) [DEB]
-- **Gollama** - Advanced LLM model management and interaction tool [DEB]
+- **Ollama** - Local AI model runner (Llama, Mistral, etc.) [CUSTOM]
+- **Gollama** - Advanced LLM model management and interaction tool [CUSTOM]
+- **LM Studio** - Desktop app for running local LLMs [CUSTOM]
+- **Text Generation WebUI** - Web interface for running LLMs [CUSTOM]
+- **Whisper.cpp** - High-performance inference of OpenAI's Whisper [CUSTOM]
+- **ComfyUI** - Powerful and modular stable diffusion GUI [CUSTOM]
+- **InvokeAI** - Professional creative AI toolkit [CUSTOM]
+- **LMDeploy** - Toolkit for compressing, deploying, and serving LLMs [CUSTOM]
+- **KoboldCpp** - Easy-to-use AI text generation tool [CUSTOM]
+- **Automatic1111** - Stable Diffusion WebUI [CUSTOM]
+- **Fooocus** - Image generating software [CUSTOM]
+- **SD.Next** - Advanced Stable Diffusion implementation [CUSTOM]
+- **Kohya SS GUI** - GUI for Kohya's Stable Diffusion scripts [CUSTOM]
+- **Faster Whisper** - Faster Whisper transcription [PIP]
+- **WhisperX** - Automatic Speech Recognition with word-level timestamps [PIP]
+- **Coqui STT** - Deep learning toolkit for Speech-to-Text [PIP]
+- **Piper TTS** - Fast, local neural text to speech system [PIP]
+- **Mimic3** - Privacy-focused, cross-platform TTS engine [PIP]
+- **Coqui TTS** - Deep learning toolkit for Text-to-Speech [PIP]
 
 ### 🐳 **Containers** - *Containerize Everything*
 Modern deployment and orchestration:
-- **Docker** - Docker container platform [DEB]
+- **Docker** - Docker container platform [CUSTOM]
 - **Docker Compose** - Docker Compose plugin [APT]
+- **Podman** - Daemonless container engine [APT]
+- **Minikube** - Local Kubernetes cluster [CUSTOM]
+- **Kind** - Kubernetes in Docker [CUSTOM]
+- **Ctop** - Container metrics and monitoring [CUSTOM]
+- **LazyDocker** - Terminal UI for Docker and Docker Compose [CUSTOM]
 
 ### 🌐 **Web Stack** - *Build the Internet*
 Web development essentials:
@@ -193,28 +149,52 @@ Web development essentials:
 - **Python3-certbot-nginx** - Certbot Nginx plugin [APT]
 - **Python3-certbot-apache** - Certbot Apache plugin [APT]
 - **Redis** - Redis in-memory data store [APT]
+- **Caddy** - Modern web server with automatic HTTPS [CUSTOM]
+- **PM2** - Production process manager for Node.js [CUSTOM]
+- **NGROK** - Secure tunnels to localhost [CUSTOM]
+- **Mailhog** - Email testing tool [CUSTOM]
+- **AdminMongo** - MongoDB admin interface [CUSTOM]
+- **SQLiteStudio** - SQLite database manager [CUSTOM]
+- **N8n** - Workflow automation tool (self-hosted Zapier alternative) [CUSTOM]
 
 ### 🐚 **Shell Tools** - *Terminal Bling*
 Make your shell beautiful and powerful:
 - **Zsh** - Z shell [APT]
 - **Fonts-powerline** - Powerline fonts [APT]
+- **Oh My Zsh** - Framework for managing Zsh configuration [CUSTOM]
+- **Starship** - Cross-shell prompt [CUSTOM]
+- **Zoxide** - Smarter cd command [CUSTOM]
+- **Zsh Autosuggestions** - Fish-like autosuggestions for Zsh [APT]
+
+### 🎪 **Hacker Playground** - *Fun Terminal Tools*
+Entertaining command-line applications:
+- **CMatrix** - Matrix-style terminal screensaver [APT]
+- **Hollywood** - Fill your console with Hollywood hacker melodrama [APT]
+- **SL** - Steam locomotive animation [APT]
+- **Lolcat** - Rainbow coloring for terminal output [APT]
+- **Toilet** - Display large colorful characters [APT]
+- **Figlet** - ASCII art text generator [APT]
+- **Boxes** - Text mode box and comment drawing filter [APT]
+- **ASCIIquarium** - Aquarium animation in ASCII art [APT]
+- **Cowsay** - Configurable talking cow [APT]
+- **Fortune** - Display random quotes and sayings [APT]
 
 ### ✏️ **Editors & IDEs** - *Code in Style*
 Professional development environments:
-- **Visual Studio Code** - Visual Studio Code [DEB]
-- **VSCode (Snap)** - Visual Studio Code [SNAP] - Alternative to DEB version
-- **VSCode (Flatpak)** - Visual Studio Code [FLATPAK] - Alternative to DEB version
-- **Sublime Text** - Sublime Text editor [DEB]
+- **Visual Studio Code** - Visual Studio Code [CUSTOM]
+- **VSCode (Snap)** - Visual Studio Code [SNAP]
+- **VSCode (Flatpak)** - Visual Studio Code [FLATPAK]
+- **Sublime Text** - Sublime Text editor [CUSTOM]
 
 ### 🌍 **Web Browsers** - *Surf the Digital Waves*
 Browse the web with style:
-- **Brave** - Brave web browser [DEB]
+- **Brave** - Brave web browser [CUSTOM]
 - **Firefox** - Mozilla Firefox browser [APT]
-- **Firefox (Snap)** - Mozilla Firefox browser [SNAP] - Alternative to APT version
-- **Firefox (Flatpak)** - Mozilla Firefox browser [FLATPAK] - Alternative to APT version
+- **Firefox (Snap)** - Mozilla Firefox browser [SNAP]
+- **Firefox (Flatpak)** - Mozilla Firefox browser [FLATPAK]
 - **Chromium** - Chromium web browser [APT]
-- **Chromium (Snap)** - Chromium web browser [SNAP] - Alternative to APT version
-- **Chromium (Flatpak)** - Chromium web browser [FLATPAK] - Alternative to APT version
+- **Chromium (Snap)** - Chromium web browser [SNAP]
+- **Chromium (Flatpak)** - Chromium web browser [FLATPAK]
 
 ### 📊 **System Monitoring** - *Know Your System*
 Comprehensive system monitoring and analysis tools:
@@ -223,9 +203,9 @@ Comprehensive system monitoring and analysis tools:
 - **Glances** - Cross-platform system monitor [APT]
 - **Nethogs** - Network bandwidth monitor per process [APT]
 - **Iotop** - I/O monitor [APT]
-- **Bpytop** - Python-based resource monitor (btop predecessor) [APT]
-- **Bashtop** - Bash-based resource monitor (original) [APT]
-- **Bottom** - Cross-platform graphical process monitor (btm) [APT]
+- **Bpytop** - Python-based resource monitor [APT]
+- **Bashtop** - Bash-based resource monitor [APT]
+- **Bottom** - Cross-platform graphical process monitor [APT]
 - **Gotop** - Terminal-based graphical activity monitor [SNAP]
 - **Vtop** - Visually appealing terminal monitor [NPM]
 - **Zenith** - Terminal monitor with zoomable charts [CARGO]
@@ -238,45 +218,37 @@ Comprehensive system monitoring and analysis tools:
 - **Nload** - Network traffic visualizer with graphical bars [APT]
 - **Bmon** - Interactive bandwidth monitor [APT]
 - **Iptraf-ng** - Console-based network monitoring utility [APT]
-- **SS** - Socket investigation utility (netstat replacement) [APT]
+- **SS** - Socket investigation utility [APT]
 - **Lsof** - List open files and processes [APT]
-- **Sar** - System Activity Reporter - historical monitoring [APT]
+- **Sar** - System Activity Reporter [APT]
 - **Mpstat** - Individual or combined CPU processor statistics [APT]
 - **Pidstat** - Per-process CPU, memory, and I/O statistics [APT]
 - **Nvtop** - htop-like utility for monitoring NVIDIA GPUs [APT]
 - **Radeontop** - TUI utility for monitoring AMD GPUs [APT]
-- **PS** - Standard process status command - reports a snapshot of current processes (non-interactive) [APT]
-- **Qmasa** - Terminal-based tool for displaying general GPU usage stats on Linux [CARGO]
-- **Gtop** - System monitoring dashboard for the terminal, written in Node.js [NPM]
-- **PV** - Pipe Viewer - monitor progress of data through a pipeline with progress bar [APT]
-- **Duf** - Disk Usage/Free Utility - better 'df' alternative with colors [APT]
-- **Dust** - More intuitive version of du written in Rust [CARGO]
-- **Fd-find** - Simple, fast and user-friendly alternative to 'find' [APT]
-- **Exa** - Modern replacement for 'ls' with colors and Git status [APT]
-- **Bandwhich** - Terminal bandwidth utilization tool by process [CARGO]
-- **Procs** - Modern replacement for ps written in Rust [CARGO]
+- **PS** - Standard process status command [APT]
+- **Qmasa** - Terminal-based GPU usage stats [CARGO]
+- **Gtop** - System monitoring dashboard for terminal [NPM]
+- **Bandwhich** - Terminal bandwidth utilization tool [CARGO]
+- **Procs** - Modern replacement for ps [CARGO]
 - **Tokei** - Count lines of code quickly [CARGO]
-- **Hyperfine** - Command-line benchmarking tool [APT]
-- **YQ** - Command-line YAML processor (jq wrapper for YAML files) [SNAP]
-- **Delta** - Syntax-highlighting pager for git and diff output [APT]
 
 ### 🗄️ **Database Management** - *Data Mastery*
 Database tools and administration:
 - **phpMyAdmin** - Web-based MySQL/MariaDB administration tool [CUSTOM]
-- **Adminer** - Full-featured database management tool in a single PHP file [CUSTOM]
-- **DBeaver CE** - Universal database tool and SQL client (Community Edition) [SNAP]
-- **DBeaver CE (Flatpak)** - Universal database tool and SQL client (Community Edition) [FLATPAK]
+- **Adminer** - Full-featured database management tool [CUSTOM]
+- **DBeaver CE** - Universal database tool and SQL client [SNAP]
+- **DBeaver CE (Flatpak)** - Universal database tool and SQL client [FLATPAK]
 - **MySQL Workbench Community** - Visual database design tool for MySQL [APT]
-- **pgAdmin4** - Web-based PostgreSQL administration and development platform [APT]
-- **SQLite Browser** - High quality, visual, open source tool to create, design, and edit SQLite databases [APT]
-- **MyCLI** - Command line interface for MySQL with auto-completion and syntax highlighting [APT]
-- **pgCLI** - Command line interface for PostgreSQL with auto-completion and syntax highlighting [APT]
-- **LiteCLI** - Command-line client for SQLite databases with auto-completion and syntax highlighting [APT]
-- **Redis Tools** - Command-line tools for Redis key-value store [APT]
-- **MongoDB Compass** - GUI for MongoDB - explore and manipulate your data [SNAP]
+- **pgAdmin4** - Web-based PostgreSQL administration platform [APT]
+- **SQLite Browser** - Visual tool for SQLite databases [APT]
+- **MyCLI** - Command line interface for MySQL [APT]
+- **pgCLI** - Command line interface for PostgreSQL [APT]
+- **LiteCLI** - Command-line client for SQLite databases [APT]
+- **Redis Tools** - Command-line tools for Redis [APT]
+- **MongoDB Compass** - GUI for MongoDB [SNAP]
 - **Postbird** - Cross-platform PostgreSQL GUI client [SNAP]
-- **Beekeeper Studio** - Modern and easy to use SQL client for MySQL, Postgres, SQLite, SQL Server, and more [SNAP]
-- **TablePlus** - Modern, native tool with elegant UI for relational databases [SNAP]
+- **Beekeeper Studio** - Modern SQL client [SNAP]
+- **TablePlus** - Modern database management tool [SNAP]
 
 ### 🛡️ **Security Tools** - *Fortress Your System*
 Protect your digital kingdom:
@@ -286,7 +258,14 @@ Protect your digital kingdom:
 ### ⚙️ **System Tools** - *Power User Paradise*
 Advanced system utilities:
 - **Flatpak** - Flatpak package manager [APT]
-- **Dysk** - Modern disk usage analyzer with colorful output [CARGO]
+- **Samba** - SMB/CIFS file sharing server [APT]
+- **NFS Kernel Server** - Network File System server [APT]
+- **LVM2** - Logical Volume Manager for flexible disk management [APT]
+- **SnapRAID** - Parity protection for different sized disks [CUSTOM]
+- **Greyhole** - Samba-based storage pooling with redundancy [CUSTOM]
+- **MergerFS** - Union filesystem for pooling drives [CUSTOM]
+- **LocalSend** - Cross-platform file sharing [SNAP]
+- **Dysk** - Modern disk usage analyzer [CARGO]
 
 ### 📄 **Office & Productivity** - *Get Things Done*
 Professional productivity suite:
@@ -297,10 +276,9 @@ Professional productivity suite:
 
 ### 💬 **Communication** - *Stay Connected*
 Chat, call, and collaborate:
-- **LocalSend** - LocalSend file sharing [SNAP]
 - **Discord** - Discord voice and text chat [SNAP]
-- **Discord (DEB)** - Discord voice and text chat [DEB] - Alternative to SNAP version
-- **Discord (Flatpak)** - Discord voice and text chat [FLATPAK] - Alternative to SNAP version
+- **Discord (DEB)** - Discord voice and text chat [CUSTOM]
+- **Discord (Flatpak)** - Discord voice and text chat [FLATPAK]
 - **Telegram Desktop** - Telegram messaging app [APT]
 - **Zoom** - Zoom video conferencing [SNAP]
 
@@ -308,48 +286,90 @@ Chat, call, and collaborate:
 Creative tools for artists and creators:
 - **Spotify** - Music streaming service [SNAP]
 - **OBS Studio** - OBS Studio streaming/recording [APT]
-- **OBS Studio (Flatpak)** - OBS Studio streaming/recording [FLATPAK] - Alternative to APT version
+- **OBS Studio (Flatpak)** - OBS Studio streaming/recording [FLATPAK]
 - **VLC** - VLC media player [APT]
-- **VLC (Snap)** - VLC media player [SNAP] - Alternative to APT version
-- **VLC (Flatpak)** - VLC media player [FLATPAK] - Alternative to APT version
+- **VLC (Snap)** - VLC media player [SNAP]
+- **VLC (Flatpak)** - VLC media player [FLATPAK]
 - **GIMP** - GIMP image editor [APT]
-- **GIMP (Snap)** - GIMP image editor [SNAP] - Alternative to APT version
-- **GIMP (Flatpak)** - GIMP image editor [FLATPAK] - Alternative to APT version
+- **GIMP (Snap)** - GIMP image editor [SNAP]
+- **GIMP (Flatpak)** - GIMP image editor [FLATPAK]
 - **Audacity** - Audacity audio editor [APT]
-- **Audacity (Snap)** - Audacity audio editor [SNAP] - Alternative to APT version
-- **Audacity (Flatpak)** - Audacity audio editor [FLATPAK] - Alternative to APT version
+- **Audacity (Snap)** - Audacity audio editor [SNAP]
+- **Audacity (Flatpak)** - Audacity audio editor [FLATPAK]
 - **Blender** - Blender 3D creation suite [SNAP]
 - **Inkscape** - Inkscape vector graphics editor [APT]
-- **Inkscape (Snap)** - Inkscape vector graphics [SNAP] - Alternative to APT version
-- **Inkscape (Flatpak)** - Inkscape vector graphics [FLATPAK] - Alternative to APT version
+- **Inkscape (Snap)** - Inkscape vector graphics [SNAP]
+- **Inkscape (Flatpak)** - Inkscape vector graphics [FLATPAK]
 - **FFmpeg** - Complete multimedia processing toolkit [APT]
-- **YT-DLP** - Modern YouTube/media downloader (youtube-dl fork) [PIP]
+- **YT-DLP** - Modern YouTube/media downloader [PIP]
+- **FreeTube** - Privacy-focused YouTube client [FLATPAK]
+- **Invidious** - Alternative YouTube frontend [CUSTOM]
+- **MPV** - Minimalist media player [APT]
+- **Kodi** - Open-source media center [APT]
+- **Stremio** - Modern media center with streaming [FLATPAK]
 - **Webcamize** - Webcam effects and virtual camera tool [APT]
 - **Durdraw** - ASCII art drawing and animation tool [PIP]
-- **Pastel** - Command-line tool for color manipulation and palette generation [APT]
+- **Pastel** - Command-line tool for color manipulation [APT]
+
+### 🎵 **Music Production & Audio** - *Create Amazing Sounds*
+Professional audio production tools:
+- **Ardour** - Professional digital audio workstation [APT]
+- **LMMS** - Cross-platform music production software [APT]
+- **Mixxx** - Free DJ software [APT]
 
 ### ☁️ **Cloud & Sync** - *Data Everywhere*
 Cloud storage and synchronization:
 - **Rclone** - Cloud storage sync tool [APT]
-- **Dropbox** - File synchronization [DEB]
+- **Dropbox** - File synchronization [CUSTOM]
 - **Nextcloud Desktop** - Self-hosted cloud client [APT]
+- **Nextcloud Server** - Self-hosted cloud storage server [SNAP]
+- **Seafile** - Lightweight cloud storage with sync [CUSTOM]
 - **Syncthing** - Decentralized sync [APT]
 - **Google Drive OCamlFUSE** - Google Drive filesystem [APT]
 
 ### 💻 **Terminal Emulators** - *Terminal Paradise*
 Beautiful terminal experiences:
-- **Warp Terminal** - Modern terminal with AI features [DEB]
+- **Warp Terminal** - Modern terminal with AI features [CUSTOM]
 - **Alacritty** - GPU-accelerated terminal emulator [APT]
 - **Terminator** - Multiple terminals in one window [APT]
 - **Tilix** - Tiling terminal emulator [APT]
 - **Ghostty** - Fast, feature-rich terminal emulator [SNAP]
 
-### 🎮 **Gaming** - *Level Up Your Fun*
-Gaming platforms and tools:
+### 🎮 **Gaming & Emulation** - *Level Up Your Fun*
+Gaming platforms, tools, and emulators:
 - **Steam** - Steam gaming platform [APT]
 - **Heroic Launcher** - Open-source Epic Games/GOG launcher [SNAP]
 - **Lutris** - Gaming on Linux made easy [APT]
 - **GameMode** - Optimize gaming performance [APT]
+
+### 🎮 **Game Emulators** - *Retro Gaming Paradise*
+Complete emulation suite with multiple installation options:
+
+**Multi-System Emulators:**
+- **RetroArch** - Universal emulator frontend [APT/SNAP/FLATPAK] *(Snap/Flatpak recommended for newer cores)*
+- **Mednafen** - Multi-system accurate emulator [APT]
+
+**Console Emulators:**
+- **MAME** - Multiple Arcade Machine Emulator [APT/FLATPAK]
+- **Dolphin** - GameCube & Wii emulator [APT/FLATPAK] *(Flatpak recommended)*
+- **PCSX2** - PlayStation 2 emulator [APT/FLATPAK]
+- **RPCS3** - PlayStation 3 emulator [FLATPAK] *(Flatpak only)*
+- **DuckStation** - PlayStation 1 emulator [FLATPAK] *(Flatpak recommended)*
+- **Yuzu** - Nintendo Switch emulator [FLATPAK] *(Flatpak only)*
+- **Cemu** - Wii U emulator [FLATPAK] *(Flatpak only)*
+- **Citra** - Nintendo 3DS emulator [APT/FLATPAK]
+- **DeSmuME** - Nintendo DS emulator [APT/FLATPAK]
+- **mGBA** - Game Boy Advance emulator [APT/SNAP/FLATPAK]
+- **Mupen64Plus** - Nintendo 64 emulator [APT]
+- **bsnes** - Super Nintendo emulator [APT]
+- **Stella** - Atari 2600 emulator [APT]
+
+**PC Emulators:**
+- **DOSBox** - DOS emulator [APT/SNAP/FLATPAK]
+- **DOSBox Staging** - Enhanced DOS emulator [APT]
+- **ScummVM** - Adventure game engine [APT/SNAP/FLATPAK]
+- **QEMU** - System hardware emulator [APT]
+- **Wine** - Windows API compatibility layer [APT/SNAP/FLATPAK] *(APT or WineHQ PPA preferred)*
 
 ---
 
@@ -366,7 +386,7 @@ Gaming platforms and tools:
 
 1. **Update Your System First** (This is CRUCIAL!)
    ```bash
-   sudo apt update
+   sudo apt update && sudo apt upgrade -y
    ```
 
 2. **Download the Ultimate Buntstaller**
@@ -377,7 +397,7 @@ Gaming platforms and tools:
 
 3. **Make It Executable** (The Magic Incantation!)
    ```bash
-   sudo chmod +x ultrabunt.sh
+   chmod +x ultrabunt.sh
    ```
 
 4. **Launch the Beast!**
@@ -389,13 +409,13 @@ Gaming platforms and tools:
 
 **One-Liner for the Brave:**
 ```bash
-curl -sSL https://raw.githubusercontent.com/yourusername/ultrabunt/main/ultrabunt.sh | sudo chmod +x /dev/stdin && ./ultrabunt.sh
+curl -sSL https://raw.githubusercontent.com/yourusername/ultrabunt/main/ultrabunt.sh | bash
 ```
 
 **Download and Run:**
 ```bash
 wget https://raw.githubusercontent.com/yourusername/ultrabunt/main/ultrabunt.sh
-sudo chmod +x ultrabunt.sh
+chmod +x ultrabunt.sh
 ./ultrabunt.sh
 ```
 
@@ -416,8 +436,24 @@ sudo chmod +x ultrabunt.sh
 ├── 📦 Browse Buntages by Category
 │   ├── 🔧 Core Utilities
 │   ├── 💻 Development Tools
-│   ├── 🤖 AI & LLM Tools
-│   └── ... (15 more categories)
+│   ├── 🤖 AI & Modern Tools
+│   ├── 🐳 Containers
+│   ├── 🌐 Web Stack
+│   ├── 🐚 Shell Tools
+│   ├── 🎪 Hacker Playground
+│   ├── ✏️ Editors & IDEs
+│   ├── 🌍 Web Browsers
+│   ├── 📊 System Monitoring
+│   ├── 🗄️ Database Management
+│   ├── 🛡️ Security Tools
+│   ├── ⚙️ System Tools
+│   ├── 📄 Office & Productivity
+│   ├── 💬 Communication
+│   ├── 🎨 Multimedia & Graphics
+│   ├── 🎵 Music Production & Audio
+│   ├── ☁️ Cloud & Sync
+│   ├── 💻 Terminal Emulators
+│   └── 🎮 Gaming & Emulation
 ├── 🔍 Search Buntages
 ├── ℹ️ System Information
 ├── ⌨️ Keyboard Layout Configuration
@@ -446,8 +482,8 @@ sudo chmod +x ultrabunt.sh
 ### 🎨 **Status Icons Guide**
 - **✓** = Installed and ready to rock!
 - **✗** = Not installed (yet!)
-- **(_*_)** = Available for installation
-- **(.Y.)** = Installed and awesome
+- **(_*_)** = bumhole
+- **(.Y.)** = bewbs
 
 ---
 
@@ -457,6 +493,7 @@ sudo chmod +x ultrabunt.sh
 - **Ubuntu 20.04 LTS** (Focal Fossa)
 - **Ubuntu 22.04 LTS** (Jammy Jellyfish)
 - **Ubuntu 23.04** (Lunar Lobster)
+- **Ubuntu 24.04 LTS** (Noble Numbat)
 - **Linux Mint 20.x** (All variants)
 - **Linux Mint 21.x** (All variants)
 
@@ -466,10 +503,11 @@ sudo chmod +x ultrabunt.sh
 - **Development Workstation** - Ideal for programmers
 - **Content Creation** - Perfect for creators and artists
 - **Gaming Setup** - Excellent for Linux gamers
+- **AI/ML Development** - Complete AI toolkit included
 
 ### ⚡ **System Requirements**
-- **RAM:** 2GB minimum (4GB+ recommended)
-- **Storage:** 10GB free space (for all buntages)
+- **RAM:** 4GB minimum (8GB+ recommended for AI tools)
+- **Storage:** 20GB free space (for all buntages)
 - **Network:** Broadband internet connection
 - **Processor:** Any 64-bit x86 processor
 
@@ -491,7 +529,7 @@ sudo chmod +x ultrabunt.sh
 
 ### 🎨 **Customization Options**
 - **Category Filtering** - Show only what you need
-- **Installation Methods** - Choose APT, Snap, or Flatpak
+- **Installation Methods** - Choose APT, Snap, Flatpak, or Custom
 - **Batch Processing** - Queue multiple installations
 - **Export Formats** - Multiple list export options
 
@@ -504,7 +542,7 @@ sudo chmod +x ultrabunt.sh
 **Script Won't Run:**
 ```bash
 # Make sure it's executable
-sudo chmod +x ultrabunt.sh
+chmod +x ultrabunt.sh
 
 # Check if bash is available
 which bash
@@ -532,6 +570,15 @@ sudo apt install snapd
 
 # Install flatpak support
 sudo apt install flatpak
+```
+
+**AI Tools Installation Issues:**
+```bash
+# Ensure Python and pip are installed
+sudo apt install python3 python3-pip python3-venv
+
+# Install required system dependencies
+sudo apt install build-essential git curl wget
 ```
 
 ---
@@ -562,6 +609,13 @@ Want to make this even more ridiculously sublime?
 4. **Submit a Pull Request**
 5. **Become a Buntage Legend!**
 
+### 🎯 **Adding New Applications**
+1. Add package definition in the appropriate category section
+2. Create custom installation/removal functions if needed
+3. Add to installation/removal dispatchers
+4. Update this README with the new application
+5. Test thoroughly on a clean system
+
 ---
 
 ## 📜 **LICENSE** 📜
@@ -581,7 +635,7 @@ seriously its just a bunch of terminal stickytaped together go nuts.
 ### 🌟 **Special Thanks**
 - **Ubuntu Community** - For creating an OS for lazy ppl who hate windows
 - **Open Source Developers** - For the free shit
-- **Tata Besters** - For finding all our bugs
+- **Beta Testers** - For finding all our bugs
 - **methylphenidate** - For making this possible
 
 ---
