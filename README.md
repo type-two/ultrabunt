@@ -1096,12 +1096,10 @@ The Ultimate Buntstaller isn't just a script - it's a statement. A statement tha
 
 So go forth, brave user, and BUNTAGE ALL THE THINGS! 🎉
 
+```
 ╔══════════════════════════════════════════════════════════════╗
-
 ║  "In a world of packages, dare to be a BUNTAGE!"             ║
-
 ║                                                              ║
-
 ║  - The Ultimate Buntstaller Philosophy                       ║
-
 ╚══════════════════════════════════════════════════════════════╝
+```
