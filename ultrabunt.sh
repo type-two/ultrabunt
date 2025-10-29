@@ -48,6 +48,96 @@ CURRENT_DIALOG_PRESET="standard"
 declare -A INSTALLED_CACHE
 
 # Session variables for database authentication
+
+# ============================================================================== 
+# TTS (Text-to-Speech) Integration for Accessibility
+# ==============================================================================
+
+# TTS function to speak text if accessibility mode is enabled
+speak_if_enabled() {
+    local text="$1"
+    local priority="${2:-text}"
+    
+    # Only speak if TTS is enabled and spd-say is available
+    if [[ "${ULTRABUNT_TTS_ENABLED:-false}" == "true" ]] && command -v spd-say >/dev/null 2>&1; then
+        # Clean the text of ANSI color codes for speech
+        local clean_text=$(echo "$text" | sed 's/\x1b\[[0-9;]*m//g')
+        
+        # Use the settings exported from the accessible script
+        spd-say \
+            --voice-type "${ULTRABUNT_TTS_VOICE:-female1}" \
+            --rate "${ULTRABUNT_TTS_RATE:--20}" \
+            --pitch "${ULTRABUNT_TTS_PITCH:-0}" \
+            --volume "${ULTRABUNT_TTS_VOLUME:-10}" \
+            --punctuation-mode "${ULTRABUNT_TTS_PUNCTUATION:-some}" \
+            --priority "$priority" \
+            --wait \
+            "$clean_text" 2>/dev/null &
+    fi
+}
+
+# Enhanced UI message function with TTS support
+ui_msg_accessible() {
+    local title="$1"
+    local message="$2"
+    local height="${3:-10}"
+    local width="${4:-60}"
+    
+    # Speak the title and message
+    speak_if_enabled "$title" "important"
+    speak_if_enabled "$message"
+    
+    # Show the visual dialog
+    dialog --title "$title" --msgbox "$message" "$height" "$width"
+}
+
+# Enhanced input function with TTS support
+ui_input_accessible() {
+    local title="$1"
+    local prompt="$2"
+    local default="${3:-}"
+    local height="${4:-10}"
+    local width="${5:-60}"
+    
+    # Speak the title and prompt
+    speak_if_enabled "$title" "important"
+    speak_if_enabled "$prompt"
+    
+    # Show the visual input dialog
+    dialog --title "$title" --inputbox "$prompt" "$height" "$width" "$default"
+}
+
+# Enhanced menu function with TTS support
+ui_menu_accessible() {
+    local title="$1"
+    local prompt="$2"
+    local height="$3"
+    local width="$4"
+    local menu_height="$5"
+    shift 5
+    local options=("$@")
+    
+    # Speak the title and prompt
+    speak_if_enabled "$title" "important"
+    speak_if_enabled "$prompt"
+    
+    # Speak the available options
+    if [[ "${ULTRABUNT_TTS_ENABLED:-false}" == "true" ]]; then
+        speak_if_enabled "Available options:"
+        local i=0
+        while [ $i -lt ${#options[@]} ]; do
+            local option_key="${options[$i]}"
+            local option_text="${options[$((i+1))]}"
+            speak_if_enabled "Option $option_key: $option_text"
+            i=$((i+2))
+            sleep 0.2  # Small pause between options
+        done
+        speak_if_enabled "Please make your selection"
+    fi
+    
+    # Show the visual menu dialog
+    dialog --title "$title" --menu "$prompt" "$height" "$width" "$menu_height" "${options[@]}"
+}
 MARIADB_SESSION_PASSWORD=""
 MARIADB_SESSION_ACTIVE=false
 
@@ -13618,6 +13708,9 @@ main() {
     init_logging
     log "Initializing Ultrabunt Ultimate Buntstaller..."
     
+    # Announce initialization if TTS is enabled
+    speak_if_enabled "Initializing Ultrabunt Ultimate Buntstaller" "important"
+    
     ensure_deps
     log "Dependencies check completed"
     
@@ -13627,19 +13720,25 @@ main() {
     
     # Update buntage cache
     log "Starting APT cache update..."
+    speak_if_enabled "Updating package cache, please wait..."
     apt_update
     log "APT cache update completed"
+    speak_if_enabled "Package cache updated successfully"
     
     # Build buntage installation cache for fast lookups
+    speak_if_enabled "Building package installation cache..."
     build_package_cache
+    speak_if_enabled "Package cache built successfully"
     
     # Show main menu
     log "Loading main menu..."
+    speak_if_enabled "Loading main menu" "important"
     show_category_menu
     log "Main menu completed"
     
     # Farewell
     log "Ultrabunt Ultimate Buntstaller exiting."
+    speak_if_enabled "Thank you for using Ultrabunt Ultimate Buntstaller. Goodbye!" "important"
     ui_msg "Goodbye!" "Thanks for bunting Ultrabunt Ultimate Buntstaller!\n\nLog: $LOGFILE\nBackups: $BACKUP_DIR\n\n💡 Tip: Reboot to apply all changes."
 }
 

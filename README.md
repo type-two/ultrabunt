@@ -911,6 +911,168 @@ Want to make this even more ridiculously sublime?
 4. Update this README with the new application
 5. Test thoroughly on a clean system
 
+# ♿ ACCESSIBILITY FEATURES ♿
+
+UltraBunt is committed to being accessible to all users, including those with visual impairments. We've implemented comprehensive Text-to-Speech (TTS) support to make the installation process fully accessible.
+
+## 🔊 Text-to-Speech Integration
+
+The accessibility-enhanced version of UltraBunt provides full voice guidance throughout the installation process using the `spd-say` command from Speech Dispatcher.
+
+### 🎯 Key Accessibility Features
+
+- **🗣️ Voice Announcements**: All menu options, prompts, and system messages are spoken aloud
+- **👥 Female Voice**: Configured with a friendly female voice for better user experience
+- **⚡ Moderate Speed**: Speech rate optimized for clarity and comprehension
+- **🎵 Punctuation Support**: Important punctuation is vocalized for better context
+- **🔄 Real-time Feedback**: Installation progress and status updates are announced
+- **⚠️ Error Handling**: Graceful fallback when TTS is unavailable
+
+### 🚀 Getting Started with Accessibility
+
+#### Option 1: Use the Accessible Script (Recommended)
+```bash
+# Make the accessible script executable
+chmod +x ultrabunt-accessible.sh
+
+# Run the accessibility-enhanced version
+./ultrabunt-accessible.sh
+```
+
+#### Option 2: Enable TTS in Main Script
+```bash
+# Export TTS environment variables before running
+export ULTRABUNT_TTS_ENABLED=true
+export ULTRABUNT_TTS_VOICE=female1
+export ULTRABUNT_TTS_RATE=0
+
+# Run the main script with TTS support
+./ultrabunt.sh
+```
+
+### 📋 Prerequisites for TTS
+
+The accessibility features require Speech Dispatcher to be installed:
+
+```bash
+# Install Speech Dispatcher (usually pre-installed on Ubuntu)
+sudo apt update
+sudo apt install speech-dispatcher espeak-ng
+
+# Test TTS functionality
+spd-say "Hello, UltraBunt accessibility is working!"
+```
+
+### ⚙️ TTS Configuration Options
+
+The accessible version supports several voice configuration options:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Voice Type | `female1` | Voice gender and variant |
+| Speech Rate | `0` (moderate) | Speaking speed (-100 to +100) |
+| Punctuation | `some` | Level of punctuation vocalization |
+| Language | `en` | Speech language |
+
+### 🎛️ Voice Settings
+
+You can customize the TTS experience by modifying these environment variables:
+
+```bash
+# Voice selection (male1, male2, male3, female1, female2, female3, child_male, child_female)
+export ULTRABUNT_TTS_VOICE="female1"
+
+# Speech rate (-100 = very slow, 0 = normal, +100 = very fast)
+export ULTRABUNT_TTS_RATE="0"
+
+# Punctuation level (none, some, all)
+export ULTRABUNT_TTS_PUNCTUATION="some"
+
+# Language code
+export ULTRABUNT_TTS_LANGUAGE="en"
+```
+
+### 🔧 How It Works
+
+The accessibility system integrates seamlessly with the existing UltraBunt interface:
+
+1. **Menu Navigation**: All menu categories and options are announced
+2. **Installation Progress**: Package installations are narrated in real-time
+3. **User Prompts**: Input requests and confirmations are spoken
+4. **Status Updates**: System messages and warnings are vocalized
+5. **Error Handling**: Installation errors and issues are announced clearly
+
+### 🎪 Accessible Menu Experience
+
+When using the accessible version, you'll hear:
+- **Category Announcements**: "Development Tools menu with 15 options available"
+- **Option Reading**: Each package name and description is spoken
+- **Navigation Guidance**: Instructions for menu navigation
+- **Selection Confirmation**: Confirmation of your choices
+- **Installation Narration**: Real-time progress updates
+
+### 🛠️ Technical Implementation
+
+The accessibility features are implemented through:
+
+- **`speak_if_enabled()` Function**: Core TTS functionality with ANSI color code filtering
+- **Enhanced UI Functions**: `ui_msg_accessible()`, `ui_input_accessible()`, `ui_menu_accessible()`
+- **Menu Integration**: TTS announcements in all menu functions
+- **Progress Narration**: Voice feedback during package installations
+- **Error Vocalization**: Spoken error messages and warnings
+
+### 🔍 Troubleshooting TTS
+
+If TTS isn't working:
+
+1. **Check Speech Dispatcher**:
+   ```bash
+   systemctl --user status speech-dispatcher
+   ```
+
+2. **Test spd-say directly**:
+   ```bash
+   spd-say "Testing speech synthesis"
+   ```
+
+3. **Install missing components**:
+   ```bash
+   sudo apt install speech-dispatcher espeak-ng pulseaudio
+   ```
+
+4. **Restart audio services**:
+   ```bash
+   pulseaudio --kill
+   pulseaudio --start
+   ```
+
+### 🌟 Accessibility Best Practices
+
+The UltraBunt accessibility implementation follows these principles:
+
+- **Non-intrusive**: TTS can be easily disabled without affecting functionality
+- **Informative**: All visual information has audio equivalents
+- **Efficient**: Speech is concise but comprehensive
+- **Customizable**: Users can adjust voice settings to their preferences
+- **Fallback-ready**: Graceful degradation when TTS is unavailable
+
+### 🎯 Future Accessibility Enhancements
+
+Planned improvements include:
+- **Keyboard Navigation**: Enhanced keyboard-only operation
+- **Screen Reader Support**: Better compatibility with screen readers
+- **Audio Cues**: Sound effects for different types of notifications
+- **Voice Commands**: Voice-controlled menu navigation
+- **Multi-language TTS**: Support for additional languages
+
+### 💡 Tips for Visually Impaired Users
+
+- Use the `ultrabunt-accessible.sh` script for the best experience
+- The script will automatically detect and configure TTS settings
+- All menu navigation can be done using standard keyboard controls
+- Press `Ctrl+C` at any time to safely interrupt TTS and exit
+- Installation progress is announced every few seconds during package installations
+
 # 📜 LICENSE 📜
 
 This project is licensed under the MIT License - because sharing is caring! seriously its just a bunch of bash stickytaped together go nuts.
@@ -935,7 +1097,11 @@ The Ultimate Buntstaller isn't just a script - it's a statement. A statement tha
 So go forth, brave user, and BUNTAGE ALL THE THINGS! 🎉
 
 ╔══════════════════════════════════════════════════════════════╗
+
 ║  "In a world of packages, dare to be a BUNTAGE!"             ║
+
 ║                                                              ║
+
 ║  - The Ultimate Buntstaller Philosophy                       ║
+
 ╚══════════════════════════════════════════════════════════════╝
