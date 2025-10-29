@@ -925,7 +925,7 @@ This project is licensed under the MIT License - because sharing is caring! seri
 ## 🌟 Special Thanks
 - Ubuntu Community - For creating an OS for lazy ppl who hate windows
 - Open Source Developers - For the free shit
-- Beta Testers - For finding all our bugs
+- Tata Besters - For flinding all our blugs
 - Methylphenidate - For making this possible
 
 # 🚀 FINAL WORDS 🚀
