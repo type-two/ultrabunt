@@ -27,12 +27,296 @@ BACKUP_DIR="/var/backups/ultrabunt"
 PHP_VER="8.3"
 NODE_LTS="20"
 
+# Dialog box size configuration
+DIALOG_HEIGHT=24
+DIALOG_WIDTH=80
+DIALOG_MENU_HEIGHT=14
+
+# Dialog size presets
+declare -A DIALOG_PRESETS
+DIALOG_PRESETS[compact]="20 70 12"
+DIALOG_PRESETS[standard]="24 80 14"
+DIALOG_PRESETS[large]="30 100 18"
+DIALOG_PRESETS[wide]="24 120 14"
+DIALOG_PRESETS[tall]="35 80 20"
+DIALOG_PRESETS[huge]="40 140 25"
+
+# Current dialog preset
+CURRENT_DIALOG_PRESET="standard"
+
 # Cache for installed buntages - populated once at startup
 declare -A INSTALLED_CACHE
 
 # Session variables for database authentication
 MARIADB_SESSION_PASSWORD=""
 MARIADB_SESSION_ACTIVE=false
+
+# Selective loading configuration - categories to exclude
+declare -A EXCLUDED_CATEGORIES
+EXCLUDED_CATEGORIES=()
+
+# Show ASCII art splash screen
+show_ascii_splash() {
+    # Clear screen
+    clear
+    
+    # Get terminal dimensions
+    local term_width=$(tput cols 2>/dev/null || echo "80")
+    local term_height=$(tput lines 2>/dev/null || echo "24")
+    
+    # ASCII art width is 81 characters
+    local ascii_width=81
+    
+    if [[ $ascii_width -gt $term_width ]]; then
+        log "WARNING: ASCII art width ($ascii_width) exceeds terminal width ($term_width)"
+        echo -e "${YELLOW}⚠️  Terminal too narrow for optimal display. Recommended width: ${ascii_width} columns${NC}"
+        echo -e "${BLUE}💡 Try maximizing your terminal or reducing font size${NC}"
+        echo ""
+        sleep 2
+    fi
+    
+    # Display ASCII art with scrolling effect
+    echo -e "${GREEN}"
+    
+    # Embedded ASCII art (cleaner version - 81 characters wide)
+    local ascii_lines=(
+        "                                                                                 "
+        "                  ...                                                            "
+        "                :==-:.               -                                     "
+        "              .=**+-.       :-.-#%%#*#%%%%%%%=                                  "
+        "              -=*=+-.    :*%%#%#************#@+.                                 "
+        "             .::=:-:...=%%#####****************#%=..                             "
+        "             ..:::----#########****************####+.      .-:.                  "
+        "             .::::----==++####****************#####*#=    .=*+-..                "
+        "        -######**++==-==++*####***#%%#********###***+*+. .-#*+-.                 "
+        "       .*%#####**++++*==++*##*****%@@@%*******####***+*+--==+*+.                 "
+        "       :%#####***+++++%++*####***#@@%%@********##%@@%++*---==++                  "
+        "       -%######*****+==%#####*#**#@@@@%*+++****#%@%*%*+*=-=++#-..              "
+        "       *%######*****+==%%####****#%%%%#*++++***#%@@@@*+*###########+.            "
+        "      +%#######****#++%######**********++++++***#%@@@*+****##########-           "
+        "    .#%%########**#*##%######*#***#@@%#*+++++***##****++*#*##########=           "
+        "   .#@%####%######%%%#########***#@@@@%**+++****#%%%*+++%**#########*.           "
+        "    *%%###%%######%%%########****#@@@@@********##@@@%+++:###%#######=            "
+        "  =*+*#%%#######*%#%%##########**#@@%%%********#%@@@@*+=..##########=            "
+        " =*==-*#*#######: =%##########***#%%%%#********#%@%%@*+=.%**#######*:            "
+        ":#++=*#*######### =%%%#######********####*****###%@@%++=#***######*:             "
+        "+*===#################%#####***#**#%%*-*+:-+=+*###***+++****######*=:--..        "
+        "=*--++-*%##########**+%#####*#****%%#*##***+=-=-.=#*++++****#####*+=:-*+=.       "
+        " *=-=*-=#%%#%#*****+++*%######*####%%#*-+*-:+=-=--*%++++****#####=:..:**-.       "
+        ":%%=-+*=+#%#*+*######%%%###########**########+-=-*%*++++****##+=*--:.:**=--:.    "
+        "**%%%###*+==+#-   *%%%%#%#+=-----------==+*#######**+++*#%**#==-*+=:..+-.:*+=.   "
+        "*--=*#%%%%%%%#-   *%%+:.......:.::::::::::::::::=##*+*%%%@%%=.+%#**-.....:+*=.   "
+        ".*==++====--==    +=....:=###**++++*#%%#*+-::......:**+%*####++#*..:.:+=-.+*=.   "
+        " *=**+++++*#+    .+..+#++***=#==****#+*#%##*#+:....=:*+**#%+###%##*****=-:=#=.   "
+        ".+**##*++*+*-    .+-+=*%:==::#--++++#++#***#*#+:...--.:=++*=++##*+=*=   .:=#=.   "
+        " .+=*##+=-+##=.. .+=+*=%:=+::#::++==#*+##*##*#-::. ...:-  :*+==+###**=   .=#=.   "
+        "- .*####**=+#+**#+=:*#+#**+=======---=====+*+-:::.. -===:  .+==+***++%:   -*=.   "
+        "=-. =++##**#=+#*++=....:::::::::::::::-++====-::::.+:+::-=-:-===+*#*=+*          "
+        "#=::-+#%%*+*#*.:-+=..===+=+=::::::::=+=+=+*+++=:::=:*===::*-++=+++**#**          "
+        "+*=:-=+-..+##*=++:=-*=*:::-*-::::::-*+*-:-=-:**:::+-+:--+-===+=+*+*+-#-          "
+        "-+*-.:-....==+::-=--++----=%=::::::=*+=---==+#*:::-=+=*##-==+++=+##*=*           "
+        ".=+*-..:=:..-+=++*--++--=++#-:::::::**=--=+++%-:::=#######+++++**++*#            "
+        " :=++--+*+:..::::-=.-*+-==*+::::::::-*+-===+#+:::*##*===+###*++**+=-#.           "
+        "  .....-+*=...--:-=..:-**+-:::::::::.:=***+=:....-#*==-::=#**+*+=-=+.            "
+        "       .=+*=:=+++-=.....:::::::::::.................-=*+=+++*+--=#=              "
+        "        .:--- :++*+......::...:::::.............=*+:..--+*=+*-==+*              "
+        "                =+*......:......::..............-+=...++--=*..::==               "
+        "                 .*=. ...........:................ ..:*++#==--:-+               "
+        "                 .=*:..................... .....=#%#==--*===++*.                 "
+        "                   :+:...::..::::.............-=*#+=#=     ::                    "
+        "                  .:=*:...::::::::......  ...=%#+----:.                          "
+        "                .:--::+*:..::::::............+#*-::::.:-.                        "
+        "               :----:...+*:...:::.............:+*:..:....:                       "
+        "                -:....    -##-:::::.:......:+#=     ......                       "
+        "                  .           -*%%#####%%#=.     .  .:::.                        "
+        "               =@@  .#@-+@%@@+*@* @#-@@%*:@@@%.@@%+*@@%@#                        "
+        "               =@@#.#@@=#@ +@++@@@@%=@#    %#  @%  -@* %#                        "
+        "               +@#@@%%@.*@ *@*-@%@@%   @+  @#  @@%-=@@%@-                        "
+        "               =@+=%=#@.*@#%@+-@ =@#.#=@@: @#  %@*:-@#-@+                                             "
+        "               .====: .  .=**= . :=++      .=**=  :=++++-                      "
+        "               -#%%%@@: %@%++@@#.=#%%%@@..%@%++%@#+#@@%#+                        "
+        "                    +@*@@=    -@*:---=%@:#@-    =@* #@=                          "
+        "               +@@@@@# @%:    :@*#@%##%@+%%:    -@# #@=                          "
+        "               *@=.*@+ -@%=::=@%-*@=::+@%-@%=::=@%: #@=.                         "
+        "               =%-  +%- .=#@@#=. +%@@@%+  .=#@@#=.  +%=                                                                                      "
+        "                        @%##* +@#*@#. @###=#@@#+                                 "
+        "                        @@% --%:   %# @:    *%                              "
+        "                           =@-%+. -@+ #@@%  *%                               "
+        "                        ####= .+##*.  #     +*                                            "
+    )
+    
+    # Display each line with scrolling effect
+    for line in "${ascii_lines[@]}"; do
+        echo "$line"
+        sleep 0.05  # Small delay for scrolling effect
+    done
+    
+    echo -e "${NC}"
+    
+    # Add some spacing and info
+    echo ""
+    echo -e "${BLUE}╔═══════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║     ULTRABUNT ULTIMATE BUNTSTALLER v4.2.0             ║${NC}"
+    echo -e "${BLUE}║     Professional Ubuntu/Mint Setup & Package Manager  ║${NC}"
+    echo -e "${BLUE}╚═══════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    
+    # Brief pause before continuing
+    sleep 1.5
+}
+
+# Parse command line arguments
+parse_arguments() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            -dev|--no-dev)
+                EXCLUDED_CATEGORIES["dev"]=1
+                log "Excluding development category"
+                ;;
+            -wp|--no-wordpress)
+                EXCLUDED_CATEGORIES["wordpress"]=1
+                log "Excluding WordPress category"
+                ;;
+            -gaming|--no-gaming)
+                EXCLUDED_CATEGORIES["gaming-platforms"]=1
+                EXCLUDED_CATEGORIES["gaming-emulators"]=1
+                log "Excluding gaming categories"
+                ;;
+            -ai|--no-ai)
+                EXCLUDED_CATEGORIES["ai"]=1
+                log "Excluding AI category"
+                ;;
+            -media|--no-media)
+                EXCLUDED_CATEGORIES["multimedia"]=1
+                EXCLUDED_CATEGORIES["music"]=1
+                log "Excluding media categories"
+                ;;
+            -web|--no-web)
+                EXCLUDED_CATEGORIES["web-browsers"]=1
+                log "Excluding web browsers category"
+                ;;
+            -comm|--no-communication)
+                EXCLUDED_CATEGORIES["communication"]=1
+                log "Excluding communication category"
+                ;;
+            -office|--no-office)
+                EXCLUDED_CATEGORIES["office"]=1
+                log "Excluding office category"
+                ;;
+            -graphics|--no-graphics)
+                EXCLUDED_CATEGORIES["graphics"]=1
+                log "Excluding graphics category"
+                ;;
+            -security|--no-security)
+                EXCLUDED_CATEGORIES["security"]=1
+                log "Excluding security category"
+                ;;
+            -network|--no-network)
+                EXCLUDED_CATEGORIES["network"]=1
+                log "Excluding network category"
+                ;;
+            -system|--no-system)
+                EXCLUDED_CATEGORIES["system"]=1
+                log "Excluding system category"
+                ;;
+            -education|--no-education)
+                EXCLUDED_CATEGORIES["education"]=1
+                log "Excluding education category"
+                ;;
+            -science|--no-science)
+                EXCLUDED_CATEGORIES["science"]=1
+                log "Excluding science category"
+                ;;
+            -finance|--no-finance)
+                EXCLUDED_CATEGORIES["finance"]=1
+                log "Excluding finance category"
+                ;;
+            -virtualization|--no-virtualization)
+                EXCLUDED_CATEGORIES["virtualization"]=1
+                log "Excluding virtualization category"
+                ;;
+            -cloud|--no-cloud)
+                EXCLUDED_CATEGORIES["cloud"]=1
+                log "Excluding cloud category"
+                ;;
+            -minimal|--minimal)
+                # Exclude most categories, keep only core and system
+                for cat in dev wordpress gaming-platforms gaming-emulators ai multimedia music web-browsers communication office graphics security network education science finance virtualization cloud; do
+                    EXCLUDED_CATEGORIES["$cat"]=1
+                done
+                log "Minimal mode: excluding most categories"
+                ;;
+            -core|--core-only)
+                # Exclude everything except core
+                for cat in dev wordpress gaming-platforms gaming-emulators ai multimedia music web-browsers communication office graphics security network system education science finance virtualization cloud; do
+                    EXCLUDED_CATEGORIES["$cat"]=1
+                done
+                log "Core-only mode: excluding all except core category"
+                ;;
+            *)
+                echo "Unknown option: $1"
+                echo "Use -h or --help for usage information"
+                exit 1
+                ;;
+        esac
+        shift
+    done
+}
+
+# Show help information
+show_help() {
+    cat << EOF
+ULTRABUNT ULTIMATE BUNTSTALLER v4.2.0
+Professional Ubuntu/Mint setup & package manager
+
+USAGE:
+    ./ultrabunt.sh [OPTIONS]
+
+OPTIONS:
+    -h, --help              Show this help message
+    
+SELECTIVE LOADING (exclude categories to speed up startup):
+    -dev, --no-dev          Exclude development tools
+    -wp, --no-wordpress     Exclude WordPress tools
+    -gaming, --no-gaming    Exclude gaming platforms and emulators
+    -ai, --no-ai            Exclude AI/ML tools
+    -media, --no-media      Exclude multimedia and music tools
+    -web, --no-web          Exclude web browsers
+    -comm, --no-communication  Exclude communication tools
+    -office, --no-office    Exclude office applications
+    -graphics, --no-graphics  Exclude graphics tools
+    -security, --no-security  Exclude security tools
+    -network, --no-network  Exclude network tools
+    -system, --no-system    Exclude system utilities
+    -education, --no-education  Exclude educational software
+    -science, --no-science  Exclude scientific applications
+    -finance, --no-finance  Exclude financial software
+    -virtualization, --no-virtualization  Exclude virtualization tools
+    -cloud, --no-cloud      Exclude cloud tools
+    
+PRESET MODES:
+    -minimal, --minimal     Load only core and system categories
+    -core, --core-only      Load only core category
+
+EXAMPLES:
+    ./ultrabunt.sh                    # Load all categories (default)
+    ./ultrabunt.sh -dev -gaming       # Exclude development and gaming
+    ./ultrabunt.sh --minimal          # Minimal installation (fastest)
+    ./ultrabunt.sh --core-only        # Core packages only
+    ./ultrabunt.sh -wp -ai -media     # Exclude WordPress, AI, and media
+
+NOTES:
+    - Excluding categories significantly speeds up startup time
+    - Categories can still be accessed if needed (they just won't be scanned)
+    - Log file: /var/log/ultrabunt.log
+    - Backups: /var/backups/ultrabunt
+
+EOF
+}
 
 # Color codes for terminal output
 RED='\033[0;31m'
@@ -55,30 +339,103 @@ build_package_cache() {
     # Clear existing cache
     INSTALLED_CACHE=()
     
+    # If selective loading is enabled, only cache packages from non-excluded categories
+    local selective_mode=false
+    if [[ ${#EXCLUDED_CATEGORIES[@]} -gt 0 ]]; then
+        selective_mode=true
+        log "Selective loading enabled - optimizing cache for included categories only"
+    fi
+    
     # Cache APT buntages
     log "Caching APT buntages..."
-    while IFS= read -r pkg; do
-        INSTALLED_CACHE["apt:$pkg"]=1
-    done < <(dpkg-query -W -f='${Package}\n' 2>/dev/null | sort)
+    if [[ "$selective_mode" == "true" ]]; then
+        # Only cache packages from included categories
+        for name in "${!PACKAGES[@]}"; do
+            local pkg_category="${PKG_CATEGORY[$name]:-}"
+            local method="${PKG_METHOD[$name]:-}"
+            
+            # Skip if category is excluded
+            if [[ -n "${EXCLUDED_CATEGORIES[$pkg_category]:-}" ]]; then
+                continue
+            fi
+            
+            # Only check APT packages in this section
+            if [[ "$method" == "apt" ]]; then
+                local pkg="${PACKAGES[$name]}"
+                if dpkg-query -W "$pkg" &>/dev/null; then
+                    INSTALLED_CACHE["apt:$pkg"]=1
+                fi
+            fi
+        done
+    else
+        # Cache all APT packages (original behavior)
+        while IFS= read -r pkg; do
+            INSTALLED_CACHE["apt:$pkg"]=1
+        done < <(dpkg-query -W -f='${Package}\n' 2>/dev/null | sort)
+    fi
     
     # Cache Snap buntages
     if command -v snap &>/dev/null; then
         log "Caching Snap buntages..."
-        while IFS= read -r pkg; do
-            INSTALLED_CACHE["snap:$pkg"]=1
-        done < <(snap list 2>/dev/null | awk 'NR>1 {print $1}' | sort)
+        if [[ "$selective_mode" == "true" ]]; then
+            # Only cache packages from included categories
+            for name in "${!PACKAGES[@]}"; do
+                local pkg_category="${PKG_CATEGORY[$name]:-}"
+                local method="${PKG_METHOD[$name]:-}"
+                
+                # Skip if category is excluded
+                if [[ -n "${EXCLUDED_CATEGORIES[$pkg_category]:-}" ]]; then
+                    continue
+                fi
+                
+                # Only check Snap packages in this section
+                if [[ "$method" == "snap" ]]; then
+                    local pkg="${PACKAGES[$name]}"
+                    if snap list "$pkg" &>/dev/null; then
+                        INSTALLED_CACHE["snap:$pkg"]=1
+                    fi
+                fi
+            done
+        else
+            # Cache all Snap packages (original behavior)
+            while IFS= read -r pkg; do
+                INSTALLED_CACHE["snap:$pkg"]=1
+            done < <(snap list 2>/dev/null | awk 'NR>1 {print $1}' | sort)
+        fi
     fi
     
     # Cache Flatpak buntages
     if command -v flatpak &>/dev/null; then
         log "Caching Flatpak buntages..."
-        while IFS= read -r pkg; do
-            INSTALLED_CACHE["flatpak:$pkg"]=1
-        done < <(flatpak list --app --columns=application 2>/dev/null | sort)
+        if [[ "$selective_mode" == "true" ]]; then
+            # Only cache packages from included categories
+            for name in "${!PACKAGES[@]}"; do
+                local pkg_category="${PKG_CATEGORY[$name]:-}"
+                local method="${PKG_METHOD[$name]:-}"
+                
+                # Skip if category is excluded
+                if [[ -n "${EXCLUDED_CATEGORIES[$pkg_category]:-}" ]]; then
+                    continue
+                fi
+                
+                # Only check Flatpak packages in this section
+                if [[ "$method" == "flatpak" ]]; then
+                    local pkg="${PACKAGES[$name]}"
+                    if flatpak list --app | grep -q "$pkg"; then
+                        INSTALLED_CACHE["flatpak:$pkg"]=1
+                    fi
+                fi
+            done
+        else
+            # Cache all Flatpak packages (original behavior)
+            while IFS= read -r pkg; do
+                INSTALLED_CACHE["flatpak:$pkg"]=1
+            done < <(flatpak list --app --columns=application 2>/dev/null | sort)
+        fi
     fi
     
     local total_cached=${#INSTALLED_CACHE[@]}
-    log "Buntage cache built with $total_cached entries"
+    log "Buntage cache built with $total_cached entries (selective mode: $selective_mode)"
 }
 
 # Function to update cache for a specific buntage
@@ -308,7 +665,7 @@ choose_installation_method() {
     # If multiple methods available, show selection menu
     if [[ ${#available_methods[@]} -gt 2 ]]; then
         local choice
-        choice=$(ui_menu "Installation Method" "Multiple installation methods available for $base_name.\nChoose your preferred method:" 20 80 10 "${available_methods[@]}")
+        choice=$(ui_menu "Installation Method" "Multiple installation methods available for $base_name.\nChoose your preferred method:" $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${available_methods[@]}")
         
         # Handle user cancellation gracefully - don't exit script
         if [[ -n "$choice" && "$choice" != "back" ]]; then
@@ -550,6 +907,46 @@ PKG_DESC[golang]="Go programming language [APT]"
 PKG_METHOD[golang]="apt"
 PKG_CATEGORY[golang]="dev"
 
+PACKAGES[rustup]="rustup"
+PKG_DESC[rustup]="Rust toolchain installer [CURL]"
+PKG_METHOD[rustup]="custom"
+PKG_CATEGORY[rustup]="dev"
+
+PACKAGES[poetry]="poetry"
+PKG_DESC[poetry]="Modern Python dependency manager [PIP]"
+PKG_METHOD[poetry]="custom"
+PKG_CATEGORY[poetry]="dev"
+
+PACKAGES[pipx]="pipx"
+PKG_DESC[pipx]="Install Python CLIs in isolated environments [APT]"
+PKG_METHOD[pipx]="apt"
+PKG_CATEGORY[pipx]="dev"
+
+PACKAGES[deno]="deno"
+PKG_DESC[deno]="Secure JS/TS runtime (Node's calmer cousin) [DEB]"
+PKG_METHOD[deno]="custom"
+PKG_CATEGORY[deno]="dev"
+
+PACKAGES[bun]="bun"
+PKG_DESC[bun]="Insanely fast JS runtime + package manager + bundler [SH]"
+PKG_METHOD[bun]="custom"
+PKG_CATEGORY[bun]="dev"
+
+PACKAGES[mkdocs]="mkdocs"
+PKG_DESC[mkdocs]="Static site generator for docs (dev favorite) [PIP]"
+PKG_METHOD[mkdocs]="custom"
+PKG_CATEGORY[mkdocs]="dev"
+
+PACKAGES[insomnia]="insomnia"
+PKG_DESC[insomnia]="Gorgeous API testing tool [DEB]"
+PKG_METHOD[insomnia]="custom"
+PKG_CATEGORY[insomnia]="dev"
+
+PACKAGES[zed]="zed"
+PKG_DESC[zed]="Ultra-fast modern code editor (from Atom devs) [DEB]"
+PKG_METHOD[zed]="custom"
+PKG_CATEGORY[zed]="dev"
+
 # CONTAINERS
 PACKAGES[docker]="docker-ce"
 PKG_DESC[docker]="Docker container platform [DEB]"
@@ -561,6 +958,31 @@ PKG_DESC[docker-compose]="Docker Compose plugin [APT]"
 PKG_METHOD[docker-compose]="apt"
 PKG_CATEGORY[docker-compose]="containers"
 PKG_DEPS[docker-compose]="docker"
+
+PACKAGES[podman]="podman"
+PKG_DESC[podman]="Daemonless container engine [APT]"
+PKG_METHOD[podman]="apt"
+PKG_CATEGORY[podman]="containers"
+
+PACKAGES[minikube]="minikube"
+PKG_DESC[minikube]="Local Kubernetes cluster [DEB]"
+PKG_METHOD[minikube]="custom"
+PKG_CATEGORY[minikube]="containers"
+
+PACKAGES[kind]="kind"
+PKG_DESC[kind]="Kubernetes in Docker [BIN]"
+PKG_METHOD[kind]="custom"
+PKG_CATEGORY[kind]="containers"
+
+PACKAGES[ctop]="ctop"
+PKG_DESC[ctop]="Top-like interface for containers [BIN]"
+PKG_METHOD[ctop]="custom"
+PKG_CATEGORY[ctop]="containers"
+
+PACKAGES[lazydocker]="lazydocker"
+PKG_DESC[lazydocker]="Terminal UI for Docker and Docker Compose [BIN]"
+PKG_METHOD[lazydocker]="custom"
+PKG_CATEGORY[lazydocker]="containers"
 
 # WEB STACK
 PACKAGES[nginx]="nginx"
@@ -638,6 +1060,62 @@ PKG_DESC[redis]="Redis in-memory data store [APT]"
 PKG_METHOD[redis]="apt"
 PKG_CATEGORY[redis]="web"
 
+PACKAGES[caddy]="caddy"
+PKG_DESC[caddy]="Fast web server with automatic HTTPS [DEB]"
+PKG_METHOD[caddy]="custom"
+PKG_CATEGORY[caddy]="web"
+
+PACKAGES[pm2]="pm2"
+PKG_DESC[pm2]="Production process manager for Node.js [NPM]"
+PKG_METHOD[pm2]="npm"
+PKG_CATEGORY[pm2]="web"
+
+PACKAGES[ngrok]="ngrok"
+PKG_DESC[ngrok]="Secure tunnels to localhost [BIN]"
+PKG_METHOD[ngrok]="custom"
+PKG_CATEGORY[ngrok]="web"
+
+PACKAGES[mailhog]="mailhog"
+PKG_DESC[mailhog]="Email testing tool [BIN]"
+PKG_METHOD[mailhog]="custom"
+PKG_CATEGORY[mailhog]="web"
+
+PACKAGES[adminmongo]="adminmongo"
+PKG_DESC[adminmongo]="MongoDB admin interface [NPM]"
+PKG_METHOD[adminmongo]="npm"
+PKG_CATEGORY[adminmongo]="web"
+
+PACKAGES[sqlitestudio]="sqlitestudio"
+PKG_DESC[sqlitestudio]="SQLite database browser [APT]"
+PKG_METHOD[sqlitestudio]="apt"
+PKG_CATEGORY[sqlitestudio]="web"
+
+# CONTAINERIZED DEVELOPMENT ENVIRONMENTS
+PACKAGES[localwp]="local"
+PKG_DESC[localwp]="LocalWP - Local WordPress development environment [DEB]"
+PKG_METHOD[localwp]="custom"
+PKG_CATEGORY[localwp]="web"
+
+PACKAGES[devkinsta]="devkinsta"
+PKG_DESC[devkinsta]="DevKinsta - Kinsta's local WordPress development tool [DEB]"
+PKG_METHOD[devkinsta]="custom"
+PKG_CATEGORY[devkinsta]="web"
+
+PACKAGES[lando]="lando"
+PKG_DESC[lando]="Lando - Containerized local development [DEB]"
+PKG_METHOD[lando]="custom"
+PKG_CATEGORY[lando]="web"
+
+PACKAGES[ddev]="ddev"
+PKG_DESC[ddev]="DDEV - Docker-based local development [BIN]"
+PKG_METHOD[ddev]="custom"
+PKG_CATEGORY[ddev]="web"
+
+PACKAGES[xampp]="xampp"
+PKG_DESC[xampp]="XAMPP - Cross-platform web server solution stack [BIN]"
+PKG_METHOD[xampp]="custom"
+PKG_CATEGORY[xampp]="web"
+
 # NODE.JS
 PACKAGES[nodejs]="nodejs"
 PKG_DESC[nodejs]="Node.js JavaScript runtime [DEB]"
@@ -659,6 +1137,77 @@ PACKAGES[fonts-powerline]="fonts-powerline"
 PKG_DESC[fonts-powerline]="Powerline fonts [APT]"
 PKG_METHOD[fonts-powerline]="apt"
 PKG_CATEGORY[fonts-powerline]="shell"
+
+PACKAGES[oh-my-zsh]="oh-my-zsh"
+PKG_DESC[oh-my-zsh]="Framework for managing Zsh configuration [SCRIPT]"
+PKG_METHOD[oh-my-zsh]="custom"
+PKG_CATEGORY[oh-my-zsh]="shell"
+
+PACKAGES[starship]="starship"
+PKG_DESC[starship]="Cross-shell prompt with customization [BINARY]"
+PKG_METHOD[starship]="custom"
+PKG_CATEGORY[starship]="shell"
+
+PACKAGES[zoxide]="zoxide"
+PKG_DESC[zoxide]="Smarter cd command that learns your habits [BINARY]"
+PKG_METHOD[zoxide]="custom"
+PKG_CATEGORY[zoxide]="shell"
+
+PACKAGES[zsh-autosuggestions]="zsh-autosuggestions"
+PKG_DESC[zsh-autosuggestions]="Fish-like autosuggestions for Zsh [APT]"
+PKG_METHOD[zsh-autosuggestions]="apt"
+PKG_CATEGORY[zsh-autosuggestions]="shell"
+
+# HACKER PLAYGROUND - Fun Terminal Tools
+PACKAGES[cmatrix]="cmatrix"
+PKG_DESC[cmatrix]="Matrix digital rain [APT]"
+PKG_METHOD[cmatrix]="apt"
+PKG_CATEGORY[cmatrix]="fun"
+
+PACKAGES[hollywood]="hollywood"
+PKG_DESC[hollywood]="Turn your terminal into a fake hacking montage [APT]"
+PKG_METHOD[hollywood]="apt"
+PKG_CATEGORY[hollywood]="fun"
+
+PACKAGES[sl]="sl"
+PKG_DESC[sl]="Steam locomotive for when you mistype ls [APT]"
+PKG_METHOD[sl]="apt"
+PKG_CATEGORY[sl]="fun"
+
+PACKAGES[lolcat]="lolcat"
+PKG_DESC[lolcat]="Rainbow text output [APT]"
+PKG_METHOD[lolcat]="apt"
+PKG_CATEGORY[lolcat]="fun"
+
+PACKAGES[toilet]="toilet"
+PKG_DESC[toilet]="Big ASCII banners [APT]"
+PKG_METHOD[toilet]="apt"
+PKG_CATEGORY[toilet]="fun"
+
+PACKAGES[figlet]="figlet"
+PKG_DESC[figlet]="Classic ASCII text art generator [APT]"
+PKG_METHOD[figlet]="apt"
+PKG_CATEGORY[figlet]="fun"
+
+PACKAGES[boxes]="boxes"
+PKG_DESC[boxes]="ASCII box drawings around text [APT]"
+PKG_METHOD[boxes]="apt"
+PKG_CATEGORY[boxes]="fun"
+
+PACKAGES[asciiquarium]="asciiquarium"
+PKG_DESC[asciiquarium]="ASCII aquarium in your terminal [APT]"
+PKG_METHOD[asciiquarium]="apt"
+PKG_CATEGORY[asciiquarium]="fun"
+
+PACKAGES[cowsay]="cowsay"
+PKG_DESC[cowsay]="Talking ASCII cows [APT]"
+PKG_METHOD[cowsay]="apt"
+PKG_CATEGORY[cowsay]="fun"
+
+PACKAGES[fortune]="fortune-mod"
+PKG_DESC[fortune]="Random fortune cookies [APT]"
+PKG_METHOD[fortune]="apt"
+PKG_CATEGORY[fortune]="fun"
 
 # EDITORS & IDEs
 PACKAGES[vscode]="code"
@@ -691,137 +1240,137 @@ PKG_CATEGORY[chromium]="browsers"
 PACKAGES[htop]="htop"
 PKG_DESC[htop]="Interactive process viewer [APT]"
 PKG_METHOD[htop]="apt"
-PKG_CATEGORY[htop]="monitoring"
+PKG_CATEGORY[htop]="system-monitoring"
 
 PACKAGES[btop]="btop"
 PKG_DESC[btop]="Resource monitor with better graphs [APT]"
 PKG_METHOD[btop]="apt"
-PKG_CATEGORY[btop]="monitoring"
+PKG_CATEGORY[btop]="system-monitoring"
 
 PACKAGES[glances]="glances"
 PKG_DESC[glances]="Cross-platform system monitor [APT]"
 PKG_METHOD[glances]="apt"
-PKG_CATEGORY[glances]="monitoring"
+PKG_CATEGORY[glances]="system-monitoring"
 
 PACKAGES[nethogs]="nethogs"
 PKG_DESC[nethogs]="Network bandwidth monitor per process [APT]"
 PKG_METHOD[nethogs]="apt"
-PKG_CATEGORY[nethogs]="monitoring"
+PKG_CATEGORY[nethogs]="network-monitoring"
 
 PACKAGES[iotop]="iotop"
 PKG_DESC[iotop]="I/O monitor [APT]"
 PKG_METHOD[iotop]="apt"
-PKG_CATEGORY[iotop]="monitoring"
+PKG_CATEGORY[iotop]="system-monitoring"
 
 # Additional Process Monitors
 PACKAGES[bpytop]="bpytop"
 PKG_DESC[bpytop]="Python-based resource monitor (btop predecessor) [APT]"
 PKG_METHOD[bpytop]="apt"
-PKG_CATEGORY[bpytop]="monitoring"
+PKG_CATEGORY[bpytop]="system-monitoring"
 
 PACKAGES[bashtop]="bashtop"
 PKG_DESC[bashtop]="Bash-based resource monitor (original) [APT]"
 PKG_METHOD[bashtop]="apt"
-PKG_CATEGORY[bashtop]="monitoring"
+PKG_CATEGORY[bashtop]="system-monitoring"
 
 PACKAGES[bottom]="bottom"
 PKG_DESC[bottom]="Cross-platform graphical process monitor (btm) [APT]"
 PKG_METHOD[bottom]="apt"
-PKG_CATEGORY[bottom]="monitoring"
+PKG_CATEGORY[bottom]="system-monitoring"
 
 PACKAGES[gotop]="gotop"
 PKG_DESC[gotop]="Terminal-based graphical activity monitor [SNAP]"
 PKG_METHOD[gotop]="snap"
-PKG_CATEGORY[gotop]="monitoring"
+PKG_CATEGORY[gotop]="system-monitoring"
 
 PACKAGES[vtop]="vtop"
 PKG_DESC[vtop]="Visually appealing terminal monitor [NPM]"
 PKG_METHOD[vtop]="npm"
-PKG_CATEGORY[vtop]="monitoring"
+PKG_CATEGORY[vtop]="system-monitoring"
 
 PACKAGES[zenith]="zenith"
 PKG_DESC[zenith]="Terminal monitor with zoomable charts [CARGO]"
 PKG_METHOD[zenith]="cargo"
-PKG_CATEGORY[zenith]="monitoring"
+PKG_CATEGORY[zenith]="system-monitoring"
 
 PACKAGES[nmon]="nmon"
 PKG_DESC[nmon]="Nigel's Monitor - modular system statistics [APT]"
 PKG_METHOD[nmon]="apt"
-PKG_CATEGORY[nmon]="monitoring"
+PKG_CATEGORY[nmon]="system-monitoring"
 
 PACKAGES[atop]="atop"
 PKG_DESC[atop]="Advanced system and process monitor [APT]"
 PKG_METHOD[atop]="apt"
-PKG_CATEGORY[atop]="monitoring"
+PKG_CATEGORY[atop]="system-monitoring"
 
 # I/O, Memory, and Disk Tools
 PACKAGES[iostat]="sysstat"
 PKG_DESC[iostat]="CPU utilization and disk I/O statistics [APT]"
 PKG_METHOD[iostat]="apt"
-PKG_CATEGORY[iostat]="monitoring"
+PKG_CATEGORY[iostat]="system-monitoring"
 
 PACKAGES[vmstat]="procps"
 PKG_DESC[vmstat]="Virtual memory, processes, I/O, and CPU activity [APT]"
 PKG_METHOD[vmstat]="apt"
-PKG_CATEGORY[vmstat]="monitoring"
+PKG_CATEGORY[vmstat]="system-monitoring"
 
 PACKAGES[free]="procps"
 PKG_DESC[free]="Display free and used memory [APT]"
 PKG_METHOD[free]="apt"
-PKG_CATEGORY[free]="monitoring"
+PKG_CATEGORY[free]="system-monitoring"
 
 # Network Monitoring Tools
 PACKAGES[iftop]="iftop"
 PKG_DESC[iftop]="Real-time bandwidth usage per network interface [APT]"
 PKG_METHOD[iftop]="apt"
-PKG_CATEGORY[iftop]="monitoring"
+PKG_CATEGORY[iftop]="network-monitoring"
 
 PACKAGES[nload]="nload"
 PKG_DESC[nload]="Network traffic visualizer with graphical bars [APT]"
 PKG_METHOD[nload]="apt"
-PKG_CATEGORY[nload]="monitoring"
+PKG_CATEGORY[nload]="network-monitoring"
 
 PACKAGES[bmon]="bmon"
 PKG_DESC[bmon]="Interactive bandwidth monitor [APT]"
 PKG_METHOD[bmon]="apt"
-PKG_CATEGORY[bmon]="monitoring"
+PKG_CATEGORY[bmon]="network-monitoring"
 
 PACKAGES[iptraf-ng]="iptraf-ng"
 PKG_DESC[iptraf-ng]="Console-based network monitoring utility [APT]"
 PKG_METHOD[iptraf-ng]="apt"
-PKG_CATEGORY[iptraf-ng]="monitoring"
+PKG_CATEGORY[iptraf-ng]="network-monitoring"
 
 PACKAGES[ss]="iproute2"
 PKG_DESC[ss]="Socket investigation utility (netstat replacement) [APT]"
 PKG_METHOD[ss]="apt"
-PKG_CATEGORY[ss]="monitoring"
+PKG_CATEGORY[ss]="network-monitoring"
 
 # Process and System Information Tools
 PACKAGES[lsof]="lsof"
 PKG_DESC[lsof]="List open files and processes [APT]"
 PKG_METHOD[lsof]="apt"
-PKG_CATEGORY[lsof]="monitoring"
+PKG_CATEGORY[lsof]="system-monitoring"
 
 PACKAGES[sar]="sysstat"
 PKG_DESC[sar]="System Activity Reporter - historical monitoring [APT]"
 PKG_METHOD[sar]="apt"
-PKG_CATEGORY[sar]="monitoring"
+PKG_CATEGORY[sar]="system-monitoring"
 
 PACKAGES[mpstat]="sysstat"
 PKG_DESC[mpstat]="Individual or combined CPU processor statistics [APT]"
 PKG_METHOD[mpstat]="apt"
-PKG_CATEGORY[mpstat]="monitoring"
+PKG_CATEGORY[mpstat]="system-monitoring"
 
 PACKAGES[pidstat]="sysstat"
 PKG_DESC[pidstat]="Per-process CPU, memory, and I/O statistics [APT]"
 PKG_METHOD[pidstat]="apt"
-PKG_CATEGORY[pidstat]="monitoring"
+PKG_CATEGORY[pidstat]="system-monitoring"
 
 # GPU Monitoring Tools
 PACKAGES[nvtop]="nvtop"
 PKG_DESC[nvtop]="htop-like utility for monitoring NVIDIA GPUs [APT]"
 PKG_METHOD[nvtop]="apt"
-PKG_CATEGORY[nvtop]="monitoring"
+PKG_CATEGORY[nvtop]="system-monitoring"
 
 PACKAGES[radeontop]="radeontop"
 PKG_DESC[radeontop]="TUI utility for monitoring AMD GPUs [APT]"
@@ -830,107 +1379,112 @@ PKG_METHOD[radeontop]="apt"
 PACKAGES[ps]="procps"
 PKG_DESC[ps]="Standard process status command - reports a snapshot of current processes (non-interactive)"
 PKG_METHOD[ps]="apt"
-PKG_CATEGORY[ps]="monitoring"
+PKG_CATEGORY[ps]="system-monitoring"
 
-PKG_CATEGORY[radeontop]="monitoring"
+PKG_CATEGORY[radeontop]="system-monitoring"
 
 # Additional GPU Monitoring Tool
 PACKAGES[qmasa]="qmasa"
 PKG_DESC[qmasa]="Terminal-based tool for displaying general GPU usage stats on Linux [Cargo]"
 PKG_METHOD[qmasa]="cargo"
-PKG_CATEGORY[qmasa]="monitoring"
+PKG_CATEGORY[qmasa]="system-monitoring"
 
 # Additional Process Monitoring Tool
 PACKAGES[gtop]="gtop"
 PKG_DESC[gtop]="System monitoring dashboard for the terminal, written in Node.js [NPM]"
 PKG_METHOD[gtop]="npm"
-PKG_CATEGORY[gtop]="monitoring"
+PKG_CATEGORY[gtop]="system-monitoring"
 
 # Additional System Utilities
 PACKAGES[pv]="pv"
 PKG_DESC[pv]="Pipe Viewer - monitor progress of data through a pipeline with progress bar [APT]"
 PKG_METHOD[pv]="apt"
-PKG_CATEGORY[pv]="monitoring"
-
-PACKAGES[tree]="tree"
-PKG_DESC[tree]="Display directory structure in tree format [APT]"
-PKG_METHOD[tree]="apt"
-PKG_CATEGORY[tree]="monitoring"
-
-PACKAGES[ncdu]="ncdu"
-PKG_DESC[ncdu]="NCurses Disk Usage - interactive disk usage analyzer [APT]"
-PKG_METHOD[ncdu]="apt"
-PKG_CATEGORY[ncdu]="monitoring"
+PKG_CATEGORY[pv]="utilities"
 
 PACKAGES[duf]="duf"
 PKG_DESC[duf]="Disk Usage/Free Utility - better 'df' alternative with colors [APT]"
 PKG_METHOD[duf]="apt"
-PKG_CATEGORY[duf]="monitoring"
+PKG_CATEGORY[duf]="utilities"
 
 PACKAGES[dust]="dust"
 PKG_DESC[dust]="More intuitive version of du written in Rust [Cargo]"
 PKG_METHOD[dust]="cargo"
-PKG_CATEGORY[dust]="monitoring"
+PKG_CATEGORY[dust]="utilities"
 
 PACKAGES[fd-find]="fd-find"
 PKG_DESC[fd-find]="Simple, fast and user-friendly alternative to 'find' [APT]"
 PKG_METHOD[fd-find]="apt"
-PKG_CATEGORY[fd-find]="monitoring"
-
-PACKAGES[ripgrep]="ripgrep"
-PKG_DESC[ripgrep]="Recursively search directories for regex patterns (rg command) [APT]"
-PKG_METHOD[ripgrep]="apt"
-PKG_CATEGORY[ripgrep]="monitoring"
-
-PACKAGES[bat]="bat"
-PKG_DESC[bat]="Cat clone with syntax highlighting and Git integration [APT]"
-PKG_METHOD[bat]="apt"
-PKG_CATEGORY[bat]="monitoring"
+PKG_CATEGORY[fd-find]="utilities"
 
 PACKAGES[exa]="exa"
 PKG_DESC[exa]="Modern replacement for 'ls' with colors and Git status [APT]"
 PKG_METHOD[exa]="apt"
-PKG_CATEGORY[exa]="monitoring"
+PKG_CATEGORY[exa]="utilities"
 
 PACKAGES[bandwhich]="bandwhich"
 PKG_DESC[bandwhich]="Terminal bandwidth utilization tool by process [Cargo]"
 PKG_METHOD[bandwhich]="cargo"
-PKG_CATEGORY[bandwhich]="monitoring"
+PKG_CATEGORY[bandwhich]="network-monitoring"
 
 PACKAGES[procs]="procs"
 PKG_DESC[procs]="Modern replacement for ps written in Rust [Cargo]"
 PKG_METHOD[procs]="cargo"
-PKG_CATEGORY[procs]="monitoring"
+PKG_CATEGORY[procs]="system-monitoring"
 
 PACKAGES[tokei]="tokei"
 PKG_DESC[tokei]="Count lines of code quickly [Cargo]"
 PKG_METHOD[tokei]="cargo"
-PKG_CATEGORY[tokei]="monitoring"
+PKG_CATEGORY[tokei]="performance-tools"
 
 PACKAGES[hyperfine]="hyperfine"
 PKG_DESC[hyperfine]="Command-line benchmarking tool [APT]"
 PKG_METHOD[hyperfine]="apt"
-PKG_CATEGORY[hyperfine]="monitoring"
+PKG_CATEGORY[hyperfine]="performance-tools"
 
-PACKAGES[fzf]="fzf"
-PKG_DESC[fzf]="Command-line fuzzy finder [APT]"
-PKG_METHOD[fzf]="apt"
-PKG_CATEGORY[fzf]="monitoring"
+PACKAGES[batcat]="batcat"
+PKG_DESC[batcat]="Enhanced cat command with paging, syntax highlight & Git integration [APT]"
+PKG_METHOD[batcat]="apt"
+PKG_CATEGORY[batcat]="utilities"
 
-PACKAGES[jq]="jq"
-PKG_DESC[jq]="Lightweight and flexible command-line JSON processor [APT]"
-PKG_METHOD[jq]="apt"
-PKG_CATEGORY[jq]="monitoring"
+PACKAGES[micro]="micro"
+PKG_DESC[micro]="Terminal-based text editor that feels like Sublime [APT]"
+PKG_METHOD[micro]="apt"
+PKG_CATEGORY[micro]="utilities"
+
+PACKAGES[atool]="atool"
+PKG_DESC[atool]="Manage archive files (tar, zip, etc.) from terminal [APT]"
+PKG_METHOD[atool]="apt"
+PKG_CATEGORY[atool]="utilities"
+
+PACKAGES[plocate]="plocate"
+PKG_DESC[plocate]="Superfast locate replacement using modern indexing [APT]"
+PKG_METHOD[plocate]="apt"
+PKG_CATEGORY[plocate]="utilities"
+
+PACKAGES[silversearcher-ag]="silversearcher-ag"
+PKG_DESC[silversearcher-ag]="The silver searcher, crazy-fast grep alternative [APT]"
+PKG_METHOD[silversearcher-ag]="apt"
+PKG_CATEGORY[silversearcher-ag]="utilities"
 
 PACKAGES[yq]="yq"
 PKG_DESC[yq]="Command-line YAML processor (jq wrapper for YAML files) [Snap]"
 PKG_METHOD[yq]="snap"
-PKG_CATEGORY[yq]="monitoring"
+PKG_CATEGORY[yq]="utilities"
 
 PACKAGES[delta]="git-delta"
 PKG_DESC[delta]="Syntax-highlighting pager for git and diff output [APT]"
 PKG_METHOD[delta]="apt"
-PKG_CATEGORY[delta]="monitoring"
+PKG_CATEGORY[delta]="utilities"
+
+PACKAGES[mirrorselect]="mirrorselect"
+PKG_DESC[mirrorselect]="Tool to select the fastest Ubuntu mirror for optimal download speeds [SNAP]"
+PKG_METHOD[mirrorselect]="snap"
+PKG_CATEGORY[mirrorselect]="utilities"
+
+PACKAGES[apt-mirror]="apt-mirror"
+PKG_DESC[apt-mirror]="Tool to create local Ubuntu repository mirrors for offline installations [APT]"
+PKG_METHOD[apt-mirror]="apt"
+PKG_CATEGORY[apt-mirror]="utilities"
 
 # DATABASE MANAGEMENT TOOLS
 PACKAGES[phpmyadmin]="phpmyadmin"
@@ -1025,6 +1579,17 @@ PKG_DESC[flatpak]="Flatpak buntage manager [APT]"
 PKG_METHOD[flatpak]="apt"
 PKG_CATEGORY[flatpak]="system"
 
+# FILE SHARING & NETWORK
+PACKAGES[samba]="samba"
+PKG_DESC[samba]="SMB/CIFS file sharing server [APT]"
+PKG_METHOD[samba]="apt"
+PKG_CATEGORY[samba]="system"
+
+PACKAGES[nfs-kernel-server]="nfs-kernel-server"
+PKG_DESC[nfs-kernel-server]="Network File System server [APT]"
+PKG_METHOD[nfs-kernel-server]="apt"
+PKG_CATEGORY[nfs-kernel-server]="system"
+
 PACKAGES[localsend]="localsend"
 PKG_DESC[localsend]="LocalSend file sharing [SNP]"
 PKG_METHOD[localsend]="snap"
@@ -1035,23 +1600,44 @@ PKG_DEPS[localsend]="snapd"
 PACKAGES[spotify]="spotify"
 PKG_DESC[spotify]="Music streaming service [SNP]"
 PKG_METHOD[spotify]="snap"
-PKG_CATEGORY[spotify]="multimedia"
+PKG_CATEGORY[spotify]="audio"
 
 PACKAGES[postman]="postman"
 PKG_DESC[postman]="API development platform [SNP]"
 PKG_METHOD[postman]="snap"
-PKG_CATEGORY[postman]="development"
+PKG_CATEGORY[postman]="dev"
+
+PACKAGES[bruno]="bruno"
+PKG_DESC[bruno]="Open-source Postman alternative [CUSTOM]"
+PKG_METHOD[bruno]="custom"
+PKG_CATEGORY[bruno]="dev"
+
+PACKAGES[bruno-snap]="bruno"
+PKG_DESC[bruno-snap]="Open-source Postman alternative [SNAP]"
+PKG_METHOD[bruno-snap]="snap"
+PKG_CATEGORY[bruno-snap]="dev"
+
+PACKAGES[bruno-flatpak]="com.usebruno.Bruno"
+PKG_DESC[bruno-flatpak]="Open-source Postman alternative [FLATPAK]"
+PKG_METHOD[bruno-flatpak]="flatpak"
+PKG_CATEGORY[bruno-flatpak]="dev"
+PKG_DEPS[bruno-flatpak]="flatpak"
+
+PACKAGES[yaak]="yaak"
+PKG_DESC[yaak]="Modern API client [DEB]"
+PKG_METHOD[yaak]="custom"
+PKG_CATEGORY[yaak]="dev"
 
 # DESKTOP APPS
 PACKAGES[obs-studio]="obs-studio"
 PKG_DESC[obs-studio]="OBS Studio streaming/recording [APT]"
 PKG_METHOD[obs-studio]="apt"
-PKG_CATEGORY[obs-studio]="multimedia"
+PKG_CATEGORY[obs-studio]="video"
 
 PACKAGES[vlc]="vlc"
 PKG_DESC[vlc]="VLC media player [APT]"
 PKG_METHOD[vlc]="apt"
-PKG_CATEGORY[vlc]="multimedia"
+PKG_CATEGORY[vlc]="video"
 
 # CLOUD & SYNC
 PACKAGES[rclone]="rclone"
@@ -1078,6 +1664,16 @@ PACKAGES[google-drive-ocamlfuse]="google-drive-ocamlfuse"
 PKG_DESC[google-drive-ocamlfuse]="Google Drive filesystem [APT]"
 PKG_METHOD[google-drive-ocamlfuse]="apt"
 PKG_CATEGORY[google-drive-ocamlfuse]="cloud"
+
+PACKAGES[nextcloud-server]="nextcloud-server"
+PKG_DESC[nextcloud-server]="Self-hosted cloud storage server [SNAP]"
+PKG_METHOD[nextcloud-server]="snap"
+PKG_CATEGORY[nextcloud-server]="cloud"
+
+PACKAGES[seafile]="seafile"
+PKG_DESC[seafile]="Lightweight cloud storage with sync [CUSTOM]"
+PKG_METHOD[seafile]="custom"
+PKG_CATEGORY[seafile]="cloud"
 
 # TERMINALS
 PACKAGES[warp-terminal]="warp-terminal"
@@ -1109,28 +1705,28 @@ PKG_CATEGORY[ghostty]="terminals"
 PACKAGES[steam]="steam"
 PKG_DESC[steam]="Steam gaming platform [APT]"
 PKG_METHOD[steam]="apt"
-PKG_CATEGORY[steam]="gaming"
+PKG_CATEGORY[steam]="gaming-platforms"
 
 PACKAGES[heroic-launcher]="heroic"
 PKG_DESC[heroic-launcher]="Open-source Epic Games/GOG launcher [SNP]"
 PKG_METHOD[heroic-launcher]="snap"
-PKG_CATEGORY[heroic-launcher]="gaming"
+PKG_CATEGORY[heroic-launcher]="gaming-platforms"
 PKG_DEPS[heroic-launcher]="snapd"
 
 PACKAGES[lutris]="lutris"
 PKG_DESC[lutris]="Gaming on Linux made easy [APT]"
 PKG_METHOD[lutris]="apt"
-PKG_CATEGORY[lutris]="gaming"
+PKG_CATEGORY[lutris]="gaming-platforms"
 
 PACKAGES[gamemode]="gamemode"
 PKG_DESC[gamemode]="Optimize gaming performance [APT]"
 PKG_METHOD[gamemode]="apt"
-PKG_CATEGORY[gamemode]="gaming"
+PKG_CATEGORY[gamemode]="gaming-platforms"
 
 PACKAGES[gimp]="gimp"
 PKG_DESC[gimp]="GIMP image editor [APT]"
 PKG_METHOD[gimp]="apt"
-PKG_CATEGORY[gimp]="multimedia"
+PKG_CATEGORY[gimp]="graphics"
 
 # OFFICE & PRODUCTIVITY
 PACKAGES[libreoffice]="libreoffice"
@@ -1173,17 +1769,17 @@ PKG_CATEGORY[zoom]="communication"
 PACKAGES[audacity]="audacity"
 PKG_DESC[audacity]="Audacity audio editor [APT]"
 PKG_METHOD[audacity]="apt"
-PKG_CATEGORY[audacity]="multimedia"
+PKG_CATEGORY[audacity]="audio"
 
 PACKAGES[blender]="blender"
 PKG_DESC[blender]="Blender 3D creation suite [SNP]"
 PKG_METHOD[blender]="snap"
-PKG_CATEGORY[blender]="multimedia"
+PKG_CATEGORY[blender]="graphics"
 
 PACKAGES[inkscape]="inkscape"
 PKG_DESC[inkscape]="Inkscape vector graphics editor [APT]"
 PKG_METHOD[inkscape]="apt"
-PKG_CATEGORY[inkscape]="multimedia"
+PKG_CATEGORY[inkscape]="graphics"
 
 # AI & MODERN TOOLS
 PACKAGES[ollama]="ollama"
@@ -1196,20 +1792,338 @@ PKG_DESC[gollama]="Advanced LLM model management and interaction tool [DEB]"
 PKG_METHOD[gollama]="custom"
 PKG_CATEGORY[gollama]="ai"
 
+PACKAGES[lm-studio]="lm-studio"
+PKG_DESC[lm-studio]="GUI for local LLMs (Ollama compatible) [APPIMAGE]"
+PKG_METHOD[lm-studio]="custom"
+PKG_CATEGORY[lm-studio]="ai"
+
+PACKAGES[text-generation-webui]="text-generation-webui"
+PKG_DESC[text-generation-webui]="Self-hosted interface for local LLMs [GIT]"
+PKG_METHOD[text-generation-webui]="custom"
+PKG_CATEGORY[text-generation-webui]="ai"
+
+PACKAGES[whisper-cpp]="whisper-cpp"
+PKG_DESC[whisper-cpp]="Offline speech-to-text engine [BUILD]"
+PKG_METHOD[whisper-cpp]="custom"
+PKG_CATEGORY[whisper-cpp]="ai"
+
+PACKAGES[comfyui]="comfyui"
+PKG_DESC[comfyui]="Visual Stable Diffusion node-based interface [GIT]"
+PKG_METHOD[comfyui]="custom"
+PKG_CATEGORY[comfyui]="ai"
+
+PACKAGES[invokeai]="invokeai"
+PKG_DESC[invokeai]="Stable Diffusion image generator [PYTHON]"
+PKG_METHOD[invokeai]="custom"
+PKG_CATEGORY[invokeai]="ai"
+
+PACKAGES[lmdeploy]="lmdeploy"
+PKG_DESC[lmdeploy]="Lightweight framework to serve LLMs efficiently [PIP]"
+PKG_METHOD[lmdeploy]="pip"
+PKG_CATEGORY[lmdeploy]="ai"
+
+PACKAGES[koboldcpp]="koboldcpp"
+PKG_DESC[koboldcpp]="LLM interface optimized for story and RP generation [BIN]"
+PKG_METHOD[koboldcpp]="custom"
+PKG_CATEGORY[koboldcpp]="ai"
+
+PACKAGES[automatic1111]="automatic1111"
+PKG_DESC[automatic1111]="Stable Diffusion WebUI - feature-packed interface [GIT]"
+PKG_METHOD[automatic1111]="custom"
+PKG_CATEGORY[automatic1111]="ai"
+
+PACKAGES[fooocus]="fooocus"
+PKG_DESC[fooocus]="Simplified Stable Diffusion frontend - zero-config [GIT]"
+PKG_METHOD[fooocus]="custom"
+PKG_CATEGORY[fooocus]="ai"
+
+PACKAGES[sd-next]="sd-next"
+PKG_DESC[sd-next]="Modernized fork of A1111 with optimizations [GIT]"
+PKG_METHOD[sd-next]="custom"
+PKG_CATEGORY[sd-next]="ai"
+
+PACKAGES[kohya-ss-gui]="kohya-ss-gui"
+PKG_DESC[kohya-ss-gui]="Fine-tune and train models with GUI [GIT]"
+PKG_METHOD[kohya-ss-gui]="custom"
+PKG_CATEGORY[kohya-ss-gui]="ai"
+
+PACKAGES[faster-whisper]="faster-whisper"
+PKG_DESC[faster-whisper]="Optimized Python Whisper with CTranslate2 [PIP]"
+PKG_METHOD[faster-whisper]="pip"
+PKG_CATEGORY[faster-whisper]="ai"
+
+PACKAGES[whisperx]="whisperx"
+PKG_DESC[whisperx]="Whisper with speaker diarization support [PIP]"
+PKG_METHOD[whisperx]="pip"
+PKG_CATEGORY[whisperx]="ai"
+
+PACKAGES[coqui-stt]="coqui-stt"
+PKG_DESC[coqui-stt]="Open-source speech-to-text engine [PIP]"
+PKG_METHOD[coqui-stt]="pip"
+PKG_CATEGORY[coqui-stt]="ai"
+
+PACKAGES[piper-tts]="piper-tts"
+PKG_DESC[piper-tts]="Modern local text-to-speech by Rhasspy [PIP]"
+PKG_METHOD[piper-tts]="pip"
+PKG_CATEGORY[piper-tts]="ai"
+
+PACKAGES[mimic3]="mimic3"
+PKG_DESC[mimic3]="Neural voice synthesis by Mycroft AI [PIP]"
+PKG_METHOD[mimic3]="pip"
+PKG_CATEGORY[mimic3]="ai"
+
+PACKAGES[coqui-tts]="coqui-tts"
+PKG_DESC[coqui-tts]="Deep-learning TTS with voice cloning [PIP]"
+PKG_METHOD[coqui-tts]="pip"
+PKG_CATEGORY[coqui-tts]="ai"
+
 PACKAGES[ffmpeg]="ffmpeg"
 PKG_DESC[ffmpeg]="Complete multimedia processing toolkit [APT]"
 PKG_METHOD[ffmpeg]="apt"
-PKG_CATEGORY[ffmpeg]="multimedia"
+PKG_CATEGORY[ffmpeg]="video"
 
 PACKAGES[yt-dlp]="yt-dlp"
 PKG_DESC[yt-dlp]="Modern YouTube/media downloader (youtube-dl fork) [PIP]"
 PKG_METHOD[yt-dlp]="custom"
-PKG_CATEGORY[yt-dlp]="multimedia"
+PKG_CATEGORY[yt-dlp]="video"
+
+PACKAGES[freetube]="freetube"
+PKG_DESC[freetube]="Privacy-focused YouTube client [FLATPAK]"
+PKG_METHOD[freetube]="flatpak"
+PKG_CATEGORY[freetube]="video"
+
+PACKAGES[invidious]="invidious"
+PKG_DESC[invidious]="Alternative YouTube frontend [CUSTOM]"
+PKG_METHOD[invidious]="custom"
+PKG_CATEGORY[invidious]="video"
+
+PACKAGES[mpv]="mpv"
+PKG_DESC[mpv]="Minimalist media player [APT]"
+PKG_METHOD[mpv]="apt"
+PKG_CATEGORY[mpv]="video"
+
+PACKAGES[kodi]="kodi"
+PKG_DESC[kodi]="Open-source media center [APT]"
+PKG_METHOD[kodi]="apt"
+PKG_CATEGORY[kodi]="media-servers"
+
+PACKAGES[stremio]="stremio"
+PKG_DESC[stremio]="Modern media center with streaming [FLATPAK]"
+PKG_METHOD[stremio]="flatpak"
+PKG_CATEGORY[stremio]="media-servers"
+
+# MEDIA SERVERS & STREAMING
+PACKAGES[plex]="plexmediaserver"
+PKG_DESC[plex]="Plex Media Server [CUSTOM]"
+PKG_METHOD[plex]="custom"
+PKG_CATEGORY[plex]="media-servers"
+
+PACKAGES[jellyfin]="jellyfin"
+PKG_DESC[jellyfin]="Free media server [APT]"
+PKG_METHOD[jellyfin]="apt"
+PKG_CATEGORY[jellyfin]="media-servers"
+
+PACKAGES[ums]="ums"
+PKG_DESC[ums]="Universal Media Server [CUSTOM]"
+PKG_METHOD[ums]="custom"
+PKG_CATEGORY[ums]="media-servers"
+
+# MUSIC PRODUCTION & AUDIO
+PACKAGES[ardour]="ardour"
+PKG_DESC[ardour]="Professional digital audio workstation [APT]"
+PKG_METHOD[ardour]="apt"
+PKG_CATEGORY[ardour]="audio"
+
+PACKAGES[lmms]="lmms"
+PKG_DESC[lmms]="Free pattern-based music production suite [APT]"
+PKG_METHOD[lmms]="apt"
+PKG_CATEGORY[lmms]="audio"
+
+PACKAGES[mixxx]="mixxx"
+PKG_DESC[mixxx]="Open-source DJ software [APT]"
+PKG_METHOD[mixxx]="apt"
+PKG_CATEGORY[mixxx]="audio"
+
+# GAMING & EMULATION
+PACKAGES[retroarch]="retroarch"
+PKG_DESC[retroarch]="Multi-system emulator frontend [APT]"
+PKG_METHOD[retroarch]="apt"
+PKG_CATEGORY[retroarch]="gaming-emulators"
+
+PACKAGES[retroarch-snap]="retroarch"
+PKG_DESC[retroarch-snap]="Multi-system emulator frontend [SNAP]"
+PKG_METHOD[retroarch-snap]="snap"
+PKG_CATEGORY[retroarch-snap]="gaming-emulators"
+
+PACKAGES[retroarch-flatpak]="org.libretro.RetroArch"
+PKG_DESC[retroarch-flatpak]="Multi-system emulator frontend [FLATPAK]"
+PKG_METHOD[retroarch-flatpak]="flatpak"
+PKG_CATEGORY[retroarch-flatpak]="gaming-emulators"
+
+PACKAGES[mame]="mame"
+PKG_DESC[mame]="Multiple Arcade Machine Emulator [APT]"
+PKG_METHOD[mame]="apt"
+PKG_CATEGORY[mame]="gaming-emulators"
+
+PACKAGES[mame-flatpak]="net.mame.MAME"
+PKG_DESC[mame-flatpak]="Multiple Arcade Machine Emulator [FLATPAK]"
+PKG_METHOD[mame-flatpak]="flatpak"
+PKG_CATEGORY[mame-flatpak]="gaming-emulators"
+
+PACKAGES[dolphin-emu]="dolphin-emu"
+PKG_DESC[dolphin-emu]="GameCube and Wii emulator [APT]"
+PKG_METHOD[dolphin-emu]="apt"
+PKG_CATEGORY[dolphin-emu]="gaming-emulators"
+
+PACKAGES[dolphin-emu-flatpak]="org.DolphinEmu.dolphin-emu"
+PKG_DESC[dolphin-emu-flatpak]="GameCube and Wii emulator [FLATPAK]"
+PKG_METHOD[dolphin-emu-flatpak]="flatpak"
+PKG_CATEGORY[dolphin-emu-flatpak]="gaming-emulators"
+
+PACKAGES[pcsx2]="pcsx2"
+PKG_DESC[pcsx2]="PlayStation 2 emulator [APT]"
+PKG_METHOD[pcsx2]="apt"
+PKG_CATEGORY[pcsx2]="gaming-emulators"
+
+PACKAGES[pcsx2-flatpak]="net.pcsx2.PCSX2"
+PKG_DESC[pcsx2-flatpak]="PlayStation 2 emulator [FLATPAK]"
+PKG_METHOD[pcsx2-flatpak]="flatpak"
+PKG_CATEGORY[pcsx2-flatpak]="gaming-emulators"
+
+PACKAGES[rpcs3-flatpak]="net.rpcs3.RPCS3"
+PKG_DESC[rpcs3-flatpak]="PlayStation 3 emulator [FLATPAK]"
+PKG_METHOD[rpcs3-flatpak]="flatpak"
+PKG_CATEGORY[rpcs3-flatpak]="gaming-emulators"
+
+PACKAGES[yuzu-flatpak]="org.yuzu_emu.yuzu"
+PKG_DESC[yuzu-flatpak]="Nintendo Switch emulator [FLATPAK]"
+PKG_METHOD[yuzu-flatpak]="flatpak"
+PKG_CATEGORY[yuzu-flatpak]="gaming-emulators"
+
+PACKAGES[cemu-flatpak]="info.cemu.Cemu"
+PKG_DESC[cemu-flatpak]="Wii U emulator [FLATPAK]"
+PKG_METHOD[cemu-flatpak]="flatpak"
+PKG_CATEGORY[cemu-flatpak]="gaming-emulators"
+
+PACKAGES[mednafen]="mednafen"
+PKG_DESC[mednafen]="Multi-system accurate emulator [APT]"
+PKG_METHOD[mednafen]="apt"
+PKG_CATEGORY[mednafen]="gaming-emulators"
+
+PACKAGES[duckstation-flatpak]="org.duckstation.DuckStation"
+PKG_DESC[duckstation-flatpak]="PlayStation 1 emulator [FLATPAK]"
+PKG_METHOD[duckstation-flatpak]="flatpak"
+PKG_CATEGORY[duckstation-flatpak]="gaming-emulators"
+
+PACKAGES[bsnes]="bsnes"
+PKG_DESC[bsnes]="Super Nintendo emulator [APT]"
+PKG_METHOD[bsnes]="apt"
+PKG_CATEGORY[bsnes]="gaming-emulators"
+
+PACKAGES[mgba]="mgba-qt"
+PKG_DESC[mgba]="Game Boy Advance emulator [APT]"
+PKG_METHOD[mgba]="apt"
+PKG_CATEGORY[mgba]="gaming-emulators"
+
+PACKAGES[mgba-snap]="mgba"
+PKG_DESC[mgba-snap]="Game Boy Advance emulator [SNAP]"
+PKG_METHOD[mgba-snap]="snap"
+PKG_CATEGORY[mgba-snap]="gaming-emulators"
+
+PACKAGES[mgba-flatpak]="io.mgba.mGBA"
+PKG_DESC[mgba-flatpak]="Game Boy Advance emulator [FLATPAK]"
+PKG_METHOD[mgba-flatpak]="flatpak"
+PKG_CATEGORY[mgba-flatpak]="gaming-emulators"
+
+PACKAGES[desmume]="desmume"
+PKG_DESC[desmume]="Nintendo DS emulator [APT]"
+PKG_METHOD[desmume]="apt"
+PKG_CATEGORY[desmume]="gaming-emulators"
+
+PACKAGES[desmume-flatpak]="org.desmume.DeSmuME"
+PKG_DESC[desmume-flatpak]="Nintendo DS emulator [FLATPAK]"
+PKG_METHOD[desmume-flatpak]="flatpak"
+PKG_CATEGORY[desmume-flatpak]="gaming-emulators"
+
+PACKAGES[citra]="citra"
+PKG_DESC[citra]="Nintendo 3DS emulator [APT]"
+PKG_METHOD[citra]="apt"
+PKG_CATEGORY[citra]="gaming-emulators"
+
+PACKAGES[citra-flatpak]="org.citra_emu.citra"
+PKG_DESC[citra-flatpak]="Nintendo 3DS emulator [FLATPAK]"
+PKG_METHOD[citra-flatpak]="flatpak"
+PKG_CATEGORY[citra-flatpak]="gaming-emulators"
+
+PACKAGES[dosbox]="dosbox"
+PKG_DESC[dosbox]="DOS emulator [APT]"
+PKG_METHOD[dosbox]="apt"
+PKG_CATEGORY[dosbox]="gaming-emulators"
+
+PACKAGES[dosbox-snap]="dosbox"
+PKG_DESC[dosbox-snap]="DOS emulator [SNAP]"
+PKG_METHOD[dosbox-snap]="snap"
+PKG_CATEGORY[dosbox-snap]="gaming-emulators"
+
+PACKAGES[dosbox-flatpak]="com.dosbox.DOSBox"
+PKG_DESC[dosbox-flatpak]="DOS emulator [FLATPAK]"
+PKG_METHOD[dosbox-flatpak]="flatpak"
+PKG_CATEGORY[dosbox-flatpak]="gaming-emulators"
+
+PACKAGES[mupen64plus]="mupen64plus-qt"
+PKG_DESC[mupen64plus]="Nintendo 64 emulator [APT]"
+PKG_METHOD[mupen64plus]="apt"
+PKG_CATEGORY[mupen64plus]="gaming-emulators"
+
+PACKAGES[scummvm]="scummvm"
+PKG_DESC[scummvm]="Adventure game engine [APT]"
+PKG_METHOD[scummvm]="apt"
+PKG_CATEGORY[scummvm]="gaming-emulators"
+
+PACKAGES[scummvm-snap]="scummvm"
+PKG_DESC[scummvm-snap]="Adventure game engine [SNAP]"
+PKG_METHOD[scummvm-snap]="snap"
+PKG_CATEGORY[scummvm-snap]="gaming-emulators"
+
+PACKAGES[scummvm-flatpak]="org.scummvm.ScummVM"
+PKG_DESC[scummvm-flatpak]="Adventure game engine [FLATPAK]"
+PKG_METHOD[scummvm-flatpak]="flatpak"
+PKG_CATEGORY[scummvm-flatpak]="gaming-emulators"
+
+PACKAGES[qemu]="qemu-system"
+PKG_DESC[qemu]="System hardware emulator [APT]"
+PKG_METHOD[qemu]="apt"
+PKG_CATEGORY[qemu]="gaming-emulators"
+
+PACKAGES[wine]="wine"
+PKG_DESC[wine]="Windows API compatibility layer [APT]"
+PKG_METHOD[wine]="apt"
+PKG_CATEGORY[wine]="gaming-platforms"
+
+PACKAGES[wine-snap]="wine-platform-runtime"
+PKG_DESC[wine-snap]="Windows API compatibility layer [SNAP]"
+PKG_METHOD[wine-snap]="snap"
+PKG_CATEGORY[wine-snap]="gaming-platforms"
+
+PACKAGES[wine-flatpak]="org.winehq.Wine"
+PKG_DESC[wine-flatpak]="Windows API compatibility layer [FLATPAK]"
+PKG_METHOD[wine-flatpak]="flatpak"
+PKG_CATEGORY[wine-flatpak]="gaming-platforms"
+
+PACKAGES[stella]="stella"
+PKG_DESC[stella]="Atari 2600 emulator [APT]"
+PKG_METHOD[stella]="apt"
+PKG_CATEGORY[stella]="gaming-emulators"
+
+PACKAGES[dosbox-staging]="dosbox-staging"
+PKG_DESC[dosbox-staging]="DOS emulator for retro PC games [APT]"
+PKG_METHOD[dosbox-staging]="apt"
+PKG_CATEGORY[dosbox-staging]="gaming-emulators"
 
 PACKAGES[n8n]="n8n"
 PKG_DESC[n8n]="Workflow automation tool (self-hosted Zapier alternative) [NPM]"
 PKG_METHOD[n8n]="custom"
-PKG_CATEGORY[n8n]="development"
+PKG_CATEGORY[n8n]="dev"
 
 # ==============================================================================
 # ALTERNATIVE INSTALLATION METHODS
@@ -1256,31 +2170,31 @@ PKG_DEPS[chromium-flatpak]="flatpak"
 PACKAGES[vlc-snap]="vlc"
 PKG_DESC[vlc-snap]="VLC media player [SNP] - Alternative to APT version"
 PKG_METHOD[vlc-snap]="snap"
-PKG_CATEGORY[vlc-snap]="multimedia"
+PKG_CATEGORY[vlc-snap]="video"
 
 PACKAGES[vlc-flatpak]="org.videolan.VLC"
 PKG_DESC[vlc-flatpak]="VLC media player [FLT] - Alternative to APT version"
 PKG_METHOD[vlc-flatpak]="flatpak"
-PKG_CATEGORY[vlc-flatpak]="multimedia"
+PKG_CATEGORY[vlc-flatpak]="video"
 PKG_DEPS[vlc-flatpak]="flatpak"
 
 # GIMP alternatives
 PACKAGES[gimp-snap]="gimp"
 PKG_DESC[gimp-snap]="GIMP image editor [SNP] - Alternative to APT version"
 PKG_METHOD[gimp-snap]="snap"
-PKG_CATEGORY[gimp-snap]="multimedia"
+PKG_CATEGORY[gimp-snap]="graphics"
 
 PACKAGES[gimp-flatpak]="org.gimp.GIMP"
 PKG_DESC[gimp-flatpak]="GIMP image editor [FLT] - Alternative to APT version"
 PKG_METHOD[gimp-flatpak]="flatpak"
-PKG_CATEGORY[gimp-flatpak]="multimedia"
+PKG_CATEGORY[gimp-flatpak]="graphics"
 PKG_DEPS[gimp-flatpak]="flatpak"
 
 # OBS Studio alternatives
 PACKAGES[obs-studio-flatpak]="com.obsproject.Studio"
 PKG_DESC[obs-studio-flatpak]="OBS Studio streaming/recording [FLT] - Alternative to APT version"
 PKG_METHOD[obs-studio-flatpak]="flatpak"
-PKG_CATEGORY[obs-studio-flatpak]="multimedia"
+PKG_CATEGORY[obs-studio-flatpak]="video"
 PKG_DEPS[obs-studio-flatpak]="flatpak"
 
 # Discord alternatives (APT version)
@@ -1299,47 +2213,1546 @@ PKG_DEPS[discord-flatpak]="flatpak"
 PACKAGES[audacity-snap]="audacity"
 PKG_DESC[audacity-snap]="Audacity audio editor [SNP] - Alternative to APT version"
 PKG_METHOD[audacity-snap]="snap"
-PKG_CATEGORY[audacity-snap]="multimedia"
+PKG_CATEGORY[audacity-snap]="audio"
 
 PACKAGES[audacity-flatpak]="org.audacityteam.Audacity"
 PKG_DESC[audacity-flatpak]="Audacity audio editor [FLT] - Alternative to APT version"
 PKG_METHOD[audacity-flatpak]="flatpak"
-PKG_CATEGORY[audacity-flatpak]="multimedia"
+PKG_CATEGORY[audacity-flatpak]="audio"
 PKG_DEPS[audacity-flatpak]="flatpak"
 
 # Inkscape alternatives
 PACKAGES[inkscape-snap]="inkscape"
 PKG_DESC[inkscape-snap]="Inkscape vector graphics [SNP] - Alternative to APT version"
 PKG_METHOD[inkscape-snap]="snap"
-PKG_CATEGORY[inkscape-snap]="multimedia"
+PKG_CATEGORY[inkscape-snap]="graphics"
 
 PACKAGES[inkscape-flatpak]="org.inkscape.Inkscape"
 PKG_DESC[inkscape-flatpak]="Inkscape vector graphics [FLT] - Alternative to APT version"
 PKG_METHOD[inkscape-flatpak]="flatpak"
-PKG_CATEGORY[inkscape-flatpak]="multimedia"
+PKG_CATEGORY[inkscape-flatpak]="graphics"
 PKG_DEPS[inkscape-flatpak]="flatpak"
 
 # Drawing and Creative Tools
 PACKAGES[webcamize]="webcamize"
 PKG_DESC[webcamize]="Webcam effects and virtual camera tool [APT]"
 PKG_METHOD[webcamize]="apt"
-PKG_CATEGORY[webcamize]="multimedia"
+PKG_CATEGORY[webcamize]="graphics"
 
 PACKAGES[durdraw]="durdraw"
 PKG_DESC[durdraw]="ASCII art drawing and animation tool [PIP]"
 PKG_METHOD[durdraw]="pip"
-PKG_CATEGORY[durdraw]="multimedia"
+PKG_CATEGORY[durdraw]="graphics"
 
 PACKAGES[pastel]="pastel"
 PKG_DESC[pastel]="Command-line tool for color manipulation and palette generation [APT]"
 PKG_METHOD[pastel]="apt"
-PKG_CATEGORY[pastel]="multimedia"
+PKG_CATEGORY[pastel]="graphics"
 
 # Disk Management Tools
 PACKAGES[dysk]="dysk"
 PKG_DESC[dysk]="Modern disk usage analyzer with colorful output [CARGO]"
 PKG_METHOD[dysk]="cargo"
 PKG_CATEGORY[dysk]="system"
+
+# STORAGE MANAGEMENT
+PACKAGES[lvm2]="lvm2"
+PKG_DESC[lvm2]="Logical Volume Manager for flexible disk management [APT]"
+PKG_METHOD[lvm2]="apt"
+PKG_CATEGORY[lvm2]="system"
+
+PACKAGES[snapraid]="snapraid"
+PKG_DESC[snapraid]="Parity protection for different sized disks [CUSTOM]"
+PKG_METHOD[snapraid]="custom"
+PKG_CATEGORY[snapraid]="system"
+
+PACKAGES[greyhole]="greyhole"
+PKG_DESC[greyhole]="Samba-based storage pooling with redundancy [CUSTOM]"
+PKG_METHOD[greyhole]="custom"
+PKG_CATEGORY[greyhole]="system"
+
+PACKAGES[mergerfs]="mergerfs"
+PKG_DESC[mergerfs]="Union filesystem for pooling drives [CUSTOM]"
+PKG_METHOD[mergerfs]="custom"
+PKG_CATEGORY[mergerfs]="system"
+
+# Additional CLI tools from awesome-cli-apps
+PACKAGES[nmap]="nmap"
+PKG_DESC[nmap]="Network exploration tool and security scanner [APT]"
+PKG_METHOD[nmap]="apt"
+PKG_CATEGORY[nmap]="network-monitoring"
+
+PACKAGES[httpie]="httpie"
+PKG_DESC[httpie]="Modern command-line HTTP client [APT]"
+PKG_METHOD[httpie]="apt"
+PKG_CATEGORY[httpie]="dev"
+
+PACKAGES[ranger]="ranger"
+PKG_DESC[ranger]="Console file manager with VI key bindings [APT]"
+PKG_METHOD[ranger]="apt"
+PKG_CATEGORY[ranger]="utilities"
+
+PACKAGES[mc]="mc"
+PKG_DESC[mc]="Midnight Commander file manager [APT]"
+PKG_METHOD[mc]="apt"
+PKG_CATEGORY[mc]="utilities"
+
+PACKAGES[ag]="silversearcher-ag"
+PKG_DESC[ag]="The Silver Searcher - fast text search [APT]"
+PKG_METHOD[ag]="apt"
+PKG_CATEGORY[ag]="utilities"
+
+PACKAGES[thefuck]="thefuck"
+PKG_DESC[thefuck]="Corrects errors in previous console commands [PIP]"
+PKG_METHOD[thefuck]="pip"
+PKG_CATEGORY[thefuck]="utilities"
+
+PACKAGES[lazygit]="lazygit"
+PKG_DESC[lazygit]="Simple terminal UI for git commands [CUSTOM]"
+PKG_METHOD[lazygit]="custom"
+PKG_CATEGORY[lazygit]="dev"
+
+PACKAGES[glow]="glow"
+PKG_DESC[glow]="Terminal based markdown reader [CUSTOM]"
+PKG_METHOD[glow]="custom"
+PKG_CATEGORY[glow]="utilities"
+
+PACKAGES[cheat]="cheat"
+PKG_DESC[cheat]="Interactive cheatsheets on the command-line [CUSTOM]"
+PKG_METHOD[cheat]="custom"
+PKG_CATEGORY[cheat]="utilities"
+
+PACKAGES[broot]="broot"
+PKG_DESC[broot]="A new way to see and navigate directory trees [CUSTOM]"
+PKG_METHOD[broot]="custom"
+PKG_CATEGORY[broot]="utilities"
+
+PACKAGES[dog]="dog"
+PKG_DESC[dog]="Command-line DNS lookup tool [CUSTOM]"
+PKG_METHOD[dog]="custom"
+PKG_CATEGORY[dog]="network-monitoring"
+
+# Entertainment
+PACKAGES[newsboat]="newsboat"
+PKG_DESC[newsboat]="An RSS/Atom feed reader for text terminals [APT]"
+PKG_METHOD[newsboat]="apt"
+PKG_CATEGORY[newsboat]="fun"
+
+PACKAGES[mal-cli]="mal-cli"
+PKG_DESC[mal-cli]="MyAnimeList command line client [CUSTOM]"
+PKG_METHOD[mal-cli]="custom"
+PKG_CATEGORY[mal-cli]="fun"
+
+# Music
+PACKAGES[cmus]="cmus"
+PKG_DESC[cmus]="Small, fast and powerful console music player [APT]"
+PKG_METHOD[cmus]="apt"
+PKG_CATEGORY[cmus]="audio"
+
+PACKAGES[pianobar]="pianobar"
+PKG_DESC[pianobar]="Console-based Pandora client [APT]"
+PKG_METHOD[pianobar]="apt"
+PKG_CATEGORY[pianobar]="audio"
+
+PACKAGES[somafm-cli]="somafm-cli"
+PKG_DESC[somafm-cli]="Listen to SomaFM in your terminal [CUSTOM]"
+PKG_METHOD[somafm-cli]="custom"
+PKG_CATEGORY[somafm-cli]="audio"
+
+PACKAGES[mpd]="mpd"
+PKG_DESC[mpd]="Music Player Daemon [APT]"
+PKG_METHOD[mpd]="apt"
+PKG_CATEGORY[mpd]="audio"
+
+PACKAGES[ncmpcpp]="ncmpcpp"
+PKG_DESC[ncmpcpp]="NCurses Music Player Client (Plus Plus) [APT]"
+PKG_METHOD[ncmpcpp]="apt"
+PKG_CATEGORY[ncmpcpp]="audio"
+
+PACKAGES[moc]="moc"
+PKG_DESC[moc]="Console audio player for Linux/UNIX [APT]"
+PKG_METHOD[moc]="apt"
+PKG_CATEGORY[moc]="audio"
+
+PACKAGES[musikcube]="musikcube"
+PKG_DESC[musikcube]="Cross-platform terminal-based music player [CUSTOM]"
+PKG_METHOD[musikcube]="custom"
+PKG_CATEGORY[musikcube]="audio"
+
+PACKAGES[beets]="beets"
+PKG_DESC[beets]="Music library manager and MusicBrainz tagger [APT]"
+PKG_METHOD[beets]="apt"
+PKG_CATEGORY[beets]="audio"
+
+PACKAGES[spotify-tui]="spotify-tui"
+PKG_DESC[spotify-tui]="Spotify for the terminal written in Rust [CUSTOM]"
+PKG_METHOD[spotify-tui]="custom"
+PKG_CATEGORY[spotify-tui]="audio"
+
+PACKAGES[swaglyrics-for-spotify]="swaglyrics-for-spotify"
+PKG_DESC[swaglyrics-for-spotify]="Spotify lyrics in your terminal [CUSTOM]"
+PKG_METHOD[swaglyrics-for-spotify]="custom"
+PKG_CATEGORY[swaglyrics-for-spotify]="audio"
+
+PACKAGES[dzr]="dzr"
+PKG_DESC[dzr]="Command line Deezer player [CUSTOM]"
+PKG_METHOD[dzr]="custom"
+PKG_CATEGORY[dzr]="audio"
+
+PACKAGES[radio-active]="radio-active"
+PKG_DESC[radio-active]="Internet radio player with 40k+ stations [CUSTOM]"
+PKG_METHOD[radio-active]="custom"
+PKG_CATEGORY[radio-active]="audio"
+
+PACKAGES[mpvc]="mpvc"
+PKG_DESC[mpvc]="Music player interfacing mpv [CUSTOM]"
+PKG_METHOD[mpvc]="custom"
+PKG_CATEGORY[mpvc]="audio"
+
+# Video
+PACKAGES[streamlink]="streamlink"
+PKG_DESC[streamlink]="Extract streams from various websites [APT]"
+PKG_METHOD[streamlink]="apt"
+PKG_CATEGORY[streamlink]="video"
+
+PACKAGES[mps-youtube]="mps-youtube"
+PKG_DESC[mps-youtube]="Terminal based YouTube player and downloader [CUSTOM]"
+PKG_METHOD[mps-youtube]="custom"
+PKG_CATEGORY[mps-youtube]="video"
+
+PACKAGES[editly]="editly"
+PKG_DESC[editly]="Declarative command line video editing [CUSTOM]"
+PKG_METHOD[editly]="custom"
+PKG_CATEGORY[editly]="video"
+
+# Movies
+PACKAGES[moviemon]="moviemon"
+PKG_DESC[moviemon]="Everything about your movies within the command line [CUSTOM]"
+PKG_METHOD[moviemon]="custom"
+PKG_CATEGORY[moviemon]="fun"
+
+PACKAGES[movie]="movie"
+PKG_DESC[movie]="Get movie info or compare movies in terminal [CUSTOM]"
+PKG_METHOD[movie]="custom"
+PKG_CATEGORY[movie]="fun"
+
+# Games
+PACKAGES[pokete]="pokete"
+PKG_DESC[pokete]="A terminal based Pokemon like game [CUSTOM]"
+PKG_METHOD[pokete]="custom"
+PKG_CATEGORY[pokete]="fun"
+
+# Books
+PACKAGES[epr]="epr"
+PKG_DESC[epr]="CLI Epub reader [CUSTOM]"
+PKG_METHOD[epr]="custom"
+PKG_CATEGORY[epr]="utilities"
+
+PACKAGES[speedread]="speedread"
+PKG_DESC[speedread]="A simple terminal-based speed reading tool [CUSTOM]"
+PKG_METHOD[speedread]="custom"
+PKG_CATEGORY[speedread]="utilities"
+
+PACKAGES[medium-cli]="medium-cli"
+PKG_DESC[medium-cli]="Read medium.com stories within terminal [CUSTOM]"
+PKG_METHOD[medium-cli]="custom"
+PKG_CATEGORY[medium-cli]="utilities"
+
+PACKAGES[hygg]="hygg"
+PKG_DESC[hygg]="Document reader for various formats [CUSTOM]"
+PKG_METHOD[hygg]="custom"
+PKG_CATEGORY[hygg]="utilities"
+
+# Chat
+PACKAGES[weechat]="weechat"
+PKG_DESC[weechat]="Fast, light and extensible chat client [APT]"
+PKG_METHOD[weechat]="apt"
+PKG_CATEGORY[weechat]="communication"
+
+PACKAGES[irssi]="irssi"
+PKG_DESC[irssi]="Terminal based IRC client [APT]"
+PKG_METHOD[irssi]="apt"
+PKG_CATEGORY[irssi]="communication"
+
+PACKAGES[kirc]="kirc"
+PKG_DESC[kirc]="A tiny IRC client written in POSIX C99 [CUSTOM]"
+PKG_METHOD[kirc]="custom"
+PKG_CATEGORY[kirc]="communication"
+
+# Development Tools
+PACKAGES[legit]="legit"
+PKG_DESC[legit]="Generate Open Source licenses as files or headers [CUSTOM]"
+PKG_METHOD[legit]="custom"
+PKG_CATEGORY[legit]="dev"
+
+PACKAGES[mklicense]="mklicense"
+PKG_DESC[mklicense]="Create a custom LICENSE file painlessly [CUSTOM]"
+PKG_METHOD[mklicense]="custom"
+PKG_CATEGORY[mklicense]="dev"
+
+PACKAGES[rebound]="rebound"
+PKG_DESC[rebound]="Fetch Stack Overflow results on compiler error [CUSTOM]"
+PKG_METHOD[rebound]="custom"
+PKG_CATEGORY[rebound]="dev"
+
+PACKAGES[foy]="foy"
+PKG_DESC[foy]="Lightweight general purpose task runner/build tool [CUSTOM]"
+PKG_METHOD[foy]="custom"
+PKG_CATEGORY[foy]="dev"
+
+PACKAGES[just]="just"
+PKG_DESC[just]="A handy way to save and run project-specific commands [CUSTOM]"
+PKG_METHOD[just]="custom"
+PKG_CATEGORY[just]="dev"
+
+PACKAGES[bcal]="bcal"
+PKG_DESC[bcal]="Byte CALculator for storage conversions and calculations [CUSTOM]"
+PKG_METHOD[bcal]="custom"
+PKG_CATEGORY[bcal]="dev"
+
+PACKAGES[bitwise]="bitwise"
+PKG_DESC[bitwise]="Base conversion and bit manipulation [CUSTOM]"
+PKG_METHOD[bitwise]="custom"
+PKG_CATEGORY[bitwise]="dev"
+
+PACKAGES[cgasm]="cgasm"
+PKG_DESC[cgasm]="x86 assembly documentation [CUSTOM]"
+PKG_METHOD[cgasm]="custom"
+PKG_CATEGORY[cgasm]="dev"
+
+PACKAGES[grex]="grex"
+PKG_DESC[grex]="Generate regular expressions from user-provided test cases [CUSTOM]"
+PKG_METHOD[grex]="custom"
+PKG_CATEGORY[grex]="dev"
+
+PACKAGES[iola]="iola"
+PKG_DESC[iola]="Socket client with REST API [CUSTOM]"
+PKG_METHOD[iola]="custom"
+PKG_CATEGORY[iola]="dev"
+
+PACKAGES[add-gitignore]="add-gitignore"
+PKG_DESC[add-gitignore]="Interactively generate a .gitignore for your project [CUSTOM]"
+PKG_METHOD[add-gitignore]="custom"
+PKG_CATEGORY[add-gitignore]="dev"
+
+PACKAGES[is-up-cli]="is-up-cli"
+PKG_DESC[is-up-cli]="Check if a domain is up [CUSTOM]"
+PKG_METHOD[is-up-cli]="custom"
+PKG_CATEGORY[is-up-cli]="dev"
+
+PACKAGES[reachable]="reachable"
+PKG_DESC[reachable]="Check if a domain is up [CUSTOM]"
+PKG_METHOD[reachable]="custom"
+PKG_CATEGORY[reachable]="dev"
+
+PACKAGES[diff2html-cli]="diff2html-cli"
+PKG_DESC[diff2html-cli]="Create pretty HTML from diffs [CUSTOM]"
+PKG_METHOD[diff2html-cli]="custom"
+PKG_CATEGORY[diff2html-cli]="dev"
+
+# Text Editors
+PACKAGES[vim]="vim"
+PKG_DESC[vim]="Vi IMproved - enhanced vi editor [APT]"
+PKG_METHOD[vim]="apt"
+PKG_CATEGORY[vim]="editors"
+
+PACKAGES[emacs]="emacs"
+PKG_DESC[emacs]="GNU Emacs editor [APT]"
+PKG_METHOD[emacs]="apt"
+PKG_CATEGORY[emacs]="editors"
+
+PACKAGES[kakoune]="kakoune"
+PKG_DESC[kakoune]="Modal editor inspired by vim [APT]"
+PKG_METHOD[kakoune]="apt"
+PKG_CATEGORY[kakoune]="editors"
+
+PACKAGES[o]="o"
+PKG_DESC[o]="Configuration-free text editor and IDE [CUSTOM]"
+PKG_METHOD[o]="custom"
+PKG_CATEGORY[o]="editors"
+
+PACKAGES[helix]="helix"
+PKG_DESC[helix]="A post-modern modal text editor [CUSTOM]"
+PKG_METHOD[helix]="custom"
+PKG_CATEGORY[helix]="editors"
+
+# Frontend Development
+PACKAGES[caniuse-cmd]="caniuse-cmd"
+PKG_DESC[caniuse-cmd]="Search caniuse.com about browser support [CUSTOM]"
+PKG_METHOD[caniuse-cmd]="custom"
+PKG_CATEGORY[caniuse-cmd]="dev"
+
+PACKAGES[strip-css-comments-cli]="strip-css-comments-cli"
+PKG_DESC[strip-css-comments-cli]="Strip comments from CSS [CUSTOM]"
+PKG_METHOD[strip-css-comments-cli]="custom"
+PKG_CATEGORY[strip-css-comments-cli]="dev"
+
+PACKAGES[viewport-list-cli]="viewport-list-cli"
+PKG_DESC[viewport-list-cli]="Return a list of devices and their viewports [CUSTOM]"
+PKG_METHOD[viewport-list-cli]="custom"
+PKG_CATEGORY[viewport-list-cli]="dev"
+
+PACKAGES[surge]="surge"
+PKG_DESC[surge]="Publish static websites for free [CUSTOM]"
+PKG_METHOD[surge]="custom"
+PKG_CATEGORY[surge]="dev"
+
+# Public localhost
+PACKAGES[localtunnel]="localtunnel"
+PKG_DESC[localtunnel]="Expose localhost to the world for easy testing [CUSTOM]"
+PKG_METHOD[localtunnel]="custom"
+PKG_CATEGORY[localtunnel]="dev"
+
+PACKAGES[tunnelmole]="tunnelmole"
+PKG_DESC[tunnelmole]="Connect to localhost from anywhere [CUSTOM]"
+PKG_METHOD[tunnelmole]="custom"
+PKG_CATEGORY[tunnelmole]="dev"
+
+# Mobile Development
+PACKAGES[mobicon-cli]="mobicon-cli"
+PKG_DESC[mobicon-cli]="Mobile app icon generator [CUSTOM]"
+PKG_METHOD[mobicon-cli]="custom"
+PKG_CATEGORY[mobicon-cli]="dev"
+
+PACKAGES[mobisplash-cli]="mobisplash-cli"
+PKG_DESC[mobisplash-cli]="Mobile app splash screen generator [CUSTOM]"
+PKG_METHOD[mobisplash-cli]="custom"
+PKG_CATEGORY[mobisplash-cli]="dev"
+
+PACKAGES[deviceframe]="deviceframe"
+PKG_DESC[deviceframe]="Put device frames around your screenshots [CUSTOM]"
+PKG_METHOD[deviceframe]="custom"
+PKG_CATEGORY[deviceframe]="dev"
+
+# Database
+PACKAGES[sqlline]="sqlline"
+PKG_DESC[sqlline]="Shell for issuing SQL via JDBC [CUSTOM]"
+PKG_METHOD[sqlline]="custom"
+PKG_CATEGORY[sqlline]="database"
+
+PACKAGES[iredis]="iredis"
+PKG_DESC[iredis]="Redis client with autocompletion and syntax highlighting [CUSTOM]"
+PKG_METHOD[iredis]="custom"
+PKG_CATEGORY[iredis]="database"
+
+PACKAGES[usql]="usql"
+PKG_DESC[usql]="Universal SQL client with autocompletion [CUSTOM]"
+PKG_METHOD[usql]="custom"
+PKG_CATEGORY[usql]="database"
+
+# DevOps
+PACKAGES[htconvert]="htconvert"
+PKG_DESC[htconvert]="Convert .htaccess redirects to nginx.conf redirects [CUSTOM]"
+PKG_METHOD[htconvert]="custom"
+PKG_CATEGORY[htconvert]="dev"
+
+PACKAGES[saws]="saws"
+PKG_DESC[saws]="Supercharged AWS CLI [CUSTOM]"
+PKG_METHOD[saws]="custom"
+PKG_CATEGORY[saws]="dev"
+
+PACKAGES[s3cmd]="s3cmd"
+PKG_DESC[s3cmd]="Fully-Featured S3 client [APT]"
+PKG_METHOD[s3cmd]="apt"
+PKG_CATEGORY[s3cmd]="dev"
+
+PACKAGES[ops]="ops"
+PKG_DESC[ops]="Unikernel compilation and orchestration tool [CUSTOM]"
+PKG_METHOD[ops]="custom"
+PKG_CATEGORY[ops]="dev"
+
+PACKAGES[flog]="flog"
+PKG_DESC[flog]="A fake log generator for common log formats [CUSTOM]"
+PKG_METHOD[flog]="custom"
+PKG_CATEGORY[flog]="dev"
+
+PACKAGES[k9s]="k9s"
+PKG_DESC[k9s]="Kubernetes CLI To Manage Your Clusters In Style [CUSTOM]"
+PKG_METHOD[k9s]="custom"
+PKG_CATEGORY[k9s]="containers"
+
+PACKAGES[pingme]="pingme"
+PKG_DESC[pingme]="Send messages/alerts to multiple messaging platforms [CUSTOM]"
+PKG_METHOD[pingme]="custom"
+PKG_CATEGORY[pingme]="dev"
+
+PACKAGES[ipfs-deploy]="ipfs-deploy"
+PKG_DESC[ipfs-deploy]="Deploy static websites to IPFS [CUSTOM]"
+PKG_METHOD[ipfs-deploy]="custom"
+PKG_CATEGORY[ipfs-deploy]="dev"
+
+PACKAGES[discharge]="discharge"
+PKG_DESC[discharge]="Deploy static websites to Amazon S3 [CUSTOM]"
+PKG_METHOD[discharge]="custom"
+PKG_CATEGORY[discharge]="dev"
+
+PACKAGES[updatecli]="updatecli"
+PKG_DESC[updatecli]="A declarative dependency management tool [CUSTOM]"
+PKG_METHOD[updatecli]="custom"
+PKG_CATEGORY[updatecli]="dev"
+
+PACKAGES[telert]="telert"
+PKG_DESC[telert]="Multi-channel alerts for long-running commands [CUSTOM]"
+PKG_METHOD[telert]="custom"
+PKG_CATEGORY[telert]="dev"
+
+PACKAGES[logdy]="logdy"
+PKG_DESC[logdy]="Supercharge terminal logs with web UI [CUSTOM]"
+PKG_METHOD[logdy]="custom"
+PKG_CATEGORY[logdy]="dev"
+
+PACKAGES[s5cmd]="s5cmd"
+PKG_DESC[s5cmd]="Blazing fast S3 and local filesystem execution tool [CUSTOM]"
+PKG_METHOD[s5cmd]="custom"
+PKG_CATEGORY[s5cmd]="dev"
+
+# Docker
+PACKAGES[lstags]="lstags"
+PKG_DESC[lstags]="Synchronize images across registries [CUSTOM]"
+PKG_METHOD[lstags]="custom"
+PKG_CATEGORY[lstags]="containers"
+
+PACKAGES[dockly]="dockly"
+PKG_DESC[dockly]="Interactively manage containers [CUSTOM]"
+PKG_METHOD[dockly]="custom"
+PKG_CATEGORY[dockly]="containers"
+
+PACKAGES[docker-pushrm]="docker-pushrm"
+PKG_DESC[docker-pushrm]="Push a readme to container registries [CUSTOM]"
+PKG_METHOD[docker-pushrm]="custom"
+PKG_CATEGORY[docker-pushrm]="containers"
+
+# Release
+PACKAGES[release-it]="release-it"
+PKG_DESC[release-it]="Automate releases for Git repositories and npm packages [CUSTOM]"
+PKG_METHOD[release-it]="custom"
+PKG_CATEGORY[release-it]="dev"
+
+PACKAGES[clog]="clog"
+PKG_DESC[clog]="A conventional changelog for the rest of us [CUSTOM]"
+PKG_METHOD[clog]="custom"
+PKG_CATEGORY[clog]="dev"
+
+PACKAGES[np]="np"
+PKG_DESC[np]="A better npm publish [CUSTOM]"
+PKG_METHOD[np]="custom"
+PKG_CATEGORY[np]="dev"
+
+PACKAGES[release]="release"
+PKG_DESC[release]="Generate changelogs with a single command [CUSTOM]"
+PKG_METHOD[release]="custom"
+PKG_CATEGORY[release]="dev"
+
+PACKAGES[semantic-release]="semantic-release"
+PKG_DESC[semantic-release]="Fully automated version management and package publishing [CUSTOM]"
+PKG_METHOD[semantic-release]="custom"
+PKG_CATEGORY[semantic-release]="dev"
+
+# NPM
+PACKAGES[npm-name-cli]="npm-name-cli"
+PKG_DESC[npm-name-cli]="Check whether a package name is available on npm [CUSTOM]"
+PKG_METHOD[npm-name-cli]="custom"
+PKG_CATEGORY[npm-name-cli]="dev"
+
+PACKAGES[npm-user-cli]="npm-user-cli"
+PKG_DESC[npm-user-cli]="Get user info of a npm user [CUSTOM]"
+PKG_METHOD[npm-user-cli]="custom"
+PKG_CATEGORY[npm-user-cli]="dev"
+
+PACKAGES[npm-home]="npm-home"
+PKG_DESC[npm-home]="Open the npm page of the package in the current directory [CUSTOM]"
+PKG_METHOD[npm-home]="custom"
+PKG_CATEGORY[npm-home]="dev"
+
+PACKAGES[pkg-dir-cli]="pkg-dir-cli"
+PKG_DESC[pkg-dir-cli]="Find the root directory of a npm package [CUSTOM]"
+PKG_METHOD[pkg-dir-cli]="custom"
+PKG_CATEGORY[pkg-dir-cli]="dev"
+
+PACKAGES[npm-check-updates]="npm-check-updates"
+PKG_DESC[npm-check-updates]="Find newer versions of package dependencies [CUSTOM]"
+PKG_METHOD[npm-check-updates]="custom"
+PKG_CATEGORY[npm-check-updates]="dev"
+
+PACKAGES[updates]="updates"
+PKG_DESC[updates]="Flexible npm dependency update tool [CUSTOM]"
+PKG_METHOD[updates]="custom"
+PKG_CATEGORY[updates]="dev"
+
+PACKAGES[wipe-modules]="wipe-modules"
+PKG_DESC[wipe-modules]="Remove node_modules of inactive projects [CUSTOM]"
+PKG_METHOD[wipe-modules]="custom"
+PKG_CATEGORY[wipe-modules]="dev"
+
+# Boilerplate Tools
+PACKAGES[yo]="yo"
+PKG_DESC[yo]="Scaffolding tool for running Yeoman generators [CUSTOM]"
+PKG_METHOD[yo]="custom"
+PKG_CATEGORY[yo]="dev"
+
+PACKAGES[boilr]="boilr"
+PKG_DESC[boilr]="Create projects from boilerplate templates [CUSTOM]"
+PKG_METHOD[boilr]="custom"
+PKG_CATEGORY[boilr]="dev"
+
+PACKAGES[cookiecutter]="cookiecutter"
+PKG_DESC[cookiecutter]="Create projects from templates [APT]"
+PKG_METHOD[cookiecutter]="apt"
+PKG_CATEGORY[cookiecutter]="dev"
+
+PACKAGES[mevn-cli]="mevn-cli"
+PKG_DESC[mevn-cli]="Light speed setup for MEVN (Mongo Express Vue Node) Apps [CUSTOM]"
+PKG_METHOD[mevn-cli]="custom"
+PKG_CATEGORY[mevn-cli]="dev"
+
+PACKAGES[scaffold-static]="scaffold-static"
+PKG_DESC[scaffold-static]="Scaffolding utility for vanilla JS [CUSTOM]"
+PKG_METHOD[scaffold-static]="custom"
+PKG_CATEGORY[scaffold-static]="dev"
+
+# HTTP Server Tools
+PACKAGES[serve]="serve"
+PKG_DESC[serve]="Serve static files (https, CORS, GZIP compression, etc) [CUSTOM]"
+PKG_METHOD[serve]="custom"
+PKG_CATEGORY[serve]="web"
+
+PACKAGES[simplehttp]="simplehttp"
+PKG_DESC[simplehttp]="Easily serve a local directory over HTTP [CUSTOM]"
+PKG_METHOD[simplehttp]="custom"
+PKG_CATEGORY[simplehttp]="web"
+
+PACKAGES[shell2http]="shell2http"
+PKG_DESC[shell2http]="Shell script based HTTP server [CUSTOM]"
+PKG_METHOD[shell2http]="custom"
+PKG_CATEGORY[shell2http]="web"
+
+# HTTP Client Tools
+PACKAGES[http-prompt]="http-prompt"
+PKG_DESC[http-prompt]="Interactive HTTP client featuring autocomplete and syntax highlighting [CUSTOM]"
+PKG_METHOD[http-prompt]="custom"
+PKG_CATEGORY[http-prompt]="dev"
+
+PACKAGES[ain]="ain"
+PKG_DESC[ain]="HTTP client with a simple format to organize API endpoints [CUSTOM]"
+PKG_METHOD[ain]="custom"
+PKG_CATEGORY[ain]="dev"
+
+PACKAGES[curlie]="curlie"
+PKG_DESC[curlie]="A curl frontend with the ease of use of HTTPie [CUSTOM]"
+PKG_METHOD[curlie]="custom"
+PKG_CATEGORY[curlie]="dev"
+
+PACKAGES[atac]="atac"
+PKG_DESC[atac]="A feature-full TUI API client made in Rust [CUSTOM]"
+PKG_METHOD[atac]="custom"
+PKG_CATEGORY[atac]="dev"
+
+# Testing Tools
+PACKAGES[shellspec]="shellspec"
+PKG_DESC[shellspec]="A full-featured BDD unit-testing framework for all POSIX shells [CUSTOM]"
+PKG_METHOD[shellspec]="custom"
+PKG_CATEGORY[shellspec]="dev"
+
+PACKAGES[gdb-dashboard]="gdb-dashboard"
+PKG_DESC[gdb-dashboard]="Modular visual interface for GDB [CUSTOM]"
+PKG_METHOD[gdb-dashboard]="custom"
+PKG_CATEGORY[gdb-dashboard]="dev"
+
+PACKAGES[loadtest]="loadtest"
+PKG_DESC[loadtest]="Run load tests [CUSTOM]"
+PKG_METHOD[loadtest]="custom"
+PKG_CATEGORY[loadtest]="dev"
+
+PACKAGES[step-ci]="step-ci"
+PKG_DESC[step-ci]="API testing and QA framework [CUSTOM]"
+PKG_METHOD[step-ci]="custom"
+PKG_CATEGORY[step-ci]="dev"
+
+# Productivity Tools
+PACKAGES[doing]="doing"
+PKG_DESC[doing]="Keep track of what you're doing and track what you've done [CUSTOM]"
+PKG_METHOD[doing]="custom"
+PKG_CATEGORY[doing]="utilities"
+
+PACKAGES[ffscreencast]="ffscreencast"
+PKG_DESC[ffscreencast]="A ffmpeg screencast with video overlay and multi monitor support [CUSTOM]"
+PKG_METHOD[ffscreencast]="custom"
+PKG_CATEGORY[ffscreencast]="video"
+
+PACKAGES[meetup-cli]="meetup-cli"
+PKG_DESC[meetup-cli]="Meetup.com client [CUSTOM]"
+PKG_METHOD[meetup-cli]="custom"
+PKG_CATEGORY[meetup-cli]="utilities"
+
+PACKAGES[neomutt]="neomutt"
+PKG_DESC[neomutt]="Email client [APT]"
+PKG_METHOD[neomutt]="apt"
+PKG_CATEGORY[neomutt]="communication"
+
+PACKAGES[terjira]="terjira"
+PKG_DESC[terjira]="Jira client [CUSTOM]"
+PKG_METHOD[terjira]="custom"
+PKG_CATEGORY[terjira]="dev"
+
+PACKAGES[ipt]="ipt"
+PKG_DESC[ipt]="Pivotal Tracker client [CUSTOM]"
+PKG_METHOD[ipt]="custom"
+PKG_CATEGORY[ipt]="dev"
+
+PACKAGES[uber-cli]="uber-cli"
+PKG_DESC[uber-cli]="Uber client [CUSTOM]"
+PKG_METHOD[uber-cli]="custom"
+PKG_CATEGORY[uber-cli]="utilities"
+
+PACKAGES[buku]="buku"
+PKG_DESC[buku]="Browser-independent bookmark manager [APT]"
+PKG_METHOD[buku]="apt"
+PKG_CATEGORY[buku]="utilities"
+
+PACKAGES[fjira]="fjira"
+PKG_DESC[fjira]="Fuzzy finder and TUI application for Jira [CUSTOM]"
+PKG_METHOD[fjira]="custom"
+PKG_CATEGORY[fjira]="dev"
+
+PACKAGES[overtime]="overtime"
+PKG_DESC[overtime]="Time-overlap tables for remote teams [CUSTOM]"
+PKG_METHOD[overtime]="custom"
+PKG_CATEGORY[overtime]="utilities"
+
+# Time Tracking Tools
+PACKAGES[timetrap]="timetrap"
+PKG_DESC[timetrap]="Simple timetracker [CUSTOM]"
+PKG_METHOD[timetrap]="custom"
+PKG_CATEGORY[timetrap]="utilities"
+
+PACKAGES[moro]="moro"
+PKG_DESC[moro]="Simple tool for tracking work hours [CUSTOM]"
+PKG_METHOD[moro]="custom"
+PKG_CATEGORY[moro]="utilities"
+
+PACKAGES[timewarrior]="timewarrior"
+PKG_DESC[timewarrior]="Utility with simple stopwatch, calendar-based backfill and flexible reporting [APT]"
+PKG_METHOD[timewarrior]="apt"
+PKG_CATEGORY[timewarrior]="utilities"
+
+PACKAGES[watson]="watson"
+PKG_DESC[watson]="Generate reports for clients and manage your time [CUSTOM]"
+PKG_METHOD[watson]="custom"
+PKG_CATEGORY[watson]="utilities"
+
+PACKAGES[utt]="utt"
+PKG_DESC[utt]="Simple time tracking tool [CUSTOM]"
+PKG_METHOD[utt]="custom"
+PKG_CATEGORY[utt]="utilities"
+
+PACKAGES[bartib]="bartib"
+PKG_DESC[bartib]="Easy to use time tracking tool [CUSTOM]"
+PKG_METHOD[bartib]="custom"
+PKG_CATEGORY[bartib]="utilities"
+
+PACKAGES[arttime]="arttime"
+PKG_DESC[arttime]="Featureful timer with native desktop notifications and curated ASCII art [CUSTOM]"
+PKG_METHOD[arttime]="custom"
+PKG_CATEGORY[arttime]="utilities"
+
+# Note Taking and Lists
+PACKAGES[idea]="idea"
+PKG_DESC[idea]="A lightweight tool for keeping ideas in a safe place quick and easy [CUSTOM]"
+PKG_METHOD[idea]="custom"
+PKG_CATEGORY[idea]="utilities"
+
+PACKAGES[geeknote]="geeknote"
+PKG_DESC[geeknote]="Evernote client [CUSTOM]"
+PKG_METHOD[geeknote]="custom"
+PKG_CATEGORY[geeknote]="utilities"
+
+PACKAGES[taskwarrior]="taskwarrior"
+PKG_DESC[taskwarrior]="Manage your TODO list [APT]"
+PKG_METHOD[taskwarrior]="apt"
+PKG_CATEGORY[taskwarrior]="utilities"
+
+PACKAGES[terminal-velocity]="terminal-velocity"
+PKG_DESC[terminal-velocity]="A fast note-taking app [CUSTOM]"
+PKG_METHOD[terminal-velocity]="custom"
+PKG_CATEGORY[terminal-velocity]="utilities"
+
+PACKAGES[eureka]="eureka"
+PKG_DESC[eureka]="Input and store your ideas [CUSTOM]"
+PKG_METHOD[eureka]="custom"
+PKG_CATEGORY[eureka]="utilities"
+
+PACKAGES[sncli]="sncli"
+PKG_DESC[sncli]="Simplenote client [CUSTOM]"
+PKG_METHOD[sncli]="custom"
+PKG_CATEGORY[sncli]="utilities"
+
+PACKAGES[td-cli]="td-cli"
+PKG_DESC[td-cli]="A TODO manager to organize and manage your TODO's across multiple projects [CUSTOM]"
+PKG_METHOD[td-cli]="custom"
+PKG_CATEGORY[td-cli]="utilities"
+
+PACKAGES[taskbook]="taskbook"
+PKG_DESC[taskbook]="Tasks, boards & notes for the command-line habitat [CUSTOM]"
+PKG_METHOD[taskbook]="custom"
+PKG_CATEGORY[taskbook]="utilities"
+
+PACKAGES[dnote]="dnote"
+PKG_DESC[dnote]="A interactive, multi-device notebook [CUSTOM]"
+PKG_METHOD[dnote]="custom"
+PKG_CATEGORY[dnote]="utilities"
+
+PACKAGES[nb]="nb"
+PKG_DESC[nb]="A note‑taking, bookmarking, archiving, and knowledge base application [CUSTOM]"
+PKG_METHOD[nb]="custom"
+PKG_CATEGORY[nb]="utilities"
+
+PACKAGES[obs-cli]="obs-cli"
+PKG_DESC[obs-cli]="Interact with your Obsidian vault [CUSTOM]"
+PKG_METHOD[obs-cli]="custom"
+PKG_CATEGORY[obs-cli]="utilities"
+
+PACKAGES[journalot]="journalot"
+PKG_DESC[journalot]="Journaling tool with git sync [CUSTOM]"
+PKG_METHOD[journalot]="custom"
+PKG_CATEGORY[journalot]="utilities"
+
+# Finance Tools
+PACKAGES[ledger]="ledger"
+PKG_DESC[ledger]="Powerful, double-entry accounting system [APT]"
+PKG_METHOD[ledger]="apt"
+PKG_CATEGORY[ledger]="utilities"
+
+PACKAGES[hledger]="hledger"
+PKG_DESC[hledger]="Robust, fast, intuitive plain text accounting tool with CLI, TUI and web interfaces [APT]"
+PKG_METHOD[hledger]="apt"
+PKG_CATEGORY[hledger]="utilities"
+
+PACKAGES[moeda]="moeda"
+PKG_DESC[moeda]="Foreign exchange rates and currency conversion [CUSTOM]"
+PKG_METHOD[moeda]="custom"
+PKG_CATEGORY[moeda]="utilities"
+
+PACKAGES[cash-cli]="cash-cli"
+PKG_DESC[cash-cli]="Convert Currency Rates [CUSTOM]"
+PKG_METHOD[cash-cli]="custom"
+PKG_CATEGORY[cash-cli]="utilities"
+
+PACKAGES[cointop]="cointop"
+PKG_DESC[cointop]="Track cryptocurrencies [CUSTOM]"
+PKG_METHOD[cointop]="custom"
+PKG_CATEGORY[cointop]="utilities"
+
+PACKAGES[ticker]="ticker"
+PKG_DESC[ticker]="Stock ticker [CUSTOM]"
+PKG_METHOD[ticker]="custom"
+PKG_CATEGORY[ticker]="utilities"
+
+# Presentation Tools
+PACKAGES[wopr]="wopr"
+PKG_DESC[wopr]="A simple markup language for creating rich terminal reports, presentations and infographics [CUSTOM]"
+PKG_METHOD[wopr]="custom"
+PKG_CATEGORY[wopr]="utilities"
+
+PACKAGES[decktape]="decktape"
+PKG_DESC[decktape]="PDF exporter for HTML presentations [CUSTOM]"
+PKG_METHOD[decktape]="custom"
+PKG_CATEGORY[decktape]="utilities"
+
+PACKAGES[mdp]="mdp"
+PKG_DESC[mdp]="A markdown presentation tool [APT]"
+PKG_METHOD[mdp]="apt"
+PKG_CATEGORY[mdp]="utilities"
+
+PACKAGES[sent]="sent"
+PKG_DESC[sent]="Simple plaintext presentation tool [CUSTOM]"
+PKG_METHOD[sent]="custom"
+PKG_CATEGORY[sent]="utilities"
+
+PACKAGES[slides]="slides"
+PKG_DESC[slides]="A markdown presentation tool [CUSTOM]"
+PKG_METHOD[slides]="custom"
+PKG_CATEGORY[slides]="utilities"
+
+PACKAGES[marp]="marp"
+PKG_DESC[marp]="Export Markdown to HTML/PDF/Powerpoint presentations [CUSTOM]"
+PKG_METHOD[marp]="custom"
+PKG_CATEGORY[marp]="utilities"
+
+# Calendar Tools
+PACKAGES[calcurse]="calcurse"
+PKG_DESC[calcurse]="Calendar and scheduling [APT]"
+PKG_METHOD[calcurse]="apt"
+PKG_CATEGORY[calcurse]="utilities"
+
+PACKAGES[gcalcli]="gcalcli"
+PKG_DESC[gcalcli]="Google calendar client [CUSTOM]"
+PKG_METHOD[gcalcli]="custom"
+PKG_CATEGORY[gcalcli]="utilities"
+
+PACKAGES[khal]="khal"
+PKG_DESC[khal]="CalDAV ready CLI and TUI calendar [APT]"
+PKG_METHOD[khal]="apt"
+PKG_CATEGORY[khal]="utilities"
+
+PACKAGES[vdirsyncer]="vdirsyncer"
+PKG_DESC[vdirsyncer]="CalDAV sync [APT]"
+PKG_METHOD[vdirsyncer]="apt"
+PKG_CATEGORY[vdirsyncer]="utilities"
+
+PACKAGES[remind]="remind"
+PKG_DESC[remind]="A sophisticated calendar and alarm program [APT]"
+PKG_METHOD[remind]="apt"
+PKG_CATEGORY[remind]="utilities"
+
+PACKAGES[birthday]="birthday"
+PKG_DESC[birthday]="Know when a friend's birthday is coming [CUSTOM]"
+PKG_METHOD[birthday]="custom"
+PKG_CATEGORY[birthday]="utilities"
+
+# Additional Utilities
+PACKAGES[aria2]="aria2"
+PKG_DESC[aria2]="HTTP, FTP, SFTP, BitTorrent and Metalink download utility [APT]"
+PKG_METHOD[aria2]="apt"
+PKG_CATEGORY[aria2]="utilities"
+
+PACKAGES[bitly-client]="bitly-client"
+PKG_DESC[bitly-client]="Bitly client [CUSTOM]"
+PKG_METHOD[bitly-client]="custom"
+PKG_CATEGORY[bitly-client]="utilities"
+
+PACKAGES[deadlink]="deadlink"
+PKG_DESC[deadlink]="Find dead links in files [CUSTOM]"
+PKG_METHOD[deadlink]="custom"
+PKG_CATEGORY[deadlink]="utilities"
+
+PACKAGES[crawley]="crawley"
+PKG_DESC[crawley]="Unix-way web crawler [CUSTOM]"
+PKG_METHOD[crawley]="custom"
+PKG_CATEGORY[crawley]="utilities"
+
+PACKAGES[kill-tabs]="kill-tabs"
+PKG_DESC[kill-tabs]="Kill all Chrome tabs [CUSTOM]"
+PKG_METHOD[kill-tabs]="custom"
+PKG_CATEGORY[kill-tabs]="utilities"
+
+PACKAGES[alex]="alex"
+PKG_DESC[alex]="Catch insensitive, inconsiderate writing [CUSTOM]"
+PKG_METHOD[alex]="custom"
+PKG_CATEGORY[alex]="utilities"
+
+PACKAGES[clevercli]="clevercli"
+PKG_DESC[clevercli]="Collection of ChatGPT powered utilities [CUSTOM]"
+PKG_METHOD[clevercli]="custom"
+PKG_CATEGORY[clevercli]="ai"
+
+# Terminal Sharing Utilities
+PACKAGES[gotty]="gotty"
+PKG_DESC[gotty]="Share your terminal as a web application [CUSTOM]"
+PKG_METHOD[gotty]="custom"
+PKG_CATEGORY[gotty]="utilities"
+
+PACKAGES[tmate]="tmate"
+PKG_DESC[tmate]="Instant terminal (tmux) sharing [APT]"
+PKG_METHOD[tmate]="apt"
+PKG_CATEGORY[tmate]="utilities"
+
+PACKAGES[warp-sharing]="warp-sharing"
+PKG_DESC[warp-sharing]="Secure and simple terminal sharing [CUSTOM]"
+PKG_METHOD[warp-sharing]="custom"
+PKG_CATEGORY[warp-sharing]="utilities"
+
+# SSH Tools
+PACKAGES[mosh]="mosh"
+PKG_DESC[mosh]="Remote SSH client that allows roaming with intermittent connectivity [APT]"
+PKG_METHOD[mosh]="apt"
+PKG_CATEGORY[mosh]="network-monitoring"
+
+PACKAGES[xxh]="xxh"
+PKG_DESC[xxh]="Bring your favorite shell wherever you go through SSH [CUSTOM]"
+PKG_METHOD[xxh]="custom"
+PKG_CATEGORY[xxh]="network-monitoring"
+
+# Network Utilities
+PACKAGES[get-port-cli]="get-port-cli"
+PKG_DESC[get-port-cli]="Get an available port [CUSTOM]"
+PKG_METHOD[get-port-cli]="custom"
+PKG_CATEGORY[get-port-cli]="network-monitoring"
+
+PACKAGES[is-reachable-cli]="is-reachable-cli"
+PKG_DESC[is-reachable-cli]="Check if hostnames are reachable or not [CUSTOM]"
+PKG_METHOD[is-reachable-cli]="custom"
+PKG_CATEGORY[is-reachable-cli]="network-monitoring"
+
+PACKAGES[acmetool]="acmetool"
+PKG_DESC[acmetool]="Automatic certificate acquisition for ACME (Let's Encrypt) [CUSTOM]"
+PKG_METHOD[acmetool]="custom"
+PKG_CATEGORY[acmetool]="security"
+
+PACKAGES[certificate-ripper]="certificate-ripper"
+PKG_DESC[certificate-ripper]="Extract server certificates [CUSTOM]"
+PKG_METHOD[certificate-ripper]="custom"
+PKG_CATEGORY[certificate-ripper]="security"
+
+PACKAGES[neoss]="neoss"
+PKG_DESC[neoss]="User-friendly and detailed socket statistics [CUSTOM]"
+PKG_METHOD[neoss]="custom"
+PKG_CATEGORY[neoss]="network-monitoring"
+
+PACKAGES[gg]="gg"
+PKG_DESC[gg]="One-click proxy without installing v2ray or anything else [CUSTOM]"
+PKG_METHOD[gg]="custom"
+PKG_CATEGORY[gg]="network-monitoring"
+
+PACKAGES[rustnet]="rustnet"
+PKG_DESC[rustnet]="Network monitoring with process identification and deep packet inspection [CUSTOM]"
+PKG_METHOD[rustnet]="custom"
+PKG_CATEGORY[rustnet]="network-monitoring"
+
+PACKAGES[sshuttle]="sshuttle"
+PKG_DESC[sshuttle]="Transparent proxy server that works as a poor man's VPN [APT]"
+PKG_METHOD[sshuttle]="apt"
+PKG_CATEGORY[sshuttle]="network-monitoring"
+
+# Theming and Customization
+PACKAGES[splash-cli]="splash-cli"
+PKG_DESC[splash-cli]="Beautiful wallpapers from Unsplash [CUSTOM]"
+PKG_METHOD[splash-cli]="custom"
+PKG_CATEGORY[splash-cli]="shell"
+
+PACKAGES[wallpaper-cli]="wallpaper-cli"
+PKG_DESC[wallpaper-cli]="Get or set the desktop wallpaper [CUSTOM]"
+PKG_METHOD[wallpaper-cli]="custom"
+PKG_CATEGORY[wallpaper-cli]="shell"
+
+PACKAGES[themer]="themer"
+PKG_DESC[themer]="Generate personalized themes for your editor, terminal, wallpaper, Slack, and more [CUSTOM]"
+PKG_METHOD[themer]="custom"
+PKG_CATEGORY[themer]="shell"
+
+PACKAGES[jackpaper]="jackpaper"
+PKG_DESC[jackpaper]="Set images from Unsplash as wallpaper [CUSTOM]"
+PKG_METHOD[jackpaper]="custom"
+PKG_CATEGORY[jackpaper]="shell"
+
+PACKAGES[quickwall]="quickwall"
+PKG_DESC[quickwall]="Directly set wallpapers from Unsplash [CUSTOM]"
+PKG_METHOD[quickwall]="custom"
+PKG_CATEGORY[quickwall]="shell"
+
+PACKAGES[oh-my-posh]="oh-my-posh"
+PKG_DESC[oh-my-posh]="Prompt theme engine [CUSTOM]"
+PKG_METHOD[oh-my-posh]="custom"
+PKG_CATEGORY[oh-my-posh]="shell"
+
+# Shell Utilities
+PACKAGES[has]="has"
+PKG_DESC[has]="Checks for the presence of various commands and their versions on the path [CUSTOM]"
+PKG_METHOD[has]="custom"
+PKG_CATEGORY[has]="shell"
+
+PACKAGES[ultimate-plumber]="ultimate-plumber"
+PKG_DESC[ultimate-plumber]="Write Linux pipes with live previews [CUSTOM]"
+PKG_METHOD[ultimate-plumber]="custom"
+PKG_CATEGORY[ultimate-plumber]="shell"
+
+PACKAGES[fkill-cli]="fkill-cli"
+PKG_DESC[fkill-cli]="Simple cross-platform process killer [CUSTOM]"
+PKG_METHOD[fkill-cli]="custom"
+PKG_CATEGORY[fkill-cli]="utilities"
+
+PACKAGES[task-spooler]="task-spooler"
+PKG_DESC[task-spooler]="Queue jobs for linear execution [APT]"
+PKG_METHOD[task-spooler]="apt"
+PKG_CATEGORY[task-spooler]="utilities"
+
+PACKAGES[undollar]="undollar"
+PKG_DESC[undollar]="Strip the '$' preceding copy-pasted terminal commands [CUSTOM]"
+PKG_METHOD[undollar]="custom"
+PKG_CATEGORY[undollar]="shell"
+
+PACKAGES[pipe-exec]="pipe-exec"
+PKG_DESC[pipe-exec]="Run exes from stdin, pipes and ttys without creating a temp [CUSTOM]"
+PKG_METHOD[pipe-exec]="custom"
+PKG_CATEGORY[pipe-exec]="shell"
+
+# System Interaction Utilities
+PACKAGES[fastfetch]="fastfetch"
+PKG_DESC[fastfetch]="System information tool [APT]"
+PKG_METHOD[fastfetch]="apt"
+PKG_CATEGORY[fastfetch]="utilities"
+
+PACKAGES[battery-level-cli]="battery-level-cli"
+PKG_DESC[battery-level-cli]="Get current battery level [CUSTOM]"
+PKG_METHOD[battery-level-cli]="custom"
+PKG_CATEGORY[battery-level-cli]="utilities"
+
+PACKAGES[brightness-cli]="brightness-cli"
+PKG_DESC[brightness-cli]="Change screen brightness [CUSTOM]"
+PKG_METHOD[brightness-cli]="custom"
+PKG_CATEGORY[brightness-cli]="utilities"
+
+PACKAGES[clipboard]="clipboard"
+PKG_DESC[clipboard]="Cut, copy, and paste anything, anywhere [CUSTOM]"
+PKG_METHOD[clipboard]="custom"
+PKG_CATEGORY[clipboard]="utilities"
+
+PACKAGES[yank]="yank"
+PKG_DESC[yank]="Yank terminal output to clipboard [CUSTOM]"
+PKG_METHOD[yank]="custom"
+PKG_CATEGORY[yank]="utilities"
+
+PACKAGES[screensaver]="screensaver"
+PKG_DESC[screensaver]="Start the screensaver [CUSTOM]"
+PKG_METHOD[screensaver]="custom"
+PKG_CATEGORY[screensaver]="utilities"
+
+PACKAGES[google-font-installer]="google-font-installer"
+PKG_DESC[google-font-installer]="Download and install Google Web Fonts [CUSTOM]"
+PKG_METHOD[google-font-installer]="custom"
+PKG_CATEGORY[google-font-installer]="utilities"
+
+PACKAGES[tiptop]="tiptop"
+PKG_DESC[tiptop]="System monitor [CUSTOM]"
+PKG_METHOD[tiptop]="custom"
+PKG_CATEGORY[tiptop]="system-monitoring"
+
+PACKAGES[gzip-size-cli]="gzip-size-cli"
+PKG_DESC[gzip-size-cli]="Get the gzipped size of a file [CUSTOM]"
+PKG_METHOD[gzip-size-cli]="custom"
+PKG_CATEGORY[gzip-size-cli]="utilities"
+
+# Markdown Tools
+PACKAGES[doctoc]="doctoc"
+PKG_DESC[doctoc]="Generates table of contents for markdown files [CUSTOM]"
+PKG_METHOD[doctoc]="custom"
+PKG_CATEGORY[doctoc]="dev"
+
+PACKAGES[grip]="grip"
+PKG_DESC[grip]="Preview markdown files as GitHub would render them [CUSTOM]"
+PKG_METHOD[grip]="custom"
+PKG_CATEGORY[grip]="dev"
+
+PACKAGES[mdv]="mdv"
+PKG_DESC[mdv]="Styled terminal markdown viewer [CUSTOM]"
+PKG_METHOD[mdv]="custom"
+PKG_CATEGORY[mdv]="utilities"
+
+PACKAGES[gtree]="gtree"
+PKG_DESC[gtree]="Use markdown to generate directory trees [CUSTOM]"
+PKG_METHOD[gtree]="custom"
+PKG_CATEGORY[gtree]="utilities"
+
+# Security Tools
+PACKAGES[pass]="pass"
+PKG_DESC[pass]="Password manager [APT]"
+PKG_METHOD[pass]="apt"
+PKG_CATEGORY[pass]="security"
+
+PACKAGES[gopass]="gopass"
+PKG_DESC[gopass]="Fully-featured password manager [CUSTOM]"
+PKG_METHOD[gopass]="custom"
+PKG_CATEGORY[gopass]="security"
+
+PACKAGES[xiringuito]="xiringuito"
+PKG_DESC[xiringuito]="SSH-based VPN [CUSTOM]"
+PKG_METHOD[xiringuito]="custom"
+PKG_CATEGORY[xiringuito]="security"
+
+PACKAGES[hasha-cli]="hasha-cli"
+PKG_DESC[hasha-cli]="Get the hash of text or stdin [CUSTOM]"
+PKG_METHOD[hasha-cli]="custom"
+PKG_CATEGORY[hasha-cli]="security"
+
+PACKAGES[ots]="ots"
+PKG_DESC[ots]="Share secrets with others via a one-time URL [CUSTOM]"
+PKG_METHOD[ots]="custom"
+PKG_CATEGORY[ots]="security"
+
+# Math Tools
+PACKAGES[mdlt]="mdlt"
+PKG_DESC[mdlt]="Do quick math right from the command line [CUSTOM]"
+PKG_METHOD[mdlt]="custom"
+PKG_CATEGORY[mdlt]="utilities"
+
+PACKAGES[qalculate]="qalculate"
+PKG_DESC[qalculate]="Calculate non-trivial math expressions [APT]"
+PKG_METHOD[qalculate]="apt"
+PKG_CATEGORY[qalculate]="utilities"
+
+# Academia Tools
+PACKAGES[papis]="papis"
+PKG_DESC[papis]="Extensible document and bibliography manager [CUSTOM]"
+PKG_METHOD[papis]="custom"
+PKG_CATEGORY[papis]="office"
+
+PACKAGES[pubs]="pubs"
+PKG_DESC[pubs]="Scientific bibliography manager [CUSTOM]"
+PKG_METHOD[pubs]="custom"
+PKG_CATEGORY[pubs]="office"
+
+# Weather Tools
+PACKAGES[wttr-in]="wttr-in"
+PKG_DESC[wttr-in]="Weather information from wttr.in [CUSTOM]"
+PKG_METHOD[wttr-in]="custom"
+PKG_CATEGORY[wttr-in]="utilities"
+
+PACKAGES[wego]="wego"
+PKG_DESC[wego]="Weather app for the terminal [CUSTOM]"
+PKG_METHOD[wego]="custom"
+PKG_CATEGORY[wego]="utilities"
+
+PACKAGES[weather-cli]="weather-cli"
+PKG_DESC[weather-cli]="Get weather information from command line [CUSTOM]"
+PKG_METHOD[weather-cli]="custom"
+PKG_CATEGORY[weather-cli]="utilities"
+
+# Browser Replacement Tools
+PACKAGES[s]="s"
+PKG_DESC[s]="Open a web search in your terminal [CUSTOM]"
+PKG_METHOD[s]="custom"
+PKG_CATEGORY[s]="utilities"
+
+PACKAGES[hget]="hget"
+PKG_DESC[hget]="Render websites in plain text from your terminal [CUSTOM]"
+PKG_METHOD[hget]="custom"
+PKG_CATEGORY[hget]="utilities"
+
+PACKAGES[mapscii]="mapscii"
+PKG_DESC[mapscii]="Terminal Map Viewer [CUSTOM]"
+PKG_METHOD[mapscii]="custom"
+PKG_CATEGORY[mapscii]="utilities"
+
+PACKAGES[nasa-cli]="nasa-cli"
+PKG_DESC[nasa-cli]="Download NASA Picture of the Day [CUSTOM]"
+PKG_METHOD[nasa-cli]="custom"
+PKG_CATEGORY[nasa-cli]="utilities"
+
+PACKAGES[getnews-tech]="getnews-tech"
+PKG_DESC[getnews-tech]="Fetch news headlines from various news outlets [CUSTOM]"
+PKG_METHOD[getnews-tech]="custom"
+PKG_CATEGORY[getnews-tech]="utilities"
+
+PACKAGES[trino]="trino"
+PKG_DESC[trino]="Translation of words and phrases [CUSTOM]"
+PKG_METHOD[trino]="custom"
+PKG_CATEGORY[trino]="utilities"
+
+PACKAGES[translate-shell]="translate-shell"
+PKG_DESC[translate-shell]="Google Translate interface [APT]"
+PKG_METHOD[translate-shell]="apt"
+PKG_CATEGORY[translate-shell]="utilities"
+
+# Internet Speedtest Tools
+PACKAGES[speedtest-net]="speedtest-net"
+PKG_DESC[speedtest-net]="Test internet connection speed using speedtest.net [CUSTOM]"
+PKG_METHOD[speedtest-net]="custom"
+PKG_CATEGORY[speedtest-net]="network-monitoring"
+
+PACKAGES[speed-test]="speed-test"
+PKG_DESC[speed-test]="speedtest-net wrapper with different UI [CUSTOM]"
+PKG_METHOD[speed-test]="custom"
+PKG_CATEGORY[speed-test]="network-monitoring"
+
+PACKAGES[speedtest-cli]="speedtest-cli"
+PKG_DESC[speedtest-cli]="Test internet bandwidth using speedtest.net [APT]"
+PKG_METHOD[speedtest-cli]="apt"
+PKG_CATEGORY[speedtest-cli]="network-monitoring"
+
+# Command Line Learning Tools
+PACKAGES[cmdchallenge]="cmdchallenge"
+PKG_DESC[cmdchallenge]="Presents small shell challenge with user submitted solutions [CUSTOM]"
+PKG_METHOD[cmdchallenge]="custom"
+PKG_CATEGORY[cmdchallenge]="dev"
+
+PACKAGES[explainshell]="explainshell"
+PKG_DESC[explainshell]="Type a snippet to see the help text for each argument [CUSTOM]"
+PKG_METHOD[explainshell]="custom"
+PKG_CATEGORY[explainshell]="dev"
+
+PACKAGES[howdoi]="howdoi"
+PKG_DESC[howdoi]="Instant coding answers [CUSTOM]"
+PKG_METHOD[howdoi]="custom"
+PKG_CATEGORY[howdoi]="dev"
+
+PACKAGES[how2]="how2"
+PKG_DESC[how2]="Node.js implementation of howdoi [CUSTOM]"
+PKG_METHOD[how2]="custom"
+PKG_CATEGORY[how2]="dev"
+
+PACKAGES[wat]="wat"
+PKG_DESC[wat]="Instant, central, community-built docs [CUSTOM]"
+PKG_METHOD[wat]="custom"
+PKG_CATEGORY[wat]="dev"
+
+PACKAGES[teachcode]="teachcode"
+PKG_DESC[teachcode]="Guide for the earliest lessons of coding [CUSTOM]"
+PKG_METHOD[teachcode]="custom"
+PKG_CATEGORY[teachcode]="dev"
+
+PACKAGES[navi]="navi"
+PKG_DESC[navi]="Interactive cheatsheet tool [CUSTOM]"
+PKG_METHOD[navi]="custom"
+PKG_CATEGORY[navi]="dev"
+
+PACKAGES[yai]="yai"
+PKG_DESC[yai]="AI powered terminal assistant [CUSTOM]"
+PKG_METHOD[yai]="custom"
+PKG_CATEGORY[yai]="ai"
+
+# Data Manipulation Tools
+PACKAGES[visidata]="visidata"
+PKG_DESC[visidata]="Spreadsheet multitool for data discovery and arrangement [CUSTOM]"
+PKG_METHOD[visidata]="custom"
+PKG_CATEGORY[visidata]="utilities"
+
+PACKAGES[jp]="jp"
+PKG_DESC[jp]="JSON parser [CUSTOM]"
+PKG_METHOD[jp]="custom"
+PKG_CATEGORY[jp]="dev"
+
+PACKAGES[fx]="fx"
+PKG_DESC[fx]="Command-line JSON viewer [CUSTOM]"
+PKG_METHOD[fx]="custom"
+PKG_CATEGORY[fx]="dev"
+
+PACKAGES[vj]="vj"
+PKG_DESC[vj]="Makes JSON human readable [CUSTOM]"
+PKG_METHOD[vj]="custom"
+PKG_CATEGORY[vj]="dev"
+
+PACKAGES[underscore-cli]="underscore-cli"
+PKG_DESC[underscore-cli]="Utility-belt for hacking JSON and Javascript [CUSTOM]"
+PKG_METHOD[underscore-cli]="custom"
+PKG_CATEGORY[underscore-cli]="dev"
+
+PACKAGES[strip-json-comments-cli]="strip-json-comments-cli"
+PKG_DESC[strip-json-comments-cli]="Strip comments from JSON [CUSTOM]"
+PKG_METHOD[strip-json-comments-cli]="custom"
+PKG_CATEGORY[strip-json-comments-cli]="dev"
+
+PACKAGES[groq]="groq"
+PKG_DESC[groq]="JSON processor with queries and projections [CUSTOM]"
+PKG_METHOD[groq]="custom"
+PKG_CATEGORY[groq]="dev"
+
+PACKAGES[gron]="gron"
+PKG_DESC[gron]="Make JSON greppable [CUSTOM]"
+PKG_METHOD[gron]="custom"
+PKG_CATEGORY[gron]="dev"
+
+PACKAGES[config-file-validator]="config-file-validator"
+PKG_DESC[config-file-validator]="Validate configuration files [CUSTOM]"
+PKG_METHOD[config-file-validator]="custom"
+PKG_CATEGORY[config-file-validator]="dev"
+
+PACKAGES[dyff]="dyff"
+PKG_DESC[dyff]="YAML diff tool [CUSTOM]"
+PKG_METHOD[dyff]="custom"
+PKG_CATEGORY[dyff]="dev"
+
+PACKAGES[parse-columns-cli]="parse-columns-cli"
+PKG_DESC[parse-columns-cli]="Parse text columns to JSON [CUSTOM]"
+PKG_METHOD[parse-columns-cli]="custom"
+PKG_CATEGORY[parse-columns-cli]="dev"
+
+PACKAGES[q]="q"
+PKG_DESC[q]="Execution of SQL-like queries on CSV/TSV/tabular text file [CUSTOM]"
+PKG_METHOD[q]="custom"
+PKG_CATEGORY[q]="dev"
+
+PACKAGES[stegcloak]="stegcloak"
+PKG_DESC[stegcloak]="Hide secrets with invisible characters in plain text [CUSTOM]"
+PKG_METHOD[stegcloak]="custom"
+PKG_CATEGORY[stegcloak]="security"
+
+# File Managers
+PACKAGES[vifm]="vifm"
+PKG_DESC[vifm]="VI influenced file manager [APT]"
+PKG_METHOD[vifm]="apt"
+PKG_CATEGORY[vifm]="utilities"
+
+PACKAGES[nnn]="nnn"
+PKG_DESC[nnn]="File browser and disk usage analyzer [APT]"
+PKG_METHOD[nnn]="apt"
+PKG_CATEGORY[nnn]="utilities"
+
+PACKAGES[lf]="lf"
+PKG_DESC[lf]="Fast, extensively customizable file manager [CUSTOM]"
+PKG_METHOD[lf]="custom"
+PKG_CATEGORY[lf]="utilities"
+
+PACKAGES[clifm]="clifm"
+PKG_DESC[clifm]="The command line file manager [CUSTOM]"
+PKG_METHOD[clifm]="custom"
+PKG_CATEGORY[clifm]="utilities"
+
+PACKAGES[far2l]="far2l"
+PKG_DESC[far2l]="Orthodox file manager [CUSTOM]"
+PKG_METHOD[far2l]="custom"
+PKG_CATEGORY[far2l]="utilities"
+
+PACKAGES[yazi]="yazi"
+PKG_DESC[yazi]="Blazing fast file manager [CUSTOM]"
+PKG_METHOD[yazi]="custom"
+PKG_CATEGORY[yazi]="utilities"
+
+PACKAGES[xplr]="xplr"
+PKG_DESC[xplr]="A hackable, minimal, fast TUI file explorer [CUSTOM]"
+PKG_METHOD[xplr]="custom"
+PKG_CATEGORY[xplr]="utilities"
+
+# File Operations
+PACKAGES[trash-cli]="trash-cli"
+PKG_DESC[trash-cli]="Move files and directories to the trash [APT]"
+PKG_METHOD[trash-cli]="apt"
+PKG_CATEGORY[trash-cli]="utilities"
+
+PACKAGES[empty-trash-cli]="empty-trash-cli"
+PKG_DESC[empty-trash-cli]="Empty the trash [CUSTOM]"
+PKG_METHOD[empty-trash-cli]="custom"
+PKG_CATEGORY[empty-trash-cli]="utilities"
+
+PACKAGES[del-cli]="del-cli"
+PKG_DESC[del-cli]="Delete files and folders [CUSTOM]"
+PKG_METHOD[del-cli]="custom"
+PKG_CATEGORY[del-cli]="utilities"
+
+PACKAGES[cpy-cli]="cpy-cli"
+PKG_DESC[cpy-cli]="Copies files [CUSTOM]"
+PKG_METHOD[cpy-cli]="custom"
+PKG_CATEGORY[cpy-cli]="utilities"
+
+PACKAGES[rename-cli]="rename-cli"
+PKG_DESC[rename-cli]="Rename files quickly [CUSTOM]"
+PKG_METHOD[rename-cli]="custom"
+PKG_CATEGORY[rename-cli]="utilities"
+
+PACKAGES[renameutils]="renameutils"
+PKG_DESC[renameutils]="Mass renaming in your editor [APT]"
+PKG_METHOD[renameutils]="apt"
+PKG_CATEGORY[renameutils]="utilities"
+
+PACKAGES[diskonaut]="diskonaut"
+PKG_DESC[diskonaut]="Disk space navigator [CUSTOM]"
+PKG_METHOD[diskonaut]="custom"
+PKG_CATEGORY[diskonaut]="utilities"
+
+PACKAGES[dua-cli]="dua-cli"
+PKG_DESC[dua-cli]="Disk usage analyzer [CUSTOM]"
+PKG_METHOD[dua-cli]="custom"
+PKG_CATEGORY[dua-cli]="utilities"
+
+PACKAGES[dutree]="dutree"
+PKG_DESC[dutree]="A tool to analyze file system usage written in Rust [CUSTOM]"
+PKG_METHOD[dutree]="custom"
+PKG_CATEGORY[dutree]="utilities"
+
+PACKAGES[chokidar-cli]="chokidar-cli"
+PKG_DESC[chokidar-cli]="CLI to watch file system changes [CUSTOM]"
+PKG_METHOD[chokidar-cli]="custom"
+PKG_CATEGORY[chokidar-cli]="utilities"
+
+PACKAGES[file-type-cli]="file-type-cli"
+PKG_DESC[file-type-cli]="Detect the file type of a file or stdin [CUSTOM]"
+PKG_METHOD[file-type-cli]="custom"
+PKG_CATEGORY[file-type-cli]="utilities"
+
+PACKAGES[unix-permissions]="unix-permissions"
+PKG_DESC[unix-permissions]="Swiss Army knife for Unix permissions [CUSTOM]"
+PKG_METHOD[unix-permissions]="custom"
+PKG_CATEGORY[unix-permissions]="utilities"
+
+PACKAGES[transmission-cli]="transmission-cli"
+PKG_DESC[transmission-cli]="Torrent client for your command line [APT]"
+PKG_METHOD[transmission-cli]="apt"
+PKG_CATEGORY[transmission-cli]="utilities"
+
+PACKAGES[webtorrent-cli]="webtorrent-cli"
+PKG_DESC[webtorrent-cli]="Streaming torrent client [CUSTOM]"
+PKG_METHOD[webtorrent-cli]="custom"
+PKG_CATEGORY[webtorrent-cli]="utilities"
+
+PACKAGES[entr]="entr"
+PKG_DESC[entr]="Run an arbitrary command when files change [APT]"
+PKG_METHOD[entr]="apt"
+PKG_CATEGORY[entr]="utilities"
+
+PACKAGES[organize-cli]="organize-cli"
+PKG_DESC[organize-cli]="Organize your files automatically [CUSTOM]"
+PKG_METHOD[organize-cli]="custom"
+PKG_CATEGORY[organize-cli]="utilities"
+
+PACKAGES[organize-rt]="organize-rt"
+PKG_DESC[organize-rt]="organize-cli in Rust with more customization [CUSTOM]"
+PKG_METHOD[organize-rt]="custom"
+PKG_CATEGORY[organize-rt]="utilities"
+
+PACKAGES[recoverpy]="recoverpy"
+PKG_DESC[recoverpy]="Recover overwritten or deleted files [CUSTOM]"
+PKG_METHOD[recoverpy]="custom"
+PKG_CATEGORY[recoverpy]="utilities"
+
+PACKAGES[f2]="f2"
+PKG_DESC[f2]="A cross-platform tool for fast, safe, and flexible batch renaming [CUSTOM]"
+PKG_METHOD[f2]="custom"
+PKG_CATEGORY[f2]="utilities"
+
+PACKAGES[scc]="scc"
+PKG_DESC[scc]="Count lines of code, blank lines, comment lines, and physical lines [CUSTOM]"
+PKG_METHOD[scc]="custom"
+PKG_CATEGORY[scc]="dev"
+
+# File Sync/Sharing
+PACKAGES[ffsend]="ffsend"
+PKG_DESC[ffsend]="Quick file share [CUSTOM]"
+PKG_METHOD[ffsend]="custom"
+PKG_CATEGORY[ffsend]="utilities"
+
+PACKAGES[share-cli]="share-cli"
+PKG_DESC[share-cli]="Share files with your local network [CUSTOM]"
+PKG_METHOD[share-cli]="custom"
+PKG_CATEGORY[share-cli]="utilities"
+
+PACKAGES[google-drive-upload]="google-drive-upload"
+PKG_DESC[google-drive-upload]="Upload/sync with Google Drive [CUSTOM]"
+PKG_METHOD[google-drive-upload]="custom"
+PKG_CATEGORY[google-drive-upload]="utilities"
+
+PACKAGES[gdrive-downloader]="gdrive-downloader"
+PKG_DESC[gdrive-downloader]="Download files/folders from Google Drive [CUSTOM]"
+PKG_METHOD[gdrive-downloader]="custom"
+PKG_CATEGORY[gdrive-downloader]="utilities"
+
+PACKAGES[portal]="portal"
+PKG_DESC[portal]="Send files between computers [CUSTOM]"
+PKG_METHOD[portal]="custom"
+PKG_CATEGORY[portal]="utilities"
+
+PACKAGES[shbin]="shbin"
+PKG_DESC[shbin]="Turn a Github repo into a pastebin [CUSTOM]"
+PKG_METHOD[shbin]="custom"
+PKG_CATEGORY[shbin]="utilities"
+
+PACKAGES[sharing]="sharing"
+PKG_DESC[sharing]="Send and receive files on your mobile device [CUSTOM]"
+PKG_METHOD[sharing]="custom"
+PKG_CATEGORY[sharing]="utilities"
+
+PACKAGES[ncp]="ncp"
+PKG_DESC[ncp]="Transfer files and folders, to and from NFS servers [CUSTOM]"
+PKG_METHOD[ncp]="custom"
+PKG_CATEGORY[ncp]="utilities"
+
+# Directory Listing
+PACKAGES[alder]="alder"
+PKG_DESC[alder]="Minimal tree with colors [CUSTOM]"
+PKG_METHOD[alder]="custom"
+PKG_CATEGORY[alder]="utilities"
+
+PACKAGES[tre]="tre"
+PKG_DESC[tre]="tree with git awareness, editor aliasing, and more [CUSTOM]"
+PKG_METHOD[tre]="custom"
+PKG_CATEGORY[tre]="utilities"
 
 # ==============================================================================
 # CATEGORY DEFINITIONS
@@ -1354,16 +3767,53 @@ CATEGORIES=(
     "shell:Shells & Customization"
     "editors:Editors & IDEs"
     "browsers:Web Browsers"
-    "monitoring:System Monitoring"
+    "system-monitoring:System Monitoring"
+    "network-monitoring:Network Monitoring"
+    "performance-tools:Performance Tools"
+    "utilities:Utilities"
     "database:Database Management"
     "security:Security Tools"
     "system:System Tools"
     "office:Office & Productivity"
     "communication:Communication"
-    "multimedia:Multimedia & Graphics"
+    "graphics:Graphics & Design"
+    "audio:Audio & Music"
+    "video:Video & Media"
+    "media-servers:Media Servers & Streaming"
     "cloud:Cloud & Sync"
     "terminals:Terminals"
-    "gaming:Gaming"
+    "gaming-platforms:Gaming Platforms"
+    "gaming-emulators:Gaming Emulators"
+)
+
+# Category hotkey mappings (A-Z)
+declare -A CATEGORY_HOTKEYS=(
+    ["core"]="A"
+    ["dev"]="B"
+    ["ai"]="C"
+    ["containers"]="D"
+    ["web"]="E"
+    ["shell"]="F"
+    ["editors"]="G"
+    ["browsers"]="H"
+    ["system-monitoring"]="I"
+    ["network-monitoring"]="J"
+    ["performance-tools"]="K"
+    ["utilities"]="L"
+    ["database"]="M"
+    ["security"]="N"
+    ["system"]="O"
+    ["office"]="P"
+    ["communication"]="Q"
+    ["graphics"]="R"
+    ["audio"]="S"
+    ["video"]="T"
+    ["media-servers"]="U"
+    ["cloud"]="V"
+    ["terminals"]="W"
+    ["gaming-platforms"]="X"
+    ["gaming-emulators"]="Y"
+    # Note: Z is reserved for back navigation in submenus
 )
 
 # ==============================================================================
@@ -1598,6 +4048,99 @@ remove_docker() {
     sudo rm -f /etc/apt/keyrings/docker.gpg
 }
 
+install_minikube() {
+    log "Installing Minikube..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="amd64" ;;
+        arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    curl -LO "https://storage.googleapis.com/minikube/releases/latest/minikube-linux-${arch}"
+    sudo install minikube-linux-${arch} /usr/local/bin/minikube
+    rm -f minikube-linux-${arch}
+    
+    ui_msg "Minikube Installed" "Minikube installed successfully."
+}
+
+remove_minikube() {
+    sudo rm -f /usr/local/bin/minikube
+    rm -rf ~/.minikube 2>/dev/null || true
+}
+
+install_kind() {
+    log "Installing Kind..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="amd64" ;;
+        arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-${arch}"
+    chmod +x ./kind
+    sudo mv ./kind /usr/local/bin/kind
+    
+    ui_msg "Kind Installed" "Kind installed successfully."
+}
+
+remove_kind() {
+    sudo rm -f /usr/local/bin/kind
+}
+
+install_ctop() {
+    log "Installing ctop..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="amd64" ;;
+        arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    curl -Lo ctop "https://github.com/bcicen/ctop/releases/latest/download/ctop-0.7.7-linux-${arch}"
+    chmod +x ctop
+    sudo mv ctop /usr/local/bin/ctop
+    
+    ui_msg "ctop Installed" "ctop installed successfully."
+}
+
+remove_ctop() {
+    sudo rm -f /usr/local/bin/ctop
+}
+
+install_lazydocker() {
+    log "Installing LazyDocker..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="x86_64" ;;
+        arm64) arch="armv6" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    local version
+    version=$(curl -s https://api.github.com/repos/jesseduffield/lazydocker/releases/latest | grep -Po '"tag_name": "v\K[^"]*')
+    
+    curl -Lo lazydocker.tar.gz "https://github.com/jesseduffield/lazydocker/releases/latest/download/lazydocker_${version}_Linux_${arch}.tar.gz"
+    tar xf lazydocker.tar.gz lazydocker
+    sudo mv lazydocker /usr/local/bin/
+    rm -f lazydocker.tar.gz
+    
+    ui_msg "LazyDocker Installed" "LazyDocker installed successfully."
+}
+
+remove_lazydocker() {
+    sudo rm -f /usr/local/bin/lazydocker
+}
+
 install_nodejs() {
     log "Installing Node.js ${NODE_LTS} from NodeSource..."
     
@@ -1740,6 +4283,147 @@ remove_yt-dlp() {
     pip3 uninstall -y yt-dlp 2>/dev/null || true
 }
 
+install_invidious() {
+    log "Installing Invidious..."
+    
+    # Check if Docker is installed
+    if ! command -v docker >/dev/null 2>&1; then
+        log_error "Docker is required for Invidious. Please install Docker first."
+        return 1
+    fi
+    
+    # Create invidious directory
+    mkdir -p "$HOME/invidious"
+    cd "$HOME/invidious"
+    
+    # Download docker-compose file
+    if curl -L -o docker-compose.yml https://raw.githubusercontent.com/iv-org/invidious/master/docker-compose.yml; then
+        ui_msg "Invidious Installed" "Invidious Docker setup downloaded to $HOME/invidious. Run 'docker-compose up -d' to start."
+    else
+        log_error "Failed to download Invidious docker-compose file"
+        return 1
+    fi
+}
+
+remove_invidious() {
+    log "Removing Invidious..."
+    if [ -d "$HOME/invidious" ]; then
+        cd "$HOME/invidious"
+        docker-compose down 2>/dev/null || true
+        cd "$HOME"
+        rm -rf "$HOME/invidious"
+    fi
+}
+
+install_seafile() {
+    log "Installing Seafile..."
+    
+    # Check if Docker is installed
+    if ! command -v docker >/dev/null 2>&1; then
+        log_error "Docker is required for Seafile. Please install Docker first."
+        return 1
+    fi
+    
+    # Create seafile directory
+    mkdir -p "$HOME/seafile"
+    cd "$HOME/seafile"
+    
+    # Download docker-compose file for Seafile
+    if curl -L -o docker-compose.yml https://raw.githubusercontent.com/haiwen/seafile-docker/master/docker-compose.yml; then
+        ui_msg "Seafile Installed" "Seafile Docker setup downloaded to $HOME/seafile. Run 'docker-compose up -d' to start."
+    else
+        log_error "Failed to download Seafile docker-compose file"
+        return 1
+    fi
+}
+
+remove_seafile() {
+    log "Removing Seafile..."
+    if [ -d "$HOME/seafile" ]; then
+        cd "$HOME/seafile"
+        docker-compose down 2>/dev/null || true
+        cd "$HOME"
+        rm -rf "$HOME/seafile"
+    fi
+}
+
+install_snapraid() {
+    log "Installing SnapRAID..."
+    
+    # Install dependencies
+    sudo apt update
+    sudo apt install -y build-essential
+    
+    # Download and compile SnapRAID
+    cd /tmp
+    if wget https://github.com/amadvance/snapraid/releases/download/v12.2/snapraid-12.2.tar.gz; then
+        tar -xzf snapraid-12.2.tar.gz
+        cd snapraid-12.2
+        ./configure
+        make
+        sudo make install
+        ui_msg "SnapRAID Installed" "SnapRAID parity protection tool installed successfully."
+    else
+        log_error "Failed to download SnapRAID"
+        return 1
+    fi
+}
+
+remove_snapraid() {
+    log "Removing SnapRAID..."
+    sudo rm -f /usr/local/bin/snapraid
+    sudo rm -f /usr/local/share/man/man1/snapraid.1
+}
+
+install_greyhole() {
+    log "Installing Greyhole..."
+    
+    # Check if Samba is installed
+    if ! command -v smbd >/dev/null 2>&1; then
+        log_error "Samba is required for Greyhole. Please install Samba first."
+        return 1
+    fi
+    
+    # Add Greyhole PPA and install
+    sudo add-apt-repository -y ppa:greyhole/greyhole
+    sudo apt update
+    if sudo apt install -y greyhole; then
+        ui_msg "Greyhole Installed" "Greyhole storage pooling installed. Configure /etc/greyhole.conf before use."
+    else
+        log_error "Failed to install Greyhole"
+        return 1
+    fi
+}
+
+remove_greyhole() {
+    log "Removing Greyhole..."
+    sudo apt remove -y greyhole 2>/dev/null || true
+    sudo add-apt-repository -r ppa:greyhole/greyhole 2>/dev/null || true
+}
+
+install_mergerfs() {
+    log "Installing MergerFS..."
+    
+    # Download and install MergerFS .deb package
+    cd /tmp
+    if wget https://github.com/trapexit/mergerfs/releases/download/2.35.1/mergerfs_2.35.1.ubuntu-jammy_amd64.deb; then
+        if sudo dpkg -i mergerfs_2.35.1.ubuntu-jammy_amd64.deb; then
+            ui_msg "MergerFS Installed" "MergerFS union filesystem installed successfully."
+        else
+            sudo apt install -f -y
+            ui_msg "MergerFS Installed" "MergerFS union filesystem installed successfully."
+        fi
+    else
+        log_error "Failed to download MergerFS"
+        return 1
+    fi
+}
+
+remove_mergerfs() {
+    log "Removing MergerFS..."
+    sudo apt remove -y mergerfs 2>/dev/null || true
+}
+
 install_n8n() {
     log "Installing n8n..."
     
@@ -1790,6 +4474,69 @@ remove_discord-deb() {
     remove_apt_package "discord"
 }
 
+install_plex() {
+    log "Installing Plex Media Server..."
+    
+    # Add Plex repository key
+    curl https://downloads.plex.tv/plex-keys/PlexSign.key | sudo apt-key add -
+    
+    # Add Plex repository
+    echo "deb https://downloads.plex.tv/repo/deb public main" | sudo tee /etc/apt/sources.list.d/plexmediaserver.list
+    
+    # Update package list and install Plex
+    if sudo apt update && sudo apt install -y plexmediaserver; then
+        # Enable and start Plex service
+        sudo systemctl enable plexmediaserver
+        sudo systemctl start plexmediaserver
+        ui_msg "Plex Installed" "Plex Media Server installed successfully. Access at http://localhost:32400/web"
+    else
+        log_error "Failed to install Plex Media Server"
+        return 1
+    fi
+}
+
+remove_plex() {
+    log "Removing Plex Media Server..."
+    sudo systemctl stop plexmediaserver 2>/dev/null || true
+    sudo systemctl disable plexmediaserver 2>/dev/null || true
+    remove_apt_package "plexmediaserver"
+    sudo rm -f /etc/apt/sources.list.d/plexmediaserver.list
+    sudo apt-key del 7BB9C367 2>/dev/null || true
+}
+
+install_ums() {
+    log "Installing Universal Media Server (UMS)..."
+    
+    # Check if Java is installed
+    if ! command -v java >/dev/null 2>&1; then
+        log_error "Java is required for UMS. Installing OpenJDK..."
+        sudo apt update && sudo apt install -y openjdk-11-jre
+    fi
+    
+    # Download UMS DEB package
+    local ums_url="https://github.com/UniversalMediaServer/UniversalMediaServer/releases/latest/download/ums.deb"
+    local temp_file="/tmp/ums.deb"
+    
+    if wget -O "$temp_file" "$ums_url" 2>/dev/null; then
+        if sudo dpkg -i "$temp_file" 2>/dev/null || sudo apt-get install -f -y; then
+            rm -f "$temp_file"
+            ui_msg "UMS Installed" "Universal Media Server installed successfully. Access at http://localhost:5001"
+        else
+            log_error "Failed to install UMS DEB package"
+            rm -f "$temp_file"
+            return 1
+        fi
+    else
+        log_error "Failed to download UMS DEB package"
+        return 1
+    fi
+}
+
+remove_ums() {
+    log "Removing Universal Media Server..."
+    remove_apt_package "ums"
+}
+
 install_gollama() {
     log "Installing Gollama..."
     
@@ -1818,6 +4565,177 @@ remove_gollama() {
     sudo rm -f /usr/local/bin/gollama
 }
 
+install_lm-studio() {
+    log "Installing LM Studio..."
+    
+    # Download LM Studio AppImage
+    local lm_studio_url="https://releases.lmstudio.ai/linux/x86/0.3.5/LM_Studio-0.3.5.AppImage"
+    local temp_file="/tmp/LM_Studio.AppImage"
+    
+    if wget -O "$temp_file" "$lm_studio_url" 2>/dev/null; then
+        chmod +x "$temp_file"
+        sudo mv "$temp_file" /usr/local/bin/lm-studio
+        ui_msg "LM Studio Installed" "LM Studio GUI for local LLMs installed successfully.\n\nRun with: lm-studio"
+    else
+        log_error "Failed to download LM Studio"
+        return 1
+    fi
+}
+
+remove_lm-studio() {
+    log "Removing LM Studio..."
+    sudo rm -f /usr/local/bin/lm-studio
+}
+
+install_text-generation-webui() {
+    log "Installing Text Generation WebUI..."
+    
+    # Clone the repository
+    local install_dir="/opt/text-generation-webui"
+    
+    if git clone https://github.com/oobabooga/text-generation-webui.git "$install_dir" 2>/dev/null; then
+        cd "$install_dir"
+        # Install dependencies
+        pip3 install -r requirements.txt 2>/dev/null || true
+        
+        # Create launcher script
+        sudo tee /usr/local/bin/text-generation-webui > /dev/null << 'EOF'
+#!/bin/bash
+cd /opt/text-generation-webui
+python3 server.py "$@"
+EOF
+        sudo chmod +x /usr/local/bin/text-generation-webui
+        
+        ui_msg "Text Generation WebUI Installed" "Text Generation WebUI installed successfully.\n\nRun with: text-generation-webui"
+    else
+        log_error "Failed to clone Text Generation WebUI"
+        return 1
+    fi
+}
+
+remove_text-generation-webui() {
+    log "Removing Text Generation WebUI..."
+    sudo rm -rf /opt/text-generation-webui
+    sudo rm -f /usr/local/bin/text-generation-webui
+}
+
+install_whisper-cpp() {
+    log "Installing Whisper.cpp..."
+    
+    # Install build dependencies
+    install_apt_package "build-essential"
+    install_apt_package "cmake"
+    
+    # Clone and build whisper.cpp
+    local build_dir="/tmp/whisper.cpp"
+    
+    if git clone https://github.com/ggerganov/whisper.cpp.git "$build_dir" 2>/dev/null; then
+        cd "$build_dir"
+        make -j$(nproc) 2>/dev/null
+        
+        # Install binaries
+        sudo cp main /usr/local/bin/whisper-main
+        sudo cp quantize /usr/local/bin/whisper-quantize
+        sudo cp server /usr/local/bin/whisper-server
+        
+        # Create convenience script
+        sudo tee /usr/local/bin/whisper-cpp > /dev/null << 'EOF'
+#!/bin/bash
+whisper-main "$@"
+EOF
+        sudo chmod +x /usr/local/bin/whisper-cpp
+        
+        # Clean up
+        rm -rf "$build_dir"
+        
+        ui_msg "Whisper.cpp Installed" "Whisper.cpp offline speech-to-text installed successfully.\n\nRun with: whisper-cpp"
+    else
+        log_error "Failed to clone Whisper.cpp"
+        return 1
+    fi
+}
+
+remove_whisper-cpp() {
+    log "Removing Whisper.cpp..."
+    sudo rm -f /usr/local/bin/whisper-main
+    sudo rm -f /usr/local/bin/whisper-quantize
+    sudo rm -f /usr/local/bin/whisper-server
+    sudo rm -f /usr/local/bin/whisper-cpp
+}
+
+install_comfyui() {
+    log "Installing ComfyUI..."
+    
+    # Clone ComfyUI repository
+    local install_dir="/opt/ComfyUI"
+    
+    if git clone https://github.com/comfyanonymous/ComfyUI.git "$install_dir" 2>/dev/null; then
+        cd "$install_dir"
+        
+        # Install Python dependencies
+        pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu 2>/dev/null || true
+        pip3 install -r requirements.txt 2>/dev/null || true
+        
+        # Create launcher script
+        sudo tee /usr/local/bin/comfyui > /dev/null << 'EOF'
+#!/bin/bash
+cd /opt/ComfyUI
+python3 main.py "$@"
+EOF
+        sudo chmod +x /usr/local/bin/comfyui
+        
+        ui_msg "ComfyUI Installed" "ComfyUI visual Stable Diffusion interface installed successfully.\n\nRun with: comfyui"
+    else
+        log_error "Failed to clone ComfyUI"
+        return 1
+    fi
+}
+
+remove_comfyui() {
+    log "Removing ComfyUI..."
+    sudo rm -rf /opt/ComfyUI
+    sudo rm -f /usr/local/bin/comfyui
+}
+
+install_invokeai() {
+    log "Installing InvokeAI..."
+    
+    # Install InvokeAI via pip
+    if pip3 install invokeai[xformers] --upgrade 2>/dev/null; then
+        ui_msg "InvokeAI Installed" "InvokeAI Stable Diffusion generator installed successfully.\n\nRun with: invokeai-web"
+    else
+        log_error "Failed to install InvokeAI"
+        return 1
+    fi
+}
+
+remove_invokeai() {
+    log "Removing InvokeAI..."
+    pip3 uninstall -y invokeai 2>/dev/null || true
+}
+
+install_koboldcpp() {
+    log "Installing KoboldCpp..."
+    
+    # Download KoboldCpp binary
+    local kobold_url="https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-linux-x64"
+    local temp_file="/tmp/koboldcpp"
+    
+    if wget -O "$temp_file" "$kobold_url" 2>/dev/null; then
+        chmod +x "$temp_file"
+        sudo mv "$temp_file" /usr/local/bin/koboldcpp
+        ui_msg "KoboldCpp Installed" "KoboldCpp LLM interface installed successfully.\n\nRun with: koboldcpp"
+    else
+        log_error "Failed to download KoboldCpp"
+        return 1
+    fi
+}
+
+remove_koboldcpp() {
+    log "Removing KoboldCpp..."
+    sudo rm -f /usr/local/bin/koboldcpp
+}
+
 install_phpmyadmin() {
     log "Installing phpMyAdmin with non-interactive configuration..."
     
@@ -1827,45 +4745,101 @@ install_phpmyadmin() {
         return 1
     fi
     
-    # Check if MySQL root password is set, if not, set it up
+    # FIRST: Read the MySQL root password from file if it exists
     local mysql_root_pass=""
-    if [[ -f "/root/.mysql_root_password" ]]; then
-        mysql_root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null)
+    if sudo test -f "/root/.mysql_root_password"; then
+        mysql_root_pass=$(sudo cat /root/.mysql_root_password 2>/dev/null | tr -d '\n\r')
+        if [[ -n "$mysql_root_pass" ]]; then
+            log "Read MySQL root password from /root/.mysql_root_password"
+        else
+            log "Password file exists but is empty"
+        fi
+    else
+        log "No MySQL root password file found at /root/.mysql_root_password"
     fi
     
-    # If no root password file exists, try to set up MySQL security
+    # If no password file exists, check if we can connect without password
     if [[ -z "$mysql_root_pass" ]]; then
-        log "Setting up MySQL root authentication..."
-        
-        # Generate a random password for MySQL root
-        mysql_root_pass=$(openssl rand -base64 32)
-        
-        # Try to set root password using various methods
-        if mysql -u root -e "SELECT 1;" 2>/dev/null; then
-            # Root can login without password, set one
-            mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$mysql_root_pass';" 2>/dev/null || \
-            mysql -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_pass');" 2>/dev/null || \
-            mysql -u root -e "UPDATE mysql.user SET Password=PASSWORD('$mysql_root_pass') WHERE User='root'; FLUSH PRIVILEGES;" 2>/dev/null
-            
-            # Save the password
-            echo "$mysql_root_pass" | sudo tee /root/.mysql_root_password > /dev/null
-            sudo chmod 600 /root/.mysql_root_password
+        log "No MySQL root password file found, checking if MySQL allows passwordless root access..."
+        if mysql -u root -e "SELECT 1;" >/dev/null 2>&1; then
+            log "MySQL allows passwordless root access, will set a password"
         else
             ui_msg "MySQL Setup Required" "MySQL root password needs to be configured.\n\nPlease run the MariaDB installation from Web Stack first, or manually configure MySQL root access."
             return 1
         fi
     fi
     
-    # Pre-configure phpMyAdmin with the MySQL root password
+    # Now handle MySQL authentication setup
+    if [[ -n "$mysql_root_pass" ]]; then
+        # We have a password, test if it works
+        if mysql -u root -p"$mysql_root_pass" -e "SELECT 1;" >/dev/null 2>&1; then
+            log "MySQL root password verified successfully"
+        else
+            log "Existing MySQL root password failed verification"
+            ui_msg "MySQL Authentication Error" "The stored MySQL root password is not working.\n\nPlease reset the MariaDB root password from the Database Management section first."
+            return 1
+        fi
+    else
+        # No password exists, set one up (fresh install scenario)
+        log "Setting up MySQL root authentication for fresh install..."
+        mysql_root_pass=$(openssl rand -base64 32)
+        mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$mysql_root_pass';" 2>/dev/null || \
+        mysql -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_pass');" 2>/dev/null || \
+        mysql -u root -e "UPDATE mysql.user SET Password=PASSWORD('$mysql_root_pass') WHERE User='root'; FLUSH PRIVILEGES;" 2>/dev/null
+        
+        # Save the password
+        echo "$mysql_root_pass" | sudo tee /root/.mysql_root_password > /dev/null
+        sudo chmod 600 /root/.mysql_root_password
+        log "New MySQL root password set and saved"
+    fi
+    
+    # Pre-configure phpMyAdmin with minimal debconf configuration
+    # Clear any existing debconf selections first
+    sudo debconf-communicate <<< "PURGE phpmyadmin" 2>/dev/null || true
+    
+    # Use only the essential debconf questions that actually exist
     echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | sudo debconf-set-selections
-    echo "phpmyadmin phpmyadmin/app-password-confirm password " | sudo debconf-set-selections
-    echo "phpmyadmin phpmyadmin/mysql/admin-pass password $mysql_root_pass" | sudo debconf-set-selections
-    echo "phpmyadmin phpmyadmin/mysql/app-pass password " | sudo debconf-set-selections
     echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect " | sudo debconf-set-selections
     
-    # Install phpMyAdmin non-interactively
+    # Set MySQL root password via debconf database directly
+    echo "phpmyadmin phpmyadmin/mysql/admin-pass password $mysql_root_pass" | sudo debconf-set-selections 2>/dev/null || true
+    
+    # Alternative approach: Set MySQL root password via environment and config file
+    export MYSQL_ROOT_PASSWORD="$mysql_root_pass"
+    
+    # Install phpMyAdmin with simplified approach
     apt_update
+    
+    # Set environment variables for non-interactive installation
+    export DEBIAN_FRONTEND=noninteractive
+    
+    # Create MySQL defaults file for phpMyAdmin configuration
+    local mysql_defaults_file="/tmp/mysql_defaults_phpmyadmin.cnf"
+    sudo tee "$mysql_defaults_file" > /dev/null <<EOF
+[mysql]
+user=root
+password=$mysql_root_pass
+host=localhost
+
+[mysqldump]
+user=root
+password=$mysql_root_pass
+host=localhost
+EOF
+    sudo chmod 600 "$mysql_defaults_file"
+    
+    # Pre-configure MySQL for phpMyAdmin setup
+    mysql --defaults-file="$mysql_defaults_file" -e "
+        CREATE DATABASE IF NOT EXISTS phpmyadmin;
+        GRANT ALL PRIVILEGES ON phpmyadmin.* TO 'root'@'localhost';
+        FLUSH PRIVILEGES;
+    " 2>/dev/null || true
+    
+    # Install phpMyAdmin with minimal interaction
     if sudo DEBIAN_FRONTEND=noninteractive apt-get install -y phpmyadmin php-mbstring php-zip php-gd php-json php-curl 2>&1 | tee -a "$LOGFILE"; then
+        
+        # Clean up temporary config file
+        sudo rm -f "$mysql_defaults_file"
         
         # Detect web server and configure accordingly
         local web_server=""
@@ -1926,7 +4900,10 @@ EOF
         log "phpMyAdmin installed successfully"
         return 0
     else
+        # Clean up temporary config file on failure
+        sudo rm -f "$mysql_defaults_file"
         log_error "Failed to install phpMyAdmin"
+        ui_msg "Installation Failed" "❌ phpMyAdmin installation failed.\n\nCheck the log file for details:\n$LOGFILE\n\nCommon issues:\n• MySQL/MariaDB not properly configured\n• Network connectivity problems\n• Package repository issues"
         return 1
     fi
 }
@@ -2211,6 +5188,968 @@ EOF
     return 0
 }
 
+install_bruno() {
+    log "Installing Bruno API client..."
+    
+    # Create keyrings directory
+    sudo mkdir -p /etc/apt/keyrings
+    
+    # Update and install GPG and curl
+    sudo apt update && sudo apt install -y gpg curl
+    
+    # Add the Bruno repository key
+    curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x9FA6017ECABE0266" | gpg --dearmor | sudo tee /etc/apt/keyrings/bruno.gpg > /dev/null
+    
+    # Add the Bruno repository
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/bruno.gpg] http://debian.usebruno.com/ bruno stable" | sudo tee /etc/apt/sources.list.d/bruno.list
+    
+    # Update and install Bruno
+    if sudo apt update && sudo apt install -y bruno; then
+        ui_msg "Bruno Installed" "Bruno API client installed successfully via APT repository."
+        return 0
+    else
+        log_error "Failed to install Bruno via APT"
+        return 1
+    fi
+}
+
+remove_bruno() {
+    log "Removing Bruno..."
+    
+    # Remove the package
+    sudo apt remove --purge -y bruno
+    
+    # Remove repository and key
+    sudo rm -f /etc/apt/sources.list.d/bruno.list
+    sudo rm -f /etc/apt/keyrings/bruno.gpg
+    
+    # Update package list
+    sudo apt update
+    
+    log "Bruno removed successfully"
+    return 0
+}
+
+install_yaak() {
+    log "Installing Yaak API client..."
+    
+    local yaak_url="https://github.com/mountain-loop/yaak/releases/download/v2025.7.3/yaak_2025.7.3_amd64.deb"
+    local temp_file="/tmp/yaak.deb"
+    
+    # Download the .deb file
+    if wget -O "$temp_file" "$yaak_url" 2>/dev/null; then
+        # Install the .deb package
+        if sudo dpkg -i "$temp_file" 2>/dev/null || sudo apt-get install -f -y; then
+            rm -f "$temp_file"
+            ui_msg "Yaak Installed" "Yaak API client installed successfully from GitHub release."
+            return 0
+        else
+            rm -f "$temp_file"
+            log_error "Failed to install Yaak .deb package"
+            return 1
+        fi
+    else
+        log_error "Failed to download Yaak from $yaak_url"
+        return 1
+    fi
+}
+
+remove_yaak() {
+    log "Removing Yaak..."
+    
+    # Remove the package
+    sudo apt remove --purge -y yaak
+    
+    log "Yaak removed successfully"
+    return 0
+}
+
+install_caddy() {
+    log "Installing Caddy web server..."
+    
+    # Install dependencies
+    sudo apt update
+    sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+    
+    # Add Caddy repository key
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+    
+    # Add Caddy repository
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+    
+    # Update and install Caddy
+    sudo apt update
+    install_apt_package "caddy"
+    
+    ui_msg "Caddy Installed" "Caddy web server installed successfully."
+}
+
+remove_caddy() {
+    remove_apt_package "caddy"
+    sudo rm -f /etc/apt/sources.list.d/caddy-stable.list
+    sudo rm -f /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+}
+
+install_ngrok() {
+    log "Installing ngrok..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="amd64" ;;
+        arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    # Download and install ngrok
+    curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+    echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+    sudo apt update
+    install_apt_package "ngrok"
+    
+    ui_msg "ngrok Installed" "ngrok installed successfully. Run 'ngrok config add-authtoken <token>' to authenticate."
+}
+
+remove_ngrok() {
+    remove_apt_package "ngrok"
+    sudo rm -f /etc/apt/sources.list.d/ngrok.list
+    sudo rm -f /etc/apt/trusted.gpg.d/ngrok.asc
+}
+
+install_mailhog() {
+    log "Installing MailHog..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="amd64" ;;
+        arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    # Download MailHog binary
+    curl -Lo mailhog "https://github.com/mailhog/MailHog/releases/latest/download/MailHog_linux_${arch}"
+    chmod +x mailhog
+    sudo mv mailhog /usr/local/bin/mailhog
+    
+    # Create systemd service
+    sudo tee /etc/systemd/system/mailhog.service > /dev/null << EOF
+[Unit]
+Description=MailHog Email Testing Tool
+After=network.target
+
+[Service]
+Type=simple
+User=mailhog
+Group=mailhog
+ExecStart=/usr/local/bin/mailhog
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    
+    # Create mailhog user
+    sudo useradd -r -s /bin/false mailhog 2>/dev/null || true
+    
+    # Enable and start service
+    sudo systemctl daemon-reload
+    sudo systemctl enable mailhog
+    sudo systemctl start mailhog
+    
+    ui_msg "MailHog Installed" "MailHog installed successfully. Web UI available at http://localhost:8025"
+}
+
+remove_mailhog() {
+    sudo systemctl stop mailhog 2>/dev/null || true
+    sudo systemctl disable mailhog 2>/dev/null || true
+    sudo rm -f /etc/systemd/system/mailhog.service
+    sudo rm -f /usr/local/bin/mailhog
+    sudo userdel mailhog 2>/dev/null || true
+    sudo systemctl daemon-reload
+}
+
+remove_rustup() {
+    log "Removing Rustup..."
+    
+    # Remove rustup and all Rust toolchains
+    if command -v rustup >/dev/null 2>&1; then
+        rustup self uninstall -y 2>/dev/null || true
+    fi
+    
+    # Remove any remaining Rust directories
+    rm -rf "$HOME/.rustup" "$HOME/.cargo" 2>/dev/null || true
+    
+    log "Rustup removed successfully"
+    return 0
+}
+
+# AI Image Generation Tools
+install_automatic1111() {
+    log "Installing Automatic1111 Stable Diffusion WebUI..."
+    
+    local install_dir="$HOME/automatic1111"
+    
+    # Install dependencies
+    sudo apt update && sudo apt install -y python3 python3-pip python3-venv git wget
+    
+    # Clone repository
+    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git "$install_dir"
+    cd "$install_dir"
+    
+    # Make webui script executable
+    chmod +x webui.sh
+    
+    # Create desktop entry
+    cat > ~/.local/share/applications/automatic1111.desktop << EOF
+[Desktop Entry]
+Name=Automatic1111 WebUI
+Comment=Stable Diffusion Web Interface
+Exec=bash -c 'cd $install_dir && ./webui.sh'
+Icon=applications-graphics
+Terminal=true
+Type=Application
+Categories=Graphics;Photography;
+EOF
+    
+    ui_msg "Automatic1111 Installed" "Automatic1111 WebUI installed to $install_dir. Run ./webui.sh to start."
+}
+
+remove_automatic1111() {
+    rm -rf "$HOME/automatic1111"
+    rm -f ~/.local/share/applications/automatic1111.desktop
+}
+
+install_fooocus() {
+    log "Installing Fooocus Stable Diffusion frontend..."
+    
+    local install_dir="$HOME/fooocus"
+    
+    # Install dependencies
+    sudo apt update && sudo apt install -y python3 python3-pip python3-venv git
+    
+    # Clone repository
+    git clone https://github.com/lllyasviel/Fooocus.git "$install_dir"
+    cd "$install_dir"
+    
+    # Create virtual environment and install requirements
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements_versions.txt
+    
+    # Create desktop entry
+    cat > ~/.local/share/applications/fooocus.desktop << EOF
+[Desktop Entry]
+Name=Fooocus
+Comment=Simplified Stable Diffusion Frontend
+Exec=bash -c 'cd $install_dir && source venv/bin/activate && python entry_with_update.py'
+Icon=applications-graphics
+Terminal=true
+Type=Application
+Categories=Graphics;Photography;
+EOF
+    
+    ui_msg "Fooocus Installed" "Fooocus installed to $install_dir. Run entry_with_update.py to start."
+}
+
+remove_fooocus() {
+    rm -rf "$HOME/fooocus"
+    rm -f ~/.local/share/applications/fooocus.desktop
+}
+
+install_sd-next() {
+    log "Installing SD.Next (Stable Diffusion Next)..."
+    
+    local install_dir="$HOME/sd-next"
+    
+    # Install dependencies
+    sudo apt update && sudo apt install -y python3 python3-pip python3-venv git
+    
+    # Clone repository
+    git clone https://github.com/vladmandic/automatic.git "$install_dir"
+    cd "$install_dir"
+    
+    # Make launch script executable
+    chmod +x launch.py
+    
+    # Create desktop entry
+    cat > ~/.local/share/applications/sd-next.desktop << EOF
+[Desktop Entry]
+Name=SD.Next
+Comment=Modernized Stable Diffusion WebUI
+Exec=bash -c 'cd $install_dir && python3 launch.py'
+Icon=applications-graphics
+Terminal=true
+Type=Application
+Categories=Graphics;Photography;
+EOF
+    
+    ui_msg "SD.Next Installed" "SD.Next installed to $install_dir. Run launch.py to start."
+}
+
+remove_sd-next() {
+    rm -rf "$HOME/sd-next"
+    rm -f ~/.local/share/applications/sd-next.desktop
+}
+
+install_kohya-ss-gui() {
+    log "Installing Kohya-ss GUI for model training..."
+    
+    local install_dir="$HOME/kohya-ss"
+    
+    # Install dependencies
+    sudo apt update && sudo apt install -y python3 python3-pip python3-venv git build-essential
+    
+    # Clone repository
+    git clone https://github.com/bmaltais/kohya_ss.git "$install_dir"
+    cd "$install_dir"
+    
+    # Make setup script executable
+    chmod +x setup.sh
+    
+    # Create desktop entry
+    cat > ~/.local/share/applications/kohya-ss.desktop << EOF
+[Desktop Entry]
+Name=Kohya-ss GUI
+Comment=Model Training GUI
+Exec=bash -c 'cd $install_dir && ./gui.sh'
+Icon=applications-science
+Terminal=true
+Type=Application
+Categories=Science;Education;
+EOF
+    
+    ui_msg "Kohya-ss GUI Installed" "Kohya-ss GUI installed to $install_dir. Run setup.sh first, then gui.sh."
+}
+
+remove_kohya-ss-gui() {
+    rm -rf "$HOME/kohya-ss"
+    rm -f ~/.local/share/applications/kohya-ss.desktop
+}
+
+# Shell Enhancement Tools
+install_oh-my-zsh() {
+    log "Installing Oh My Zsh..."
+    
+    # Check if zsh is installed
+    if ! command -v zsh >/dev/null 2>&1; then
+        log_error "Zsh is required for Oh My Zsh. Install zsh first."
+        return 1
+    fi
+    
+    # Check if Oh My Zsh is already installed
+    if [[ -d "$HOME/.oh-my-zsh" ]]; then
+        ui_msg "Already Installed" "Oh My Zsh is already installed."
+        return 0
+    fi
+    
+    # Install Oh My Zsh
+    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    
+    ui_msg "Oh My Zsh Installed" "Oh My Zsh installed successfully. Restart your terminal or run 'zsh' to use it."
+}
+
+remove_oh-my-zsh() {
+    log "Removing Oh My Zsh..."
+    
+    if [[ -d "$HOME/.oh-my-zsh" ]]; then
+        # Run the uninstall script if it exists
+        if [[ -f "$HOME/.oh-my-zsh/tools/uninstall.sh" ]]; then
+            sh "$HOME/.oh-my-zsh/tools/uninstall.sh" --unattended 2>/dev/null || true
+        fi
+        
+        # Remove directory if still exists
+        rm -rf "$HOME/.oh-my-zsh"
+        
+        # Restore original shell config if backup exists
+        [[ -f "$HOME/.zshrc.pre-oh-my-zsh" ]] && mv "$HOME/.zshrc.pre-oh-my-zsh" "$HOME/.zshrc"
+    fi
+    
+    log "Oh My Zsh removed successfully"
+}
+
+install_starship() {
+    log "Installing Starship prompt..."
+    
+    # Download and install Starship
+    curl -sS https://starship.rs/install.sh | sh -s -- -y
+    
+    # Add to shell configs if not already present
+    local starship_init='eval "$(starship init zsh)"'
+    
+    # Add to .zshrc if it exists and doesn't already contain starship
+    if [[ -f "$HOME/.zshrc" ]] && ! grep -q "starship init" "$HOME/.zshrc"; then
+        echo "" >> "$HOME/.zshrc"
+        echo "# Starship prompt" >> "$HOME/.zshrc"
+        echo "$starship_init" >> "$HOME/.zshrc"
+    fi
+    
+    # Add to .bashrc if it exists and doesn't already contain starship
+    if [[ -f "$HOME/.bashrc" ]] && ! grep -q "starship init" "$HOME/.bashrc"; then
+        echo "" >> "$HOME/.bashrc"
+        echo "# Starship prompt" >> "$HOME/.bashrc"
+        echo 'eval "$(starship init bash)"' >> "$HOME/.bashrc"
+    fi
+    
+    ui_msg "Starship Installed" "Starship prompt installed successfully. Restart your terminal to see changes."
+}
+
+remove_starship() {
+    log "Removing Starship..."
+    
+    # Remove binary
+    sudo rm -f /usr/local/bin/starship
+    rm -f "$HOME/.cargo/bin/starship"
+    
+    # Remove from shell configs
+    if [[ -f "$HOME/.zshrc" ]]; then
+        sed -i '/starship init/d' "$HOME/.zshrc" 2>/dev/null || true
+        sed -i '/# Starship prompt/d' "$HOME/.zshrc" 2>/dev/null || true
+    fi
+    
+    if [[ -f "$HOME/.bashrc" ]]; then
+        sed -i '/starship init/d' "$HOME/.bashrc" 2>/dev/null || true
+        sed -i '/# Starship prompt/d' "$HOME/.bashrc" 2>/dev/null || true
+    fi
+    
+    # Remove config directory
+    rm -rf "$HOME/.config/starship.toml"
+    
+    log "Starship removed successfully"
+}
+
+install_zoxide() {
+    log "Installing Zoxide..."
+    
+    # Download and install Zoxide
+    curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+    
+    # Add to shell configs if not already present
+    local zoxide_init_zsh='eval "$(zoxide init zsh)"'
+    local zoxide_init_bash='eval "$(zoxide init bash)"'
+    
+    # Add to .zshrc if it exists and doesn't already contain zoxide
+    if [[ -f "$HOME/.zshrc" ]] && ! grep -q "zoxide init" "$HOME/.zshrc"; then
+        echo "" >> "$HOME/.zshrc"
+        echo "# Zoxide - smarter cd" >> "$HOME/.zshrc"
+        echo "$zoxide_init_zsh" >> "$HOME/.zshrc"
+    fi
+    
+    # Add to .bashrc if it exists and doesn't already contain zoxide
+    if [[ -f "$HOME/.bashrc" ]] && ! grep -q "zoxide init" "$HOME/.bashrc"; then
+        echo "" >> "$HOME/.bashrc"
+        echo "# Zoxide - smarter cd" >> "$HOME/.bashrc"
+        echo "$zoxide_init_bash" >> "$HOME/.bashrc"
+    fi
+    
+    ui_msg "Zoxide Installed" "Zoxide installed successfully. Use 'z' instead of 'cd'. Restart terminal to activate."
+}
+
+remove_zoxide() {
+    log "Removing Zoxide..."
+    
+    # Remove binary
+    rm -f "$HOME/.local/bin/zoxide"
+    
+    # Remove from shell configs
+    if [[ -f "$HOME/.zshrc" ]]; then
+        sed -i '/zoxide init/d' "$HOME/.zshrc" 2>/dev/null || true
+        sed -i '/# Zoxide - smarter cd/d' "$HOME/.zshrc" 2>/dev/null || true
+    fi
+    
+    if [[ -f "$HOME/.bashrc" ]]; then
+        sed -i '/zoxide init/d' "$HOME/.bashrc" 2>/dev/null || true
+        sed -i '/# Zoxide - smarter cd/d' "$HOME/.bashrc" 2>/dev/null || true
+    fi
+    
+    # Remove data directory
+    rm -rf "$HOME/.local/share/zoxide"
+    
+    log "Zoxide removed successfully"
+}
+
+install_poetry() {
+    log "Installing Poetry Python dependency manager..."
+    
+    # Install via pip3
+    if pip3 install --user poetry; then
+        # Add to PATH if not already there
+        if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc 2>/dev/null || true
+        fi
+        ui_msg "Poetry Installed" "Poetry Python dependency manager installed successfully via pip3."
+        return 0
+    else
+        log_error "Failed to install Poetry"
+        return 1
+    fi
+}
+
+remove_poetry() {
+    log "Removing Poetry..."
+    pip3 uninstall -y poetry 2>/dev/null || true
+    log "Poetry removed successfully"
+    return 0
+}
+
+install_deno() {
+    log "Installing Deno JS/TS runtime..."
+    
+    local deno_url="https://github.com/denoland/deno/releases/latest/download/deno-x86_64-unknown-linux-gnu.zip"
+    local temp_dir="/tmp/deno_install"
+    local temp_file="$temp_dir/deno.zip"
+    
+    mkdir -p "$temp_dir"
+    
+    # Download and install Deno
+    if wget -O "$temp_file" "$deno_url" 2>/dev/null; then
+        cd "$temp_dir"
+        unzip -q deno.zip
+        sudo mv deno /usr/local/bin/
+        sudo chmod +x /usr/local/bin/deno
+        rm -rf "$temp_dir"
+        ui_msg "Deno Installed" "Deno JS/TS runtime installed successfully."
+        return 0
+    else
+        rm -rf "$temp_dir"
+        log_error "Failed to download Deno"
+        return 1
+    fi
+}
+
+remove_deno() {
+    log "Removing Deno..."
+    sudo rm -f /usr/local/bin/deno
+    log "Deno removed successfully"
+    return 0
+}
+
+install_bun() {
+    log "Installing Bun JS runtime..."
+    
+    # Install via official installer
+    if curl -fsSL https://bun.sh/install | bash; then
+        # Add to PATH if not already there
+        if ! echo "$PATH" | grep -q "$HOME/.bun/bin"; then
+            echo 'export PATH="$HOME/.bun/bin:$PATH"' >> ~/.bashrc
+            echo 'export PATH="$HOME/.bun/bin:$PATH"' >> ~/.zshrc 2>/dev/null || true
+        fi
+        ui_msg "Bun Installed" "Bun JS runtime installed successfully."
+        return 0
+    else
+        log_error "Failed to install Bun"
+        return 1
+    fi
+}
+
+remove_bun() {
+    log "Removing Bun..."
+    rm -rf "$HOME/.bun" 2>/dev/null || true
+    log "Bun removed successfully"
+    return 0
+}
+
+install_mkdocs() {
+    log "Installing MkDocs static site generator..."
+    
+    # Install via pip3
+    if pip3 install --user mkdocs mkdocs-material; then
+        ui_msg "MkDocs Installed" "MkDocs static site generator installed successfully via pip3."
+        return 0
+    else
+        log_error "Failed to install MkDocs"
+        return 1
+    fi
+}
+
+remove_mkdocs() {
+    log "Removing MkDocs..."
+    pip3 uninstall -y mkdocs mkdocs-material 2>/dev/null || true
+    log "MkDocs removed successfully"
+    return 0
+}
+
+install_insomnia() {
+    log "Installing Insomnia API client..."
+    
+    local insomnia_url="https://github.com/Kong/insomnia/releases/latest/download/Insomnia.Core-8.6.1.deb"
+    local temp_file="/tmp/insomnia.deb"
+    
+    # Download the .deb file
+    if wget -O "$temp_file" "$insomnia_url" 2>/dev/null; then
+        # Install the .deb package
+        if sudo dpkg -i "$temp_file" 2>/dev/null || sudo apt-get install -f -y; then
+            rm -f "$temp_file"
+            ui_msg "Insomnia Installed" "Insomnia API client installed successfully."
+            return 0
+        else
+            rm -f "$temp_file"
+            log_error "Failed to install Insomnia .deb package"
+            return 1
+        fi
+    else
+        log_error "Failed to download Insomnia"
+        return 1
+    fi
+}
+
+remove_insomnia() {
+    log "Removing Insomnia..."
+    sudo apt remove --purge -y insomnia 2>/dev/null || true
+    log "Insomnia removed successfully"
+    return 0
+}
+
+install_zed() {
+    log "Installing Zed code editor..."
+    
+    local zed_url="https://zed.dev/api/releases/stable/latest/zed-linux-x86_64.tar.gz"
+    local temp_dir="/tmp/zed_install"
+    local temp_file="$temp_dir/zed.tar.gz"
+    
+    mkdir -p "$temp_dir"
+    
+    # Download and install Zed
+    if wget -O "$temp_file" "$zed_url" 2>/dev/null; then
+        cd "$temp_dir"
+        tar -xzf zed.tar.gz
+        sudo mv zed-linux-x86_64/zed /usr/local/bin/
+        sudo chmod +x /usr/local/bin/zed
+        rm -rf "$temp_dir"
+        ui_msg "Zed Installed" "Zed code editor installed successfully."
+        return 0
+    else
+        rm -rf "$temp_dir"
+        log_error "Failed to download Zed"
+        return 1
+    fi
+}
+
+remove_zed() {
+    log "Removing Zed..."
+    sudo rm -f /usr/local/bin/zed
+    log "Zed removed successfully"
+    return 0
+}
+
+install_localwp() {
+    log "Installing LocalWP..."
+    
+    local localwp_url="https://cdn.localwp.com/releases-stable/6.7.0+6387/local-6.7.0-linux.deb"
+    local temp_file="/tmp/localwp.deb"
+    
+    # Download the .deb file
+    if wget -O "$temp_file" "$localwp_url" 2>/dev/null; then
+        # Install the .deb package
+        if sudo dpkg -i "$temp_file" 2>/dev/null || sudo apt-get install -f -y; then
+            rm -f "$temp_file"
+            ui_msg "LocalWP Installed" "LocalWP WordPress development environment installed successfully."
+            return 0
+        else
+            rm -f "$temp_file"
+            log_error "Failed to install LocalWP .deb package"
+            return 1
+        fi
+    else
+        log_error "Failed to download LocalWP"
+        return 1
+    fi
+}
+
+remove_localwp() {
+    log "Removing LocalWP..."
+    sudo apt remove --purge -y local 2>/dev/null || true
+    log "LocalWP removed successfully"
+    return 0
+}
+
+install_devkinsta() {
+    log "Installing DevKinsta..."
+    
+    local devkinsta_url="https://kinsta.com/devkinsta/download/devkinsta.deb"
+    local temp_file="/tmp/devkinsta.deb"
+    
+    # Download the .deb file
+    if wget -O "$temp_file" "$devkinsta_url" 2>/dev/null; then
+        # Install the .deb package
+        if sudo dpkg -i "$temp_file" 2>/dev/null || sudo apt-get install -f -y; then
+            rm -f "$temp_file"
+            ui_msg "DevKinsta Installed" "DevKinsta WordPress development environment installed successfully."
+            return 0
+        else
+            rm -f "$temp_file"
+            log_error "Failed to install DevKinsta .deb package"
+            return 1
+        fi
+    else
+        log_error "Failed to download DevKinsta"
+        return 1
+    fi
+}
+
+remove_devkinsta() {
+    log "Removing DevKinsta..."
+    sudo apt remove --purge -y devkinsta 2>/dev/null || true
+    log "DevKinsta removed successfully"
+    return 0
+}
+
+install_lando() {
+    log "Installing Lando..."
+    
+    local arch
+    arch=$(dpkg --print-architecture)
+    case "$arch" in
+        amd64) arch="x64" ;;
+        arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    local lando_url="https://github.com/lando/lando/releases/latest/download/lando-linux-${arch}-stable.deb"
+    local temp_file="/tmp/lando.deb"
+    
+    # Download the .deb file
+    if wget -O "$temp_file" "$lando_url" 2>/dev/null; then
+        # Install the .deb package
+        if sudo dpkg -i "$temp_file" 2>/dev/null || sudo apt-get install -f -y; then
+            rm -f "$temp_file"
+            ui_msg "Lando Installed" "Lando containerized development environment installed successfully."
+            return 0
+        else
+            rm -f "$temp_file"
+            log_error "Failed to install Lando .deb package"
+            return 1
+        fi
+    else
+        log_error "Failed to download Lando"
+        return 1
+    fi
+}
+
+remove_lando() {
+    log "Removing Lando..."
+    sudo apt remove --purge -y lando 2>/dev/null || true
+    log "Lando removed successfully"
+    return 0
+}
+
+install_ddev() {
+    log "Installing DDEV..."
+    
+    # Install via official installer script
+    if curl -fsSL https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh | bash; then
+        ui_msg "DDEV Installed" "DDEV containerized development environment installed successfully."
+        return 0
+    else
+        log_error "Failed to install DDEV"
+        return 1
+    fi
+}
+
+remove_ddev() {
+    log "Removing DDEV..."
+    sudo rm -f /usr/local/bin/ddev
+    rm -rf ~/.ddev 2>/dev/null || true
+    log "DDEV removed successfully"
+    return 0
+}
+
+install_xampp() {
+    log "Installing XAMPP..."
+    
+    local xampp_url="https://www.apachefriends.org/xampp-files/8.2.12/xampp-linux-x64-8.2.12-0-installer.run"
+    local temp_file="/tmp/xampp-installer.run"
+    
+    # Download the installer
+    if wget -O "$temp_file" "$xampp_url" 2>/dev/null; then
+        chmod +x "$temp_file"
+        # Run installer in unattended mode
+        if sudo "$temp_file" --mode unattended; then
+            rm -f "$temp_file"
+            ui_msg "XAMPP Installed" "XAMPP development stack installed successfully to /opt/lampp."
+            return 0
+        else
+            rm -f "$temp_file"
+            log_error "Failed to install XAMPP"
+            return 1
+        fi
+    else
+        log_error "Failed to download XAMPP"
+        return 1
+    fi
+}
+
+remove_xampp() {
+    log "Removing XAMPP..."
+    sudo rm -rf /opt/lampp 2>/dev/null || true
+    log "XAMPP removed successfully"
+    return 0
+}
+
+# ==============================================================================
+# ADDITIONAL CLI TOOLS INSTALLATION FUNCTIONS
+# ==============================================================================
+
+install_lazygit() {
+    log "Installing lazygit..."
+    
+    local arch
+    case "$(uname -m)" in
+        x86_64) arch="x86_64" ;;
+        aarch64|arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture"; return 1 ;;
+    esac
+    
+    local latest_url=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep "browser_download_url.*Linux_${arch}.tar.gz" | cut -d '"' -f 4)
+    
+    if [[ -z "$latest_url" ]]; then
+        log_error "Failed to get lazygit download URL"
+        return 1
+    fi
+    
+    local temp_file="/tmp/lazygit.tar.gz"
+    
+    if wget -O "$temp_file" "$latest_url" 2>/dev/null; then
+        tar -xzf "$temp_file" -C /tmp/
+        sudo mv /tmp/lazygit /usr/local/bin/
+        sudo chmod +x /usr/local/bin/lazygit
+        rm -f "$temp_file"
+        log "lazygit installed successfully"
+        return 0
+    else
+        log_error "Failed to download lazygit"
+        return 1
+    fi
+}
+
+install_glow() {
+    log "Installing glow..."
+    
+    local arch
+    case "$(uname -m)" in
+        x86_64) arch="x86_64" ;;
+        aarch64|arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture"; return 1 ;;
+    esac
+    
+    local latest_url=$(curl -s https://api.github.com/repos/charmbracelet/glow/releases/latest | grep "browser_download_url.*linux_${arch}.tar.gz" | cut -d '"' -f 4)
+    
+    if [[ -z "$latest_url" ]]; then
+        log_error "Failed to get glow download URL"
+        return 1
+    fi
+    
+    local temp_file="/tmp/glow.tar.gz"
+    
+    if wget -O "$temp_file" "$latest_url" 2>/dev/null; then
+        tar -xzf "$temp_file" -C /tmp/
+        sudo mv /tmp/glow /usr/local/bin/
+        sudo chmod +x /usr/local/bin/glow
+        rm -f "$temp_file"
+        log "glow installed successfully"
+        return 0
+    else
+        log_error "Failed to download glow"
+        return 1
+    fi
+}
+
+install_cheat() {
+    log "Installing cheat..."
+    
+    local arch
+    case "$(uname -m)" in
+        x86_64) arch="amd64" ;;
+        aarch64|arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture"; return 1 ;;
+    esac
+    
+    local latest_url=$(curl -s https://api.github.com/repos/cheat/cheat/releases/latest | grep "browser_download_url.*linux-${arch}.gz" | cut -d '"' -f 4)
+    
+    if [[ -z "$latest_url" ]]; then
+        log_error "Failed to get cheat download URL"
+        return 1
+    fi
+    
+    local temp_file="/tmp/cheat.gz"
+    
+    if wget -O "$temp_file" "$latest_url" 2>/dev/null; then
+        gunzip "$temp_file"
+        sudo mv /tmp/cheat /usr/local/bin/
+        sudo chmod +x /usr/local/bin/cheat
+        log "cheat installed successfully"
+        return 0
+    else
+        log_error "Failed to download cheat"
+        return 1
+    fi
+}
+
+install_broot() {
+    log "Installing broot..."
+    
+    local arch
+    case "$(uname -m)" in
+        x86_64) arch="x86_64-linux" ;;
+        aarch64|arm64) arch="aarch64-linux" ;;
+        *) log_error "Unsupported architecture"; return 1 ;;
+    esac
+    
+    local latest_url=$(curl -s https://api.github.com/repos/Canop/broot/releases/latest | grep "browser_download_url.*${arch}" | cut -d '"' -f 4)
+    
+    if [[ -z "$latest_url" ]]; then
+        log_error "Failed to get broot download URL"
+        return 1
+    fi
+    
+    local temp_file="/tmp/broot"
+    
+    if wget -O "$temp_file" "$latest_url" 2>/dev/null; then
+        sudo mv "$temp_file" /usr/local/bin/broot
+        sudo chmod +x /usr/local/bin/broot
+        log "broot installed successfully"
+        return 0
+    else
+        log_error "Failed to download broot"
+        return 1
+    fi
+}
+
+install_dog() {
+    log "Installing dog..."
+    
+    local arch
+    case "$(uname -m)" in
+        x86_64) arch="x86_64" ;;
+        aarch64|arm64) arch="aarch64" ;;
+        *) log_error "Unsupported architecture"; return 1 ;;
+    esac
+    
+    local latest_url=$(curl -s https://api.github.com/repos/ogham/dog/releases/latest | grep "browser_download_url.*${arch}-unknown-linux-gnu.zip" | cut -d '"' -f 4)
+    
+    if [[ -z "$latest_url" ]]; then
+        log_error "Failed to get dog download URL"
+        return 1
+    fi
+    
+    local temp_file="/tmp/dog.zip"
+    
+    if wget -O "$temp_file" "$latest_url" 2>/dev/null; then
+        unzip -q "$temp_file" -d /tmp/
+        sudo mv /tmp/bin/dog /usr/local/bin/
+        sudo chmod +x /usr/local/bin/dog
+        rm -f "$temp_file"
+        rm -rf /tmp/bin
+        log "dog installed successfully"
+        return 0
+    else
+        log_error "Failed to download dog"
+        return 1
+    fi
+}
+
 # ==============================================================================
 # BUNTAGE MANAGEMENT DISPATCHER
 # ==============================================================================
@@ -2273,11 +6212,57 @@ install_package() {
                 warp-terminal) install_warp; install_result=$? ;;
                 ollama) install_ollama; install_result=$? ;;
                 yt-dlp) install_yt-dlp; install_result=$? ;;
+                invidious) install_invidious; install_result=$? ;;
                 n8n) install_n8n; install_result=$? ;;
                 gollama) install_gollama; install_result=$? ;;
                 discord-deb) install_discord-deb; install_result=$? ;;
                 phpmyadmin) install_phpmyadmin; install_result=$? ;;
                 adminer) install_adminer; install_result=$? ;;
+                bruno) install_bruno; install_result=$? ;;
+                yaak) install_yaak; install_result=$? ;;
+                rustup) install_rustup; install_result=$? ;;
+                poetry) install_poetry; install_result=$? ;;
+                deno) install_deno; install_result=$? ;;
+                bun) install_bun; install_result=$? ;;
+                mkdocs) install_mkdocs; install_result=$? ;;
+                insomnia) install_insomnia; install_result=$? ;;
+                zed) install_zed; install_result=$? ;;
+                localwp) install_localwp; install_result=$? ;;
+                devkinsta) install_devkinsta; install_result=$? ;;
+                lando) install_lando; install_result=$? ;;
+                ddev) install_ddev; install_result=$? ;;
+                xampp) install_xampp; install_result=$? ;;
+                lm-studio) install_lm-studio; install_result=$? ;;
+                text-generation-webui) install_text-generation-webui; install_result=$? ;;
+                whisper-cpp) install_whisper-cpp; install_result=$? ;;
+                comfyui) install_comfyui; install_result=$? ;;
+                invokeai) install_invokeai; install_result=$? ;;
+                koboldcpp) install_koboldcpp; install_result=$? ;;
+                minikube) install_minikube; install_result=$? ;;
+                kind) install_kind; install_result=$? ;;
+                ctop) install_ctop; install_result=$? ;;
+                lazydocker) install_lazydocker; install_result=$? ;;
+                caddy) install_caddy; install_result=$? ;;
+                ngrok) install_ngrok; install_result=$? ;;
+                mailhog) install_mailhog; install_result=$? ;;
+                automatic1111) install_automatic1111; install_result=$? ;;
+                fooocus) install_fooocus; install_result=$? ;;
+                sd-next) install_sd-next; install_result=$? ;;
+                kohya-ss-gui) install_kohya-ss-gui; install_result=$? ;;
+                oh-my-zsh) install_oh-my-zsh; install_result=$? ;;
+                starship) install_starship; install_result=$? ;;
+                zoxide) install_zoxide; install_result=$? ;;
+                seafile) install_seafile; install_result=$? ;;
+                snapraid) install_snapraid; install_result=$? ;;
+                greyhole) install_greyhole; install_result=$? ;;
+                mergerfs) install_mergerfs; install_result=$? ;;
+                plex) install_plex; install_result=$? ;;
+                ums) install_ums; install_result=$? ;;
+                lazygit) install_lazygit; install_result=$? ;;
+                glow) install_glow; install_result=$? ;;
+                cheat) install_cheat; install_result=$? ;;
+                broot) install_broot; install_result=$? ;;
+                dog) install_dog; install_result=$? ;;
                 *) log_error "Unknown custom installer: $name"; install_result=1 ;;
             esac
             ;;
@@ -2332,11 +6317,52 @@ remove_package() {
                 warp-terminal) remove_warp; remove_result=$? ;;
                 ollama) remove_ollama; remove_result=$? ;;
                 yt-dlp) remove_yt-dlp; remove_result=$? ;;
+                invidious) remove_invidious; remove_result=$? ;;
                 n8n) remove_n8n; remove_result=$? ;;
                 gollama) remove_gollama; remove_result=$? ;;
                 discord-deb) remove_discord-deb; remove_result=$? ;;
                 phpmyadmin) remove_phpmyadmin; remove_result=$? ;;
                 adminer) remove_adminer; remove_result=$? ;;
+                bruno) remove_bruno; remove_result=$? ;;
+                yaak) remove_yaak; remove_result=$? ;;
+                rustup) remove_rustup; remove_result=$? ;;
+                poetry) remove_poetry; remove_result=$? ;;
+                deno) remove_deno; remove_result=$? ;;
+                bun) remove_bun; remove_result=$? ;;
+                mkdocs) remove_mkdocs; remove_result=$? ;;
+                insomnia) remove_insomnia; remove_result=$? ;;
+                zed) remove_zed; remove_result=$? ;;
+                localwp) remove_localwp; remove_result=$? ;;
+                devkinsta) remove_devkinsta; remove_result=$? ;;
+                lando) remove_lando; remove_result=$? ;;
+                ddev) remove_ddev; remove_result=$? ;;
+                xampp) remove_xampp; remove_result=$? ;;
+                lm-studio) remove_lm-studio; remove_result=$? ;;
+                text-generation-webui) remove_text-generation-webui; remove_result=$? ;;
+                whisper-cpp) remove_whisper-cpp; remove_result=$? ;;
+                comfyui) remove_comfyui; remove_result=$? ;;
+                invokeai) remove_invokeai; remove_result=$? ;;
+                koboldcpp) remove_koboldcpp; remove_result=$? ;;
+                minikube) remove_minikube; remove_result=$? ;;
+                kind) remove_kind; remove_result=$? ;;
+                ctop) remove_ctop; remove_result=$? ;;
+                lazydocker) remove_lazydocker; remove_result=$? ;;
+                caddy) remove_caddy; remove_result=$? ;;
+                ngrok) remove_ngrok; remove_result=$? ;;
+                mailhog) remove_mailhog; remove_result=$? ;;
+                automatic1111) remove_automatic1111; remove_result=$? ;;
+                fooocus) remove_fooocus; remove_result=$? ;;
+                sd-next) remove_sd-next; remove_result=$? ;;
+                kohya-ss-gui) remove_kohya-ss-gui; remove_result=$? ;;
+                oh-my-zsh) remove_oh-my-zsh; remove_result=$? ;;
+                starship) remove_starship; remove_result=$? ;;
+                zoxide) remove_zoxide; remove_result=$? ;;
+                seafile) remove_seafile; remove_result=$? ;;
+                snapraid) remove_snapraid; remove_result=$? ;;
+                greyhole) remove_greyhole; remove_result=$? ;;
+                mergerfs) remove_mergerfs; remove_result=$? ;;
+                plex) remove_plex; remove_result=$? ;;
+                ums) remove_ums; remove_result=$? ;;
                 *) log_error "Unknown custom remover: $name"; remove_result=1 ;;
             esac
             ;;
@@ -2526,6 +6552,23 @@ is_cache_refresh_complete() {
 show_category_menu() {
     log "Entering show_category_menu function"
     
+    # Hotkey cycling state tracking
+    local -A last_hotkey_selection
+    local -A hotkey_categories
+    
+    # Build reverse mapping of hotkeys to categories for cycling
+    for cat_id in "${!CATEGORY_HOTKEYS[@]}"; do
+        local hotkey="${CATEGORY_HOTKEYS[$cat_id]}"
+        if [[ -n "${hotkey_categories[$hotkey]:-}" ]]; then
+            hotkey_categories[$hotkey]="${hotkey_categories[$hotkey]} $cat_id"
+        else
+            hotkey_categories[$hotkey]="$cat_id"
+        fi
+    done
+    
+    # Add special Q hotkey handling for communication and quit
+    hotkey_categories["Q"]="communication quit"
+    
     # Start background cache refresh on first load
     refresh_cache_silent
     
@@ -2533,10 +6576,29 @@ show_category_menu() {
         log "Building category menu items..."
         local menu_items=()
         
+        # System management tools at the top
+        log "Adding system management menu items..."
+        menu_items+=("system-info" "(.Y.) System Information")
+        menu_items+=("mirror-management" "(.Y.) Mirror Management")
+        menu_items+=("database-management" "(.Y.) Database Management")
+        menu_items+=("wordpress-setup" "(.Y.) WordPress Management")
+        menu_items+=("keyboard-layout" "(.Y.) Keyboard Layout Configuration")
+        menu_items+=("php-settings" "(.Y.) PHP Configuration")
+        menu_items+=("log-viewer" "(.Y.) Log Viewer")
+        menu_items+=("bulk-ops" "(.Y.) Bulk Operations")
+        menu_items+=("terminal-size" "(.Y.) Dialog Box Size Configuration")
+        menu_items+=("" "(_*_)")
+        
         log "Processing categories array with ${#CATEGORIES[@]} entries"
         for entry in "${CATEGORIES[@]}"; do
             local cat_id="${entry%%:*}"
             local cat_name="${entry#*:}"
+            
+            # Skip excluded categories
+            if [[ -n "${EXCLUDED_CATEGORIES[$cat_id]:-}" ]]; then
+                log "Skipping excluded category: $cat_id"
+                continue
+            fi
             
             # Count installed buntages in category
             local total=0
@@ -2567,18 +6629,19 @@ show_category_menu() {
                 refresh_indicator=" 🔄"
             fi
             
-            menu_items+=("$cat_id" "(.Y.) $cat_name [$installed/$total installed]$refresh_indicator")
+            # Get hotkey for this category
+            local hotkey="${CATEGORY_HOTKEYS[$cat_id]:-}"
+            local hotkey_display=""
+            if [[ -n "$hotkey" ]]; then
+                hotkey_display="($hotkey) "
+            fi
+            
+            menu_items+=("$cat_id" "${hotkey_display}$cat_name [$installed/$total installed]$refresh_indicator")
         done
         
         log "Adding additional menu items..."
+        # System management tools at the top
         menu_items+=("" "(_*_)")
-        menu_items+=("wordpress-setup" "(.Y.) WordPress Management")
-        menu_items+=("php-settings" "(.Y.) PHP Configuration")
-        menu_items+=("system-info" "(.Y.) System Information")
-        menu_items+=("keyboard-layout" "(.Y.) Keyboard Layout Configuration")
-        menu_items+=("database-management" "(.Y.) Database Management")
-        menu_items+=("log-viewer" "(.Y.) Log Viewer")
-        menu_items+=("bulk-ops" "(.Y.) Bulk Operations")
         menu_items+=("quit" "(Q) Exit Installer")
         
         log "Calling ui_menu with ${#menu_items[@]} menu items"
@@ -2589,7 +6652,7 @@ show_category_menu() {
         set +e  # Temporarily disable exit on error
         choice=$(ui_menu "Ultrabunt Ultimate Buntstaller" \
             "Select a buntegory to manage buntages:" \
-            24 80 14 "${menu_items[@]}")
+            $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}")
         local ui_result=$?
         set -e  # Re-enable exit on error
         
@@ -2600,9 +6663,9 @@ show_category_menu() {
         
         case "$choice" in
             quit|back|q) 
-                # Add confirmation for quit
+                # Simple confirmation for quit
                 if [[ "$choice" == "quit" || "$choice" == "q" ]]; then
-                    if ui_yesno "Confirm Exit" "Are you sure you want to exit the Ultrabunt installer?"; then
+                    if ui_yesno "Confirm Exit" "Are you sure you want to exit Ultrabunt?"; then
                         break
                     else
                         continue
@@ -2611,10 +6674,22 @@ show_category_menu() {
                     break
                 fi
                 ;;
+            terminal-size)
+                show_dialog_size_menu || {
+                    log "ERROR: show_dialog_size_menu failed"
+                    ui_msg "Error" "Failed to display dialog size menu. Please check the logs."
+                }
+                ;;
             system-info) 
                 show_system_info || {
                     log "ERROR: show_system_info failed"
                     ui_msg "Error" "Failed to display system information. Please check the logs."
+                }
+                ;;
+            mirror-management)
+                show_mirror_management_menu || {
+                    log "ERROR: show_mirror_management_menu failed"
+                    ui_msg "Error" "Failed to display mirror management menu. Please check the logs."
                 }
                 ;;
             keyboard-layout)
@@ -2654,7 +6729,61 @@ show_category_menu() {
                 continue 
                 ;;
             *) 
-                show_buntage_list "$choice" 
+                # Handle A-Z hotkey cycling
+                local upper_choice="${choice^^}"  # Convert to uppercase
+                
+                # Check if it's a valid hotkey (A-Y, excluding Z which is for back navigation)
+                if [[ "$upper_choice" =~ ^[A-Y]$ ]]; then
+                    # Get categories for this hotkey
+                    local categories="${hotkey_categories[$upper_choice]:-}"
+                    
+                    if [[ -n "$categories" ]]; then
+                        # Convert categories string to array
+                        local cat_array=($categories)
+                        local selected_category=""
+                        
+                        if [[ ${#cat_array[@]} -eq 1 ]]; then
+                            # Only one category for this hotkey
+                            selected_category="${cat_array[0]}"
+                        else
+                            # Multiple categories - cycle through them
+                            local last_selected="${last_hotkey_selection[$upper_choice]:-}"
+                            local current_index=0
+                            
+                            # Find current index if we have a previous selection
+                            if [[ -n "$last_selected" ]]; then
+                                for i in "${!cat_array[@]}"; do
+                                    if [[ "${cat_array[$i]}" == "$last_selected" ]]; then
+                                        current_index=$(( (i + 1) % ${#cat_array[@]} ))
+                                        break
+                                    fi
+                                done
+                            fi
+                            
+                            selected_category="${cat_array[$current_index]}"
+                        fi
+                        
+                        # Update last selection for this hotkey
+                        last_hotkey_selection[$upper_choice]="$selected_category"
+                        
+                        # Handle special cases
+                        if [[ "$selected_category" == "quit" ]]; then
+                            if ui_yesno "Confirm Exit" "Are you sure you want to exit Ultrabunt?"; then
+                                break
+                            else
+                                continue
+                            fi
+                        else
+                            show_buntage_list "$selected_category"
+                        fi
+                    else
+                        # Not a valid hotkey, treat as category ID
+                        show_buntage_list "$choice"
+                    fi
+                else
+                    # Not a hotkey, treat as category ID
+                    show_buntage_list "$choice"
+                fi
                 ;;
         esac
     done
@@ -2729,7 +6858,7 @@ show_buntage_list() {
         local choice
         choice=$(ui_menu "$cat_name" \
             "Select a buntage to manage:" \
-            24 80 14 "${menu_items[@]}") || break
+            $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
         
         case "$choice" in
             back|zback|z|"") break ;;
@@ -2773,7 +6902,7 @@ show_buntage_actions() {
         menu_items+=("zback" "(Z) ← Back to Buntage List")
         
         local choice
-        choice=$(ui_menu "Manage: $name" "$info" 20 80 10 "${menu_items[@]}")
+        choice=$(ui_menu "Manage: $name" "$info" $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}")
         
         case "$choice" in
             install)
@@ -2857,6 +6986,268 @@ show_buntage_info() {
     fi
     
     ui_info "Buntage Info: $name" "$info"
+}
+
+# ==============================================================================
+# DIALOG BOX SIZE MANAGEMENT FUNCTIONS
+# ==============================================================================
+
+# Function to apply dialog preset
+apply_dialog_preset() {
+    local preset="$1"
+    if [[ -n "${DIALOG_PRESETS[$preset]:-}" ]]; then
+        local preset_values=(${DIALOG_PRESETS[$preset]})
+        DIALOG_HEIGHT="${preset_values[0]}"
+        DIALOG_WIDTH="${preset_values[1]}"
+        DIALOG_MENU_HEIGHT="${preset_values[2]}"
+        CURRENT_DIALOG_PRESET="$preset"
+        log "Applied dialog preset: $preset (${DIALOG_HEIGHT}x${DIALOG_WIDTH}, menu: ${DIALOG_MENU_HEIGHT})"
+    fi
+}
+
+# Function to get current dialog dimensions
+get_dialog_dimensions() {
+    echo "$DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT"
+}
+
+show_dialog_size_menu() {
+    log "Entering show_dialog_size_menu function"
+    
+    while true; do
+        # Get current dialog size info
+        local current_info="Current: ${CURRENT_DIALOG_PRESET} (${DIALOG_HEIGHT}×${DIALOG_WIDTH})"
+        
+        local menu_items=()
+        menu_items+=("compact" "(.Y.) Compact (20×70) - Minimal space")
+        menu_items+=("standard" "(.Y.) Standard (24×80) - Default size")
+        menu_items+=("large" "(.Y.) Large (30×100) - More content")
+        menu_items+=("wide" "(.Y.) Wide (24×120) - Wider menus")
+        menu_items+=("tall" "(.Y.) Tall (35×80) - More menu items")
+        menu_items+=("huge" "(.Y.) Huge (40×140) - Maximum size")
+        menu_items+=("" "(_*_)")
+        menu_items+=("custom" "(.Y.) Custom Size - Set your own")
+        menu_items+=("preview" "(.Y.) Preview Current Size")
+        menu_items+=("back" "(Z) ← Back to Main Menu")
+        
+        local choice
+        choice=$(ui_menu "Dialog Box Size Configuration" \
+            "$current_info\n\nSelect a dialog box size preset:\n(This controls the grey menu boxes, not the terminal window)" \
+            $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
+        
+        case "$choice" in
+            compact|standard|large|wide|tall|huge)
+                apply_dialog_preset "$choice"
+                ui_msg "Success" "Dialog size changed to $choice preset!\n\nNew size: ${DIALOG_HEIGHT}×${DIALOG_WIDTH}\nMenu height: ${DIALOG_MENU_HEIGHT}\n\nYou'll see the change in the next menu."
+                ;;
+            custom)
+                set_custom_dialog_size
+                ;;
+            preview)
+                show_dialog_preview
+                ;;
+            back|z)
+                break
+                ;;
+        esac
+    done
+    
+    log "Exiting show_dialog_size_menu function"
+}
+
+set_custom_dialog_size() {
+    local height
+    local width
+    local menu_height
+    
+    # Get current size as defaults
+    height=$(ui_input "Custom Dialog Height" "Enter dialog box height (lines):" "$DIALOG_HEIGHT")
+    [[ -z "$height" ]] && return
+    
+    width=$(ui_input "Custom Dialog Width" "Enter dialog box width (columns):" "$DIALOG_WIDTH")
+    [[ -z "$width" ]] && return
+    
+    menu_height=$(ui_input "Custom Menu Height" "Enter menu area height (lines):" "$DIALOG_MENU_HEIGHT")
+    [[ -z "$menu_height" ]] && return
+    
+    # Validate inputs
+    if [[ "$height" =~ ^[0-9]+$ ]] && [[ "$width" =~ ^[0-9]+$ ]] && [[ "$menu_height" =~ ^[0-9]+$ ]]; then
+        if [[ $height -ge 15 && $height -le 50 && $width -ge 60 && $width -le 200 && $menu_height -ge 5 && $menu_height -le 30 ]]; then
+            DIALOG_HEIGHT="$height"
+            DIALOG_WIDTH="$width"
+            DIALOG_MENU_HEIGHT="$menu_height"
+            CURRENT_DIALOG_PRESET="custom"
+            ui_msg "Success" "Custom dialog size set!\n\nSize: ${DIALOG_HEIGHT}×${DIALOG_WIDTH}\nMenu height: ${DIALOG_MENU_HEIGHT}\n\nYou'll see the change in the next menu."
+            log "Custom dialog size set: ${DIALOG_HEIGHT}x${DIALOG_WIDTH}, menu: ${DIALOG_MENU_HEIGHT}"
+        else
+            ui_msg "Error" "Invalid dimensions!\n\nHeight: 15-50 lines\nWidth: 60-200 columns\nMenu height: 5-30 lines"
+        fi
+    else
+        ui_msg "Error" "Please enter valid numbers only."
+    fi
+}
+
+show_dialog_preview() {
+    local preview_items=()
+    preview_items+=("item1" "(.Y.) Sample menu item 1")
+    preview_items+=("item2" "(.Y.) Sample menu item 2")
+    preview_items+=("item3" "(.Y.) Sample menu item 3")
+    preview_items+=("item4" "(.Y.) Sample menu item 4")
+    preview_items+=("item5" "(.Y.) Sample menu item 5")
+    
+    ui_menu "Dialog Size Preview" \
+        "This is how your dialog boxes look with current settings:\n\nSize: ${DIALOG_HEIGHT}×${DIALOG_WIDTH}\nMenu height: ${DIALOG_MENU_HEIGHT}\nPreset: ${CURRENT_DIALOG_PRESET}" \
+        $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${preview_items[@]}" >/dev/null || true
+}
+
+# ==============================================================================
+# TERMINAL SIZE MANAGEMENT FUNCTIONS (Legacy - kept for compatibility)
+# ==============================================================================
+
+show_terminal_size_menu() {
+    log "Entering show_terminal_size_menu function"
+    
+    while true; do
+        # Get current terminal size
+        local current_cols=$(tput cols 2>/dev/null || echo "Unknown")
+        local current_lines=$(tput lines 2>/dev/null || echo "Unknown")
+        local current_size="${current_cols}x${current_lines}"
+        
+        local menu_items=()
+        menu_items+=("small" "(.Y.) Small Terminal (80x24) - Classic size")
+        menu_items+=("medium" "(.Y.) Medium Terminal (120x30) - Balanced")
+        menu_items+=("large" "(.Y.) Large Terminal (160x40) - Development")
+        menu_items+=("xlarge" "(.Y.) Extra Large (200x50) - Multi-pane")
+        menu_items+=("custom" "(.Y.) Custom Size - Set your own")
+        menu_items+=("" "(_*_)")
+        menu_items+=("detect" "(.Y.) Show Current Size")
+        menu_items+=("back" "(Z) ← Back to Main Menu")
+        
+        local choice
+        choice=$(ui_menu "Terminal Size Configuration" \
+            "Current Terminal Size: $current_size\n\nSelect a terminal size preset or configure custom size:" \
+            20 80 12 "${menu_items[@]}") || break
+        
+        case "$choice" in
+            small)
+                resize_terminal 80 24
+                ;;
+            medium)
+                resize_terminal 120 30
+                ;;
+            large)
+                resize_terminal 160 40
+                ;;
+            xlarge)
+                resize_terminal 200 50
+                ;;
+            custom)
+                set_custom_terminal_size
+                ;;
+            detect)
+                show_terminal_info
+                ;;
+            back|z|"")
+                break
+                ;;
+        esac
+    done
+    
+    log "Exiting show_terminal_size_menu function"
+}
+
+resize_terminal() {
+    local cols="$1"
+    local lines="$2"
+    
+    log "Attempting to resize terminal to ${cols}x${lines}"
+    
+    # Try different methods to resize terminal
+    local success=false
+    
+    # Method 1: Using printf escape sequences (works in most terminals)
+    if command -v printf >/dev/null 2>&1; then
+        printf '\e[8;%d;%dt' "$lines" "$cols" 2>/dev/null && success=true
+    fi
+    
+    # Method 2: Using resize command if available
+    if ! $success && command -v resize >/dev/null 2>&1; then
+        resize -s "$lines" "$cols" 2>/dev/null && success=true
+    fi
+    
+    # Method 3: Using stty if available
+    if ! $success && command -v stty >/dev/null 2>&1; then
+        stty rows "$lines" cols "$cols" 2>/dev/null && success=true
+    fi
+    
+    # Give terminal time to resize
+    sleep 0.5
+    
+    # Verify the resize worked
+    local new_cols=$(tput cols 2>/dev/null || echo "0")
+    local new_lines=$(tput lines 2>/dev/null || echo "0")
+    
+    if [[ "$new_cols" -eq "$cols" && "$new_lines" -eq "$lines" ]]; then
+        ui_msg "Success" "Terminal resized to ${cols}x${lines} successfully!"
+        log "Terminal resize successful: ${cols}x${lines}"
+    elif $success; then
+        ui_msg "Partial Success" "Resize command sent, but verification shows ${new_cols}x${new_lines}.\n\nSome terminals may need manual adjustment or don't support programmatic resizing."
+        log "Terminal resize partially successful: requested ${cols}x${lines}, got ${new_cols}x${new_lines}"
+    else
+        ui_msg "Notice" "Terminal resizing may not be supported by your terminal emulator.\n\nCurrent size: ${new_cols}x${new_lines}\nRequested: ${cols}x${lines}\n\nTry manually resizing your terminal window."
+        log "Terminal resize failed: terminal may not support programmatic resizing"
+    fi
+}
+
+set_custom_terminal_size() {
+    local cols
+    local lines
+    
+    # Get current size as defaults
+    local current_cols=$(tput cols 2>/dev/null || echo "80")
+    local current_lines=$(tput lines 2>/dev/null || echo "24")
+    
+    cols=$(ui_input "Custom Terminal Width" "Enter terminal width (columns):" "$current_cols")
+    [[ -z "$cols" ]] && return
+    
+    lines=$(ui_input "Custom Terminal Height" "Enter terminal height (lines):" "$current_lines")
+    [[ -z "$lines" ]] && return
+    
+    # Validate input
+    if ! [[ "$cols" =~ ^[0-9]+$ ]] || ! [[ "$lines" =~ ^[0-9]+$ ]]; then
+        ui_msg "Error" "Please enter valid numbers for width and height."
+        return
+    fi
+    
+    # Reasonable limits
+    if [[ "$cols" -lt 20 || "$cols" -gt 500 || "$lines" -lt 5 || "$lines" -gt 200 ]]; then
+        ui_msg "Error" "Please enter reasonable values:\nWidth: 20-500 columns\nHeight: 5-200 lines"
+        return
+    fi
+    
+    resize_terminal "$cols" "$lines"
+}
+
+show_terminal_info() {
+    local cols=$(tput cols 2>/dev/null || echo "Unknown")
+    local lines=$(tput lines 2>/dev/null || echo "Unknown")
+    local term_type="${TERM:-Unknown}"
+    local term_program="${TERM_PROGRAM:-Unknown}"
+    
+    local info="TERMINAL INFORMATION\n"
+    info+="═══════════════════════════════════════\n\n"
+    info+="Current Size: ${cols} columns × ${lines} lines\n"
+    info+="Terminal Type: $term_type\n"
+    info+="Terminal Program: $term_program\n\n"
+    info+="COMMON SIZES FOR REFERENCE\n"
+    info+="─────────────────────────────────────\n"
+    info+="Small (80×24): Classic terminal size\n"
+    info+="Medium (120×30): Good for most tasks\n"
+    info+="Large (160×40): Development work\n"
+    info+="Extra Large (200×50): Multi-pane setups\n\n"
+    info+="NOTE: Some terminal emulators may not\n"
+    info+="support programmatic resizing."
+    
+    ui_info "Terminal Information" "$info"
 }
 
 show_system_info() {
@@ -3444,6 +7835,9 @@ show_wordpress_setup_menu() {
             "custom-db-nginx" "(.Y.) 🔧 Custom Database + Nginx Setup"
             "custom-db-apache" "(.Y.) 🔧 Custom Database + Apache Setup"
             "" "(_*_)"
+            "wp-cli" "(.Y.) 🔧 Install/Manage WP-CLI"
+            "wp-cleanup" "(.Y.) 🧹 WordPress Cleanup & Customization"
+            "sql-import-optimize" "(.Y.) 📊 Optimize for Large SQL Imports"
             "ssl-setup" "(.Y.) 🔒 Add SSL Certificate (Let's Encrypt)"
             "wp-security" "(.Y.) 🛡️  WordPress Security Hardening"
             "" "(_*_)"
@@ -3452,8 +7846,8 @@ show_wordpress_setup_menu() {
         
         local choice
         choice=$(ui_menu "WordPress Management" \
-            "Manage your WordPress installations:\n\n📊 Manage Sites: View, configure, and troubleshoot existing WordPress sites\n🚀 Quick Setup: Auto-generated database credentials\n⚙️  Custom Setup: Choose site directory\n🔧 Custom Database: Choose database name, user, and password" \
-            22 90 14 "${menu_items[@]}") || break
+            "Manage your WordPress installations:\n\n📊 Manage Sites: View, configure, and troubleshoot existing WordPress sites\n🚀 Quick Setup: Auto-generated database credentials\n⚙️  Custom Setup: Choose site directory\n🔧 Custom Database: Choose database name, user, and password\n🧹 Cleanup: Remove default content and optimize existing WordPress sites" \
+            22 90 15 "${menu_items[@]}") || break
         
         case "$choice" in
             quick-nginx)
@@ -3473,6 +7867,15 @@ show_wordpress_setup_menu() {
                 ;;
             custom-db-apache)
                 wordpress_custom_database_setup "apache"
+                ;;
+            wp-cli)
+                wordpress_wpcli_management
+                ;;
+            wp-cleanup)
+                wordpress_cleanup_menu
+                ;;
+            sql-import-optimize)
+                optimize_for_large_sql_imports
                 ;;
             ssl-setup)
                 wordpress_ssl_setup
@@ -3520,29 +7923,49 @@ wordpress_quick_setup() {
     log "Step 1 Complete: Prerequisites installed successfully"
     
     # Get domain name with validation
-    ui_msg "Step 2/6" "Configuring domain settings...\n\nPlease enter your domain name or use 'localhost' for local development.\n\n👆 User input required below..."
+    ui_msg "Step 2/6" "Configuring domain settings...\n\nPlease enter your domain name or use 'localhost' for local development.\n\nFor local development, we recommend using '.localhost' suffix (e.g., mysite.localhost)\nwhich works automatically without DNS configuration.\n\n👆 User input required below..."
     local domain
     while true; do
         domain=$(ui_input "Domain Name" "Enter your domain name (or 'localhost' for local development):" "localhost") || return
         domain=${domain:-localhost}
         
+        # Auto-suggest .localhost for simple names
+        if [[ "$domain" != "localhost" ]] && [[ ! "$domain" =~ \. ]] && [[ ${#domain} -le 20 ]]; then
+            if ui_yesno "Domain Suggestion" "For local development, would you like to use '$domain.localhost' instead of '$domain'?\n\nThis will work automatically without DNS configuration."; then
+                domain="$domain.localhost"
+            fi
+        fi
+        
         # Validate domain format
         if [[ "$domain" == "localhost" ]] || [[ "$domain" =~ ^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
             break
         else
-            ui_msg "Invalid Domain" "Please enter a valid domain name or 'localhost'.\n\nExamples:\n• localhost\n• mysite.local\n• example.com\n• subdomain.example.com"
+            ui_msg "Invalid Domain" "Please enter a valid domain name or 'localhost'.\n\nExamples:\n• localhost\n• mysite.localhost\n• mysite.local\n• example.com\n• subdomain.example.com"
         fi
     done
     
     ui_msg "Step 2 Complete" "✅ Domain configured: $domain\n\n• Site URL: http://$domain\n• Directory: /var/www/$domain\n• Admin URL: http://$domain/wp-admin/"
+    
+    # SSL Configuration for local domains
+    local use_ssl=false
+    if [[ "$domain" =~ \.(localhost|local)$ ]] || [[ "$domain" == "localhost" ]]; then
+        if ui_yesno "SSL Configuration" "Would you like to enable HTTPS for your local WordPress site?\n\n✅ Pros:\n• Secure local development\n• Test SSL-dependent features\n• Modern browser compatibility\n\n⚠️  Note:\n• Uses self-signed certificate\n• Browser will show security warning (normal for local dev)\n• You can add certificate to system trust store"; then
+            use_ssl=true
+        fi
+    fi
     
     # Confirm installation details
     local confirm_msg="WordPress Installation Summary\n\n"
     confirm_msg+="Web Server: $web_server\n"
     confirm_msg+="Domain: $domain\n"
     confirm_msg+="Site Directory: /var/www/$domain\n"
-    confirm_msg+="Database: Auto-generated secure credentials\n\n"
-    confirm_msg+="Proceed with installation?"
+    confirm_msg+="Database: Auto-generated secure credentials\n"
+    if [[ "$use_ssl" == true ]]; then
+        confirm_msg+="SSL: Self-signed certificate (HTTPS enabled)\n"
+    else
+        confirm_msg+="SSL: HTTP only\n"
+    fi
+    confirm_msg+="\nProceed with installation?"
     
     if ! ui_yesno "Confirm Installation" "$confirm_msg"; then
         return
@@ -3596,13 +8019,24 @@ wordpress_quick_setup() {
         }
     fi
     
-    ui_msg "Step 5 Complete" "✅ $web_server configured successfully!\n\n• Server block: Created\n• PHP processing: Enabled\n• Security headers: Set\n• Site: Active and running"
+    # Set up SSL if requested
+    if [[ "$use_ssl" == true ]]; then
+        ui_msg "Step 5b/6" "Setting up SSL certificate...\n\n• Generating self-signed certificate\n• Configuring HTTPS\n• Updating server configuration\n\n⏳ This process is automatic - please wait..."
+        if setup_local_ssl "$domain" "$web_server"; then
+            ui_msg "SSL Setup Complete" "✅ SSL certificate configured successfully!\n\n• Self-signed certificate: Generated\n• HTTPS: Enabled\n• Security headers: Added\n\nYour site is accessible via HTTPS."
+        else
+            log "SSL setup failed, continuing with HTTP-only installation"
+            ui_msg "SSL Setup Warning" "⚠️  SSL setup failed, but site will work with HTTP.\n\nYour WordPress site is fully functional at: http://$domain\n\nYou can set up SSL later using:\n• WordPress management menu\n• Manual SSL configuration\n• Let's Encrypt (for public domains)"
+        fi
+    fi
+    
+    ui_msg "Step 5 Complete" "✅ $web_server configured successfully!\n\n• Server block: Created\n• PHP processing: Enabled\n• Security headers: Set\n• Site: Active and running$(if [[ "$use_ssl" == true ]]; then echo "\n• SSL: HTTPS enabled"; fi)"
     
     # Show completion message
     ui_msg "Step 6/6" "Finalizing WordPress installation...\n\nPreparing completion summary with all details.\n\n⏳ This process is automatic - please wait..."
     show_wordpress_completion "$domain" "$db_info"
     
-    ui_msg "Installation Complete!" "🎉 WordPress installation finished successfully!\n\nYour site is ready at: http://$domain\n\nNext steps:\n1. Visit your site to complete WordPress setup\n2. Create your admin account\n3. Choose your theme and plugins\n\nAll details have been saved and displayed in the completion screen."
+    ui_msg "Installation Complete!" "🎉 WordPress installation finished successfully!\n\nYour site is ready at: http://$domain\n\nNext steps:\n1. Visit your site to complete WordPress setup\n2. Create your admin account\n3. Choose your theme and plugins\n\n💡 Tip: Use the WordPress Cleanup option in the WordPress menu to remove default content and optimize your site."
 }
 
 wordpress_custom_setup() {
@@ -4447,12 +8881,23 @@ configure_nginx_wordpress() {
     
     log "Configuring Nginx for WordPress: $domain"
     
-    local nginx_conf="/etc/nginx/sites-available/$domain"
+    # Extract base domain name for config file naming (remove .localhost/.local suffix if present)
+    local base_domain="$domain"
+    if [[ "$domain" == *.localhost ]]; then
+        base_domain="${domain%.localhost}"
+    elif [[ "$domain" == *.local ]]; then
+        base_domain="${domain%.local}"
+    fi
+    
+    # Use full domain for directory path to match where WordPress files are installed
+    local actual_site_dir="/var/www/$domain"
+    local nginx_conf="/etc/nginx/sites-available/$base_domain"
+    
     sudo tee "$nginx_conf" > /dev/null <<EOF
 server {
     listen 80;
     server_name $domain www.$domain;
-    root $site_dir;
+    root $actual_site_dir;
     index index.php index.html index.htm;
     
     # Security headers
@@ -4519,11 +8964,11 @@ EOF
     
     # Enable site
     log "Enabling Nginx site: $domain"
-    sudo ln -sf "$nginx_conf" "/etc/nginx/sites-enabled/"
+    sudo ln -sf "$nginx_conf" "/etc/nginx/sites-enabled/$base_domain"
     
     # Verify the symlink was created correctly
-    if [[ ! -L "/etc/nginx/sites-enabled/$domain" ]]; then
-        log "ERROR: Failed to create symlink for $domain"
+    if [[ ! -L "/etc/nginx/sites-enabled/$base_domain" ]]; then
+        log "ERROR: Failed to create symlink for $base_domain"
         return 1
     fi
     
@@ -4542,7 +8987,7 @@ EOF
                 log "Nginx is running and site $domain is configured"
                 
                 # Show site status
-                ui_msg "Site Configured" "✅ Nginx site '$domain' has been configured successfully!\n\n📁 Config file: /etc/nginx/sites-available/$domain\n🔗 Enabled at: /etc/nginx/sites-enabled/$domain\n🌐 Access at: http://$domain\n\n🔄 Nginx has been reloaded and is running."
+                ui_msg "Site Configured" "✅ Nginx site '$domain' has been configured successfully!\n\n📁 Config file: /etc/nginx/sites-available/$base_domain\n🔗 Enabled at: /etc/nginx/sites-enabled/$base_domain\n🌐 Access at: http://$domain\n\n🔄 Nginx has been reloaded and is running."
             else
                 log "WARNING: Nginx is not running after reload"
                 ui_msg "Nginx Issue" "⚠️ Site configured but Nginx is not running.\n\nTry: sudo systemctl start nginx"
@@ -4558,7 +9003,7 @@ EOF
         ui_msg "Config Error" "❌ Nginx configuration test failed!\n\nThe site configuration has been removed.\n\nCheck the logs for details."
         
         # Remove the broken configuration
-        sudo rm -f "/etc/nginx/sites-enabled/$domain"
+        sudo rm -f "/etc/nginx/sites-enabled/$base_domain"
         return 1
     fi
 }
@@ -4568,6 +9013,326 @@ configure_nginx_wordpress_custom() {
     local site_dir="$2"
     
     configure_nginx_wordpress "$domain"
+}
+
+cleanup_wordpress_installation() {
+    local domain="$1"
+    local site_dir="/var/www/$domain"
+    
+    log "Starting WordPress cleanup and customization for: $domain"
+    
+    # Check if wp-cli is available
+    if ! command -v wp >/dev/null 2>&1; then
+        log "ERROR: wp-cli not found, skipping WordPress cleanup"
+        ui_error "WP-CLI Missing" "WordPress cleanup requires wp-cli to be installed.\n\nPlease install wp-cli first or run cleanup manually."
+        return 1
+    fi
+    
+    # Check if WordPress is properly installed
+    if [[ ! -f "$site_dir/wp-config.php" ]]; then
+        log "ERROR: wp-config.php not found, skipping cleanup"
+        ui_error "WordPress Not Found" "WordPress installation not found at: $site_dir\n\nPlease complete WordPress installation first."
+        return 1
+    fi
+    
+    local cleanup_info="🧹 WordPress Cleanup & Customization\n\n"
+    cleanup_info+="This will customize your fresh WordPress installation:\n\n"
+    cleanup_info+="🗑️  Remove Default Content:\n"
+    cleanup_info+="• Delete default plugins (Akismet, Hello Dolly)\n"
+    cleanup_info+="• Remove default themes (Twenty Twenty series)\n"
+    cleanup_info+="• Delete sample posts, pages, and comments\n\n"
+    cleanup_info+="✨ Install Essentials:\n"
+    cleanup_info+="• LiteSpeed Cache plugin\n"
+    cleanup_info+="• Hello Elementor theme (clean, fast)\n\n"
+    cleanup_info+="⚙️  Configure Settings:\n"
+    cleanup_info+="• Set homepage as static page\n"
+    cleanup_info+="• Disable comments globally\n"
+    cleanup_info+="• Match system timezone and locale\n"
+    cleanup_info+="• Clean up dashboard widgets\n\n"
+    cleanup_info+="📁 Site: $site_dir\n\n"
+    cleanup_info+="Continue with cleanup?"
+    
+    if ! ui_yesno "WordPress Cleanup" "$cleanup_info"; then
+        return
+    fi
+    
+    # Change to WordPress directory
+    cd "$site_dir" || {
+        ui_error "Directory Error" "Could not access WordPress directory: $site_dir"
+        return 1
+    }
+    
+    local cleanup_results=""
+    local cleanup_success=true
+    
+    # Detect system timezone and locale
+    local system_tz
+    local system_locale
+    system_tz=$(timedatectl show -p Timezone --value 2>/dev/null || echo "UTC")
+    system_locale=$(locale | grep LANG= | cut -d= -f2 | cut -d. -f1 2>/dev/null || echo "en_US")
+    
+    cleanup_results+="🌍 System Detection:\n"
+    cleanup_results+="• Timezone: $system_tz\n"
+    cleanup_results+="• Locale: $system_locale\n\n"
+    
+    # Remove default plugins
+    cleanup_results+="🗑️  Removing default plugins...\n"
+    if wp plugin delete akismet hello --quiet 2>/dev/null; then
+        cleanup_results+="• Default plugins removed ✅\n"
+    else
+        cleanup_results+="• Default plugins removal failed ❌\n"
+        cleanup_success=false
+    fi
+    
+    # Install and activate essential plugins
+    cleanup_results+="📦 Installing LiteSpeed Cache...\n"
+    if wp plugin install litespeed-cache --activate --quiet 2>/dev/null; then
+        cleanup_results+="• LiteSpeed Cache installed ✅\n"
+    else
+        cleanup_results+="• LiteSpeed Cache installation failed ❌\n"
+        cleanup_success=false
+    fi
+    
+    # Install and activate Hello Elementor theme
+    cleanup_results+="🎨 Installing Hello Elementor theme...\n"
+    if wp theme install hello-elementor --activate --quiet 2>/dev/null; then
+        cleanup_results+="• Hello Elementor theme installed ✅\n"
+    else
+        cleanup_results+="• Hello Elementor theme installation failed ❌\n"
+        cleanup_success=false
+    fi
+    
+    # Remove default themes
+    cleanup_results+="🗑️  Removing default themes...\n"
+    local themes_removed=0
+    for theme in twentytwentythree twentytwentyfour twentytwentyfive; do
+        if wp theme delete "$theme" --quiet 2>/dev/null; then
+            ((themes_removed++))
+        fi
+    done
+    cleanup_results+="• $themes_removed default themes removed ✅\n"
+    
+    # Delete default posts, pages, and comments
+    cleanup_results+="🗑️  Cleaning default content...\n"
+    local posts_deleted=0
+    local comments_deleted=0
+    
+    # Count and delete posts
+    local post_ids
+    post_ids=$(wp post list --format=ids 2>/dev/null || echo "")
+    if [[ -n "$post_ids" ]]; then
+        if wp post delete $post_ids --force --quiet 2>/dev/null; then
+            posts_deleted=$(echo "$post_ids" | wc -w)
+        fi
+    fi
+    
+    # Count and delete comments
+    local comment_ids
+    comment_ids=$(wp comment list --format=ids 2>/dev/null || echo "")
+    if [[ -n "$comment_ids" ]]; then
+        if wp comment delete $comment_ids --force --quiet 2>/dev/null; then
+            comments_deleted=$(echo "$comment_ids" | wc -w)
+        fi
+    fi
+    
+    cleanup_results+="• $posts_deleted posts deleted ✅\n"
+    cleanup_results+="• $comments_deleted comments deleted ✅\n"
+    
+    # Create a clean homepage
+    cleanup_results+="🏠 Creating homepage...\n"
+    if wp post create --post_type=page --post_title='Home' --post_status=publish --quiet 2>/dev/null; then
+        local home_id
+        home_id=$(wp post list --post_type=page --name=home --format=ids 2>/dev/null)
+        if [[ -n "$home_id" ]] && wp option update show_on_front 'page' --quiet 2>/dev/null && wp option update page_on_front "$home_id" --quiet 2>/dev/null; then
+            cleanup_results+="• Homepage created and set ✅\n"
+        else
+            cleanup_results+="• Homepage configuration failed ❌\n"
+            cleanup_success=false
+        fi
+    else
+        cleanup_results+="• Homepage creation failed ❌\n"
+        cleanup_success=false
+    fi
+    
+    # Disable comments globally
+    cleanup_results+="💬 Disabling comments...\n"
+    local comment_settings=(
+        "default_comment_status:closed"
+        "default_ping_status:closed"
+        "comment_registration:0"
+        "close_comments_for_old_posts:1"
+        "comments_notify:0"
+        "moderation_notify:0"
+    )
+    
+    local comment_success=true
+    for setting in "${comment_settings[@]}"; do
+        local key="${setting%:*}"
+        local value="${setting#*:}"
+        if ! wp option update "$key" "$value" --quiet 2>/dev/null; then
+            comment_success=false
+        fi
+    done
+    
+    if [[ "$comment_success" == "true" ]]; then
+        cleanup_results+="• Comments disabled globally ✅\n"
+    else
+        cleanup_results+="• Comment settings failed ❌\n"
+        cleanup_success=false
+    fi
+    
+    # Create mu-plugin to disable comment support
+    if mkdir -p wp-content/mu-plugins 2>/dev/null; then
+        cat > wp-content/mu-plugins/disable-comments.php << 'PHP'
+<?php
+// Disable comment support on all post types
+add_action('init', function() {
+    $post_types = get_post_types(array('public' => true), 'names');
+    foreach ($post_types as $type) {
+        remove_post_type_support($type, 'comments');
+        remove_post_type_support($type, 'trackbacks');
+    }
+});
+
+add_action('admin_init', function() {
+    $types = get_post_types(array('public' => true), 'names');
+    foreach ($types as $type) {
+        remove_post_type_support($type, 'comments');
+        remove_post_type_support($type, 'trackbacks');
+    }
+});
+PHP
+        cleanup_results+="• Comment support disabled ✅\n"
+    else
+        cleanup_results+="• Comment support disable failed ❌\n"
+        cleanup_success=false
+    fi
+    
+    # Set timezone and language
+    cleanup_results+="🌍 Setting timezone and locale...\n"
+    if wp option update timezone_string "$system_tz" --quiet 2>/dev/null; then
+        cleanup_results+="• Timezone set to $system_tz ✅\n"
+    else
+        cleanup_results+="• Timezone setting failed ❌\n"
+        cleanup_success=false
+    fi
+    
+    # Try to install matching language if available
+    if wp language core is-installed "$system_locale" >/dev/null 2>&1; then
+        if wp site switch-language "$system_locale" --quiet 2>/dev/null; then
+            cleanup_results+="• Language set to $system_locale ✅\n"
+        else
+            cleanup_results+="• Language setting failed ❌\n"
+        fi
+    else
+        cleanup_results+="• System locale $system_locale not available, keeping English ℹ️\n"
+    fi
+    
+    # Hide dashboard widgets
+    cleanup_results+="📊 Cleaning dashboard...\n"
+    cat > wp-content/mu-plugins/clean-dashboard.php << 'PHP'
+<?php
+add_action('wp_dashboard_setup', function() {
+    remove_meta_box('dashboard_quick_press', 'dashboard', 'side');
+    remove_meta_box('dashboard_activity', 'dashboard', 'normal');
+    remove_meta_box('dashboard_primary', 'dashboard', 'side'); // WP Events & News
+});
+PHP
+    cleanup_results+="• Dashboard widgets cleaned ✅\n"
+    
+    # Show final results
+    if [[ "$cleanup_success" == "true" ]]; then
+        # Get current theme and plugin info
+        local current_theme
+        local active_plugins
+        current_theme=$(wp theme list --status=active --field=name 2>/dev/null || echo "Unknown")
+        active_plugins=$(wp plugin list --status=active --field=name 2>/dev/null | tr '\n' ', ' | sed 's/,$//' || echo "None")
+        
+        cleanup_results+="🎉 Cleanup completed successfully!\n\n"
+        cleanup_results+="📊 Final Status:\n"
+        cleanup_results+="• Active Theme: $current_theme\n"
+        cleanup_results+="• Active Plugins: $active_plugins\n"
+        
+        ui_info "WordPress Cleanup Complete" "$cleanup_results"
+    else
+        cleanup_results+="⚠️  Cleanup completed with some errors.\n\nSome operations may have failed. Check the details above."
+        ui_info "WordPress Cleanup Finished" "$cleanup_results"
+    fi
+    
+    log "WordPress cleanup completed for: $domain"
+}
+
+wordpress_cleanup_menu() {
+    log "Entering WordPress cleanup menu"
+    
+    # Detect WordPress installations
+    local wp_sites=()
+    if [[ -d "/var/www" ]]; then
+        while IFS= read -r -d '' site_dir; do
+            local domain
+            domain=$(basename "$site_dir")
+            if [[ -f "$site_dir/wp-config.php" ]]; then
+                wp_sites+=("$domain")
+            fi
+        done < <(find /var/www -maxdepth 1 -type d -name "*.localhost" -o -name "*.local" -print0 2>/dev/null)
+    fi
+    
+    if [[ ${#wp_sites[@]} -eq 0 ]]; then
+        ui_error "No WordPress Sites Found" "No WordPress installations found in /var/www/\n\nPlease install WordPress first using the setup options."
+        return
+    fi
+    
+    local cleanup_info="🧹 WordPress Cleanup & Customization\n\n"
+    cleanup_info+="Select a WordPress site to clean up and customize:\n\n"
+    cleanup_info+="Found ${#wp_sites[@]} WordPress installation(s):\n"
+    for site in "${wp_sites[@]}"; do
+        cleanup_info+="• $site\n"
+    done
+    cleanup_info+="\nThis will:\n"
+    cleanup_info+="• Remove default content and plugins\n"
+    cleanup_info+="• Install essential plugins (LiteSpeed Cache)\n"
+    cleanup_info+="• Set up a clean theme (Hello Elementor)\n"
+    cleanup_info+="• Configure optimal settings\n"
+    cleanup_info+="• Disable comments globally\n"
+    cleanup_info+="• Match system timezone and locale\n\n"
+    cleanup_info+="⚠️  Requires wp-cli to be installed"
+    
+    while true; do
+        local menu_items=()
+        
+        # Add WordPress sites to menu
+        for site in "${wp_sites[@]}"; do
+            menu_items+=("$site" "(.Y.) 🧹 Clean up $site")
+        done
+        
+        menu_items+=("" "(_*_)")
+        menu_items+=("zback" "(Z) ← Back to WordPress Menu")
+        
+        local choice
+        choice=$(ui_menu "WordPress Cleanup" "$cleanup_info" $DIALOG_HEIGHT $DIALOG_WIDTH $((${#wp_sites[@]} + 2)) "${menu_items[@]}") || break
+        
+        case "$choice" in
+            back|zback|z|"")
+                break
+                ;;
+            *)
+                # Check if choice is a valid WordPress site
+                local found=false
+                for site in "${wp_sites[@]}"; do
+                    if [[ "$choice" == "$site" ]]; then
+                        found=true
+                        break
+                    fi
+                done
+                
+                if [[ "$found" == "true" ]]; then
+                    cleanup_wordpress_installation "$choice"
+                fi
+                ;;
+        esac
+    done
+    
+    log "Exiting WordPress cleanup menu"
 }
 
 configure_apache_wordpress() {
@@ -4812,6 +9577,194 @@ wordpress_ssl_setup() {
     fi
 }
 
+setup_local_ssl() {
+    local domain="$1"
+    local web_server="$2"
+    
+    log "Setting up local SSL certificate for $domain"
+    
+    # Create SSL directory
+    local ssl_dir="/etc/ssl/local"
+    sudo mkdir -p "$ssl_dir"
+    
+    # Generate self-signed certificate
+    local cert_file="$ssl_dir/$domain.crt"
+    local key_file="$ssl_dir/$domain.key"
+    
+    # Create certificate with proper extensions for modern browsers
+    sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout "$key_file" \
+        -out "$cert_file" \
+        -subj "/C=US/ST=Local/L=Local/O=Local Development/CN=$domain" \
+        -extensions v3_req \
+        -config <(cat /etc/ssl/openssl.cnf <(printf "\n[v3_req]\nsubjectAltName=DNS:$domain,DNS:*.$domain,IP:127.0.0.1")) 2>/dev/null || {
+        log_error "Failed to generate SSL certificate"
+        return 1
+    }
+    
+    # Set proper permissions
+    sudo chmod 600 "$key_file"
+    sudo chmod 644 "$cert_file"
+    
+    # Update web server configuration for SSL
+    if [[ "$web_server" == "nginx" ]]; then
+        setup_nginx_ssl "$domain" "$cert_file" "$key_file"
+    else
+        setup_apache_ssl "$domain" "$cert_file" "$key_file"
+    fi
+    
+    log "Local SSL certificate setup completed for $domain"
+    return 0
+}
+
+setup_nginx_ssl() {
+    local domain="$1"
+    local cert_file="$2"
+    local key_file="$3"
+    
+    local nginx_conf="/etc/nginx/sites-available/$domain"
+    
+    # Add SSL server block to existing configuration
+    sudo tee -a "$nginx_conf" > /dev/null <<EOF
+
+# HTTPS server block
+server {
+    listen 443 ssl http2;
+    server_name $domain www.$domain;
+    root /var/www/$domain;
+    index index.php index.html index.htm;
+    
+    # SSL Configuration
+    ssl_certificate $cert_file;
+    ssl_certificate_key $key_file;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+    
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    
+    # File upload size
+    client_max_body_size 100M;
+    
+    # WordPress permalinks
+    location / {
+        try_files \$uri \$uri/ /index.php?\$args;
+    }
+    
+    # PHP processing
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php${PHP_VER}-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        include fastcgi_params;
+        
+        # Additional PHP settings for WordPress
+        fastcgi_read_timeout 300;
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 4 256k;
+        fastcgi_busy_buffers_size 256k;
+    }
+    
+    # Security: Block access to sensitive files
+    location ~ /\.ht {
+        deny all;
+    }
+    
+    location ~ /\.user\.ini {
+        deny all;
+    }
+    
+    location ~ /wp-config\.php {
+        deny all;
+    }
+    
+    # Cache static files
+    location ~* \.(css|gif|ico|jpeg|jpg|js|png)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+    
+    # Block XML-RPC attacks
+    location = /xmlrpc.php {
+        deny all;
+    }
+}
+EOF
+    
+    # Test and reload nginx
+    if sudo nginx -t; then
+        sudo systemctl reload nginx
+        return 0
+    else
+        log_error "Nginx SSL configuration test failed"
+        return 1
+    fi
+}
+
+setup_apache_ssl() {
+    local domain="$1"
+    local cert_file="$2"
+    local key_file="$3"
+    
+    # Enable SSL module
+    sudo a2enmod ssl
+    
+    # Create SSL virtual host
+    local apache_ssl_conf="/etc/apache2/sites-available/${domain}-ssl.conf"
+    sudo tee "$apache_ssl_conf" > /dev/null <<EOF
+<VirtualHost *:443>
+    ServerName $domain
+    ServerAlias www.$domain
+    DocumentRoot /var/www/$domain
+    
+    # SSL Configuration
+    SSLEngine on
+    SSLCertificateFile $cert_file
+    SSLCertificateKeyFile $key_file
+    SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
+    SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384
+    SSLHonorCipherOrder off
+    
+    # Security headers
+    Header always set X-Frame-Options SAMEORIGIN
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    
+    # WordPress configuration
+    <Directory /var/www/$domain>
+        AllowOverride All
+        Require all granted
+    </Directory>
+    
+    # PHP processing
+    <FilesMatch \.php$>
+        SetHandler "proxy:unix:/var/run/php/php${PHP_VER}-fpm.sock|fcgi://localhost"
+    </FilesMatch>
+    
+    ErrorLog \${APACHE_LOG_DIR}/${domain}_ssl_error.log
+    CustomLog \${APACHE_LOG_DIR}/${domain}_ssl_access.log combined
+</VirtualHost>
+EOF
+    
+    # Enable the SSL site
+    sudo a2ensite "${domain}-ssl.conf"
+    
+    # Test and reload Apache
+    if sudo apache2ctl configtest; then
+        sudo systemctl reload apache2
+        return 0
+    else
+        log_error "Apache SSL configuration test failed"
+        return 1
+    fi
+}
+
 wordpress_security_hardening() {
     log "Starting WordPress security hardening"
     
@@ -5011,7 +9964,7 @@ show_wordpress_status() {
         menu_items+=("zback" "(Z) ← Back to Main Menu")
         
         local choice
-        choice=$(ui_menu "WordPress" "$status_info" 25 90 15 "${menu_items[@]}") || break
+        choice=$(ui_menu "WordPress" "$status_info" $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
         
         case "$choice" in
             manage)
@@ -5083,7 +10036,7 @@ show_wordpress_site_management() {
         menu_items+=("zback" "(Z) ← Back to Status View")
         
         local choice
-        choice=$(ui_menu "WordPress Site Management" "$status_info" 20 80 10 "${menu_items[@]}") || break
+        choice=$(ui_menu "WordPress Site Management" "$status_info" $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
         
         case "$choice" in
             back|zback|z|"")
@@ -5305,7 +10258,7 @@ show_individual_site_management() {
         )
         
         local choice
-        choice=$(ui_menu "Site Management: $site" "$status_info" 35 120 15 "${menu_items[@]}") || break
+        choice=$(ui_menu "Site Management: $site" "$status_info" $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
         
         case "$choice" in
             view-config)
@@ -5411,26 +10364,49 @@ test_site_accessibility() {
     if command -v curl >/dev/null 2>&1; then
         test_info+="HTTP Test:\n"
         local http_result
-        http_result=$(curl -s -o /dev/null -w "HTTP Code: %{http_code}\nTime: %{time_total}s\nSize: %{size_download} bytes" "http://$site" --connect-timeout 10 --max-time 30 2>&1)
-        test_info+="$http_result\n\n"
+        
+        # For .localhost domains, test both the full domain and localhost fallback
+        if [[ "$site" =~ \.localhost$ ]]; then
+            http_result=$(curl -s -o /dev/null -w "HTTP Code: %{http_code}\nTime: %{time_total}s\nSize: %{size_download} bytes" "http://$site" --connect-timeout 10 --max-time 30 2>&1)
+            test_info+="$http_result\n"
+            
+            # Also test with Host header for local resolution
+            test_info+="\nLocal Resolution Test:\n"
+            local local_result
+            local_result=$(curl -s -o /dev/null -w "HTTP Code: %{http_code}\nTime: %{time_total}s\nSize: %{size_download} bytes" "http://127.0.0.1" -H "Host: $site" --connect-timeout 10 --max-time 30 2>&1)
+            test_info+="$local_result\n\n"
+        else
+            http_result=$(curl -s -o /dev/null -w "HTTP Code: %{http_code}\nTime: %{time_total}s\nSize: %{size_download} bytes" "http://$site" --connect-timeout 10 --max-time 30 2>&1)
+            test_info+="$http_result\n\n"
+        fi
         
         # HTTPS test if SSL is configured
-        if [[ -f "/etc/letsencrypt/live/$site/fullchain.pem" ]]; then
+        if [[ -f "/etc/letsencrypt/live/$site/fullchain.pem" ]] || [[ -f "/etc/ssl/certs/$site.crt" ]]; then
             test_info+="HTTPS Test:\n"
             local https_result
-            https_result=$(curl -s -o /dev/null -w "HTTP Code: %{http_code}\nTime: %{time_total}s\nSize: %{size_download} bytes" "https://$site" --connect-timeout 10 --max-time 30 2>&1)
+            if [[ "$site" =~ \.localhost$ ]]; then
+                https_result=$(curl -s -o /dev/null -w "HTTP Code: %{http_code}\nTime: %{time_total}s\nSize: %{size_download} bytes" "https://$site" --connect-timeout 10 --max-time 30 -k 2>&1)
+            else
+                https_result=$(curl -s -o /dev/null -w "HTTP Code: %{http_code}\nTime: %{time_total}s\nSize: %{size_download} bytes" "https://$site" --connect-timeout 10 --max-time 30 2>&1)
+            fi
             test_info+="$https_result\n\n"
         fi
     else
         test_info+="curl not available for testing\n"
     fi
     
-    # DNS resolution test
+    # DNS resolution test - skip for .localhost domains as they resolve automatically
     if command -v nslookup >/dev/null 2>&1; then
-        test_info+="DNS Resolution:\n"
-        local dns_result
-        dns_result=$(nslookup "$site" 2>&1 | head -10)
-        test_info+="$dns_result\n"
+        if [[ "$site" =~ \.localhost$ ]]; then
+            test_info+="DNS Resolution:\n"
+            test_info+="✅ .localhost domain - automatically resolves to 127.0.0.1\n"
+            test_info+="No external DNS lookup required for .localhost domains\n"
+        else
+            test_info+="DNS Resolution:\n"
+            local dns_result
+            dns_result=$(nslookup "$site" 2>&1 | head -10)
+            test_info+="$dns_result\n"
+        fi
     fi
     
     ui_info "Site Test Results" "$test_info"
@@ -5440,10 +10416,22 @@ delete_wordpress_site() {
     local site="$1"
     local site_dir="/var/www/$site"
     
+    # Extract database credentials from wp-config.php before deletion
+    local db_name db_user db_pass db_host
+    if [[ -f "$site_dir/wp-config.php" ]]; then
+        db_name=$(grep "DB_NAME" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+        db_user=$(grep "DB_USER" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+        db_pass=$(grep "DB_PASSWORD" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+        db_host=$(grep "DB_HOST" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+        db_host=${db_host:-localhost}
+    fi
+    
     local warning_info="⚠️  WARNING: DELETE WORDPRESS SITE ⚠️\n\n"
     warning_info+="You are about to permanently delete:\n"
     warning_info+="• Site: $site\n"
     warning_info+="• Directory: $site_dir\n"
+    warning_info+="• Database: ${db_name:-'N/A'}\n"
+    warning_info+="• Database user: ${db_user:-'N/A'}\n"
     warning_info+="• Web server configuration\n"
     warning_info+="• SSL certificates (if any)\n\n"
     warning_info+="This action CANNOT be undone!\n\n"
@@ -5453,10 +10441,51 @@ delete_wordpress_site() {
     confirmation=$(ui_input "Confirm Site Deletion" "$warning_info")
     
     if [[ "$confirmation" == "DELETE $site" ]]; then
-        # Remove web server configuration
-        if [[ -f "/etc/nginx/sites-available/$site" ]]; then
-            sudo rm -f "/etc/nginx/sites-available/$site"
-            sudo rm -f "/etc/nginx/sites-enabled/$site"
+        # Get MySQL root password for database cleanup
+        local mysql_root_pass
+        if [[ -f "/root/.mysql_root_password" ]]; then
+            mysql_root_pass=$(cat /root/.mysql_root_password)
+        fi
+        
+        # Remove database and user
+        if [[ -n "$db_name" && -n "$db_user" && -n "$mysql_root_pass" ]]; then
+            # Test if database exists and is accessible
+            if mysql -uroot -p"$mysql_root_pass" -e "USE \`$db_name\`;" >/dev/null 2>&1; then
+                # Drop database
+                if mysql -uroot -p"$mysql_root_pass" -e "DROP DATABASE IF EXISTS \`$db_name\`;" >/dev/null 2>&1; then
+                    ui_success "Removed database: $db_name"
+                else
+                    ui_warning "Failed to remove database: $db_name"
+                fi
+                
+                # Drop database user
+                if mysql -uroot -p"$mysql_root_pass" -e "DROP USER IF EXISTS '$db_user'@'$db_host';" >/dev/null 2>&1; then
+                    ui_success "Removed database user: $db_user"
+                else
+                    ui_warning "Failed to remove database user: $db_user"
+                fi
+                
+                # Flush privileges
+                mysql -uroot -p"$mysql_root_pass" -e "FLUSH PRIVILEGES;" >/dev/null 2>&1
+            else
+                ui_warning "Database '$db_name' not found or not accessible"
+            fi
+        elif [[ -n "$db_name" || -n "$db_user" ]]; then
+            ui_warning "Could not clean up database - missing credentials or root password"
+        fi
+        
+        # Remove web server configuration (check both domain and base_domain patterns)
+        local nginx_removed=false
+        for config_name in "$site" "${site%%.*}"; do
+            if [[ -f "/etc/nginx/sites-available/$config_name" ]]; then
+                sudo rm -f "/etc/nginx/sites-available/$config_name"
+                sudo rm -f "/etc/nginx/sites-enabled/$config_name"
+                ui_success "Removed Nginx configuration: $config_name"
+                nginx_removed=true
+            fi
+        done
+        
+        if [[ "$nginx_removed" == true ]]; then
             sudo nginx -t && sudo systemctl reload nginx
         fi
         
@@ -5466,17 +10495,31 @@ delete_wordpress_site() {
             sudo apache2ctl configtest && sudo systemctl reload apache2
         fi
         
-        # Remove SSL certificates
-        if [[ -d "/etc/letsencrypt/live/$site" ]]; then
-            sudo certbot delete --cert-name "$site" --non-interactive 2>/dev/null
-        fi
+        # Remove SSL certificates (check multiple possible certificate names)
+        local ssl_removed=false
+        for cert_name in "$site" "${site%%.*}" "www.$site" "www.${site%%.*}"; do
+            if [[ -d "/etc/letsencrypt/live/$cert_name" ]]; then
+                sudo certbot delete --cert-name "$cert_name" --non-interactive >/dev/null 2>&1
+                ui_success "Removed SSL certificate: $cert_name"
+                ssl_removed=true
+            fi
+        done
         
-        # Remove site directory
+        # Remove site directory completely
         if [[ -d "$site_dir" ]]; then
-            sudo rm -rf "$site_dir"
+            # Double-check we're not deleting something critical
+            if [[ "$site_dir" == "/var/www/$site" && "$site" != "" && "$site" != "." && "$site" != ".." ]]; then
+                sudo rm -rf "$site_dir"
+                ui_success "Removed site directory: $site_dir"
+            else
+                ui_warning "Skipped removing directory for safety: $site_dir"
+            fi
         fi
         
-        ui_success "Site $site has been completely removed"
+        # Clean up any remaining broken symlinks in sites-enabled
+        sudo find /etc/nginx/sites-enabled/ -type l ! -exec test -e {} \; -delete 2>/dev/null
+        
+        ui_success "Site $site has been completely removed including database and all files"
     else
         ui_info "Deletion Cancelled" "Site deletion cancelled - nothing was removed"
     fi
@@ -5590,11 +10633,11 @@ show_php_settings_menu() {
             "custom-settings" "⚙️  Custom PHP Settings"
             "view-config" "📄 View Full php.ini File"
             "restart-services" "🔄 Restart Web Services"
-            "back" "← Back to Main Menu"
+            "back" "(Z) ← Back to Main Menu"
         )
         
         local choice
-        choice=$(ui_menu "PHP Settings Management" "$current_settings" 20 80 8 "${menu_items[@]}") || break
+        choice=$(ui_menu "PHP Settings Management" "$current_settings" $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
         
         case "$choice" in
             optimize-uploads)
@@ -5609,7 +10652,7 @@ show_php_settings_menu() {
             restart-services)
                 restart_web_services
                 ;;
-            back)
+            back|z|"")
                 break
                 ;;
         esac
@@ -5721,7 +10764,7 @@ configure_custom_php_settings() {
     
     while true; do
         local choice
-        choice=$(ui_menu "Custom PHP Settings" "$custom_info" 16 70 8 "${menu_items[@]}") || break
+        choice=$(ui_menu "Custom PHP Settings" "$custom_info" $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
         
         case "$choice" in
             upload_max)
@@ -6097,6 +11140,1391 @@ repair_wordpress_database_connection() {
         ui_info "Repair Successful" "✅ Database connection repair completed!\n\n$repair_steps\nYour WordPress site should now be able to connect to the database."
     else
         ui_info "Repair Failed" "❌ Database connection repair failed\n\n$repair_steps\nManual intervention may be required. Check the database credentials and MariaDB configuration."
+    fi
+}
+
+# ==============================================================================
+# LARGE SQL IMPORT OPTIMIZATION
+# ==============================================================================
+
+optimize_for_large_sql_imports() {
+    log "Starting large SQL import optimization"
+    
+    local info="🗄️ Large SQL Import Optimization\n\n"
+    info+="This will optimize your server configuration for importing large SQL files:\n\n"
+    info+="📊 PHP Configuration:\n"
+    info+="• Memory limit: 1024M (1GB)\n"
+    info+="• Execution time: 1800s (30 minutes)\n"
+    info+="• Upload limits: 256M\n\n"
+    info+="🌐 Web Server (Nginx/Apache):\n"
+    info+="• Client body size: 256M\n"
+    info+="• Timeout settings: 30 minutes\n"
+    info+="• Buffer optimizations\n\n"
+    info+="🗄️ MySQL/MariaDB:\n"
+    info+="• Connection timeouts: 30 minutes\n"
+    info+="• Packet size: 256M\n"
+    info+="• Buffer optimizations\n\n"
+    info+="⚠️ Services will be restarted to apply changes.\n\n"
+    info+="Continue with optimization?"
+    
+    if ! ui_yesno "SQL Import Optimization" "$info"; then
+        return
+    fi
+    
+    ui_msg "Step 1/4" "🔧 Optimizing PHP configuration...\n\nConfiguring memory limits, execution times, and upload settings for large SQL operations."
+    
+    # Optimize PHP settings
+    optimize_php_for_sql_imports || {
+        ui_error "PHP Optimization Failed" "Failed to optimize PHP configuration. Check the logs for details."
+        return 1
+    }
+    
+    ui_msg "Step 2/4" "🌐 Optimizing web server configuration...\n\nConfiguring Nginx/Apache timeouts and buffer sizes for large requests."
+    
+    # Optimize web server settings
+    optimize_webserver_for_sql_imports || {
+        ui_error "Web Server Optimization Failed" "Failed to optimize web server configuration. Check the logs for details."
+        return 1
+    }
+    
+    ui_msg "Step 3/4" "🗄️ Optimizing MySQL/MariaDB configuration...\n\nConfiguring database timeouts, packet sizes, and buffer settings."
+    
+    # Optimize MySQL/MariaDB settings
+    optimize_mysql_for_sql_imports || {
+        ui_error "MySQL Optimization Failed" "Failed to optimize MySQL configuration. Check the logs for details."
+        return 1
+    }
+    
+    ui_msg "Step 4/4" "🔄 Restarting services...\n\nRestarting web server, PHP-FPM, and MySQL to apply all optimizations."
+    
+    # Restart all services
+    restart_services_for_sql_imports || {
+        ui_error "Service Restart Failed" "Failed to restart services. Some optimizations may not be active."
+        return 1
+    }
+    
+    ui_msg "Optimization Complete!" "✅ Your server is now optimized for large SQL imports!\n\n🎯 Optimized Components:\n• PHP: Memory, execution time, upload limits\n• Web Server: Timeouts, buffer sizes\n• MySQL: Connection limits, packet size\n• Services: All restarted and active\n\n💡 Tips for importing large SQL files:\n• Use phpMyAdmin's import feature\n• Consider using command line: mysql -u user -p database < file.sql\n• Monitor the process in /var/log/mysql/error.log\n• Large imports may still take 10-30 minutes"
+}
+
+optimize_php_for_sql_imports() {
+    log "Optimizing PHP for large SQL imports"
+    
+    # Detect PHP version
+    local php_version
+    php_version=$(php -v 2>/dev/null | head -n1 | cut -d' ' -f2 | cut -d'.' -f1,2) || {
+        log_error "Could not detect PHP version"
+        return 1
+    }
+    
+    log "Detected PHP version: $php_version"
+    
+    # Update PHP-FPM configuration (this is what handles web requests!)
+    local php_fpm_ini="/etc/php/$php_version/fpm/php.ini"
+    if [[ -f "$php_fpm_ini" ]]; then
+        log "Updating PHP-FPM configuration: $php_fpm_ini"
+        
+        # Backup original configuration
+        local backup_file="${php_fpm_ini}.backup-sql-import-$(date +%Y%m%d-%H%M%S)"
+        sudo cp "$php_fpm_ini" "$backup_file" || {
+            log_error "Failed to backup PHP-FPM configuration"
+            return 1
+        }
+        
+        # Apply optimizations using sed (more reliable than append method)
+        sudo sed -i 's/^upload_max_filesize = .*/upload_max_filesize = 256M/' "$php_fpm_ini"
+        sudo sed -i 's/^post_max_size = .*/post_max_size = 256M/' "$php_fpm_ini"
+        sudo sed -i 's/^memory_limit = .*/memory_limit = 1024M/' "$php_fpm_ini"
+        sudo sed -i 's/^max_execution_time = .*/max_execution_time = 1800/' "$php_fpm_ini"
+        sudo sed -i 's/^max_input_time = .*/max_input_time = 1800/' "$php_fpm_ini"
+        sudo sed -i 's/^max_file_uploads = .*/max_file_uploads = 50/' "$php_fpm_ini"
+        
+        # Add settings that might not exist
+        if ! grep -q "mysql.connect_timeout" "$php_fpm_ini"; then
+            echo "mysql.connect_timeout = 300" | sudo tee -a "$php_fpm_ini" >/dev/null
+        fi
+        if ! grep -q "default_socket_timeout" "$php_fpm_ini"; then
+            echo "default_socket_timeout = 300" | sudo tee -a "$php_fpm_ini" >/dev/null
+        fi
+        
+        log "PHP-FPM configuration updated successfully"
+    else
+        log_error "PHP-FPM configuration file not found: $php_fpm_ini"
+        return 1
+    fi
+    
+    # Update PHP-FPM pool configuration for better handling of large requests
+    local php_fpm_pool="/etc/php/$php_version/fpm/pool.d/www.conf"
+    if [[ -f "$php_fpm_pool" ]]; then
+        log "Updating PHP-FPM pool configuration: $php_fpm_pool"
+        
+        # Backup the pool configuration
+        local pool_backup="${php_fpm_pool}.backup-sql-import-$(date +%Y%m%d-%H%M%S)"
+        sudo cp "$php_fpm_pool" "$pool_backup"
+        
+        # Update pool settings for better performance with large uploads
+        sudo sed -i 's/^pm.max_children = .*/pm.max_children = 50/' "$php_fpm_pool"
+        sudo sed -i 's/^pm.start_servers = .*/pm.start_servers = 10/' "$php_fpm_pool"
+        sudo sed -i 's/^pm.min_spare_servers = .*/pm.min_spare_servers = 5/' "$php_fpm_pool"
+        sudo sed -i 's/^pm.max_spare_servers = .*/pm.max_spare_servers = 15/' "$php_fpm_pool"
+        
+        # Add request_terminate_timeout if it doesn't exist or is commented
+        if ! grep -q "^request_terminate_timeout" "$php_fpm_pool"; then
+            if grep -q "^;request_terminate_timeout" "$php_fpm_pool"; then
+                sudo sed -i 's/^;request_terminate_timeout = .*/request_terminate_timeout = 1800/' "$php_fpm_pool"
+            else
+                echo "request_terminate_timeout = 1800" | sudo tee -a "$php_fpm_pool" > /dev/null
+            fi
+        else
+            sudo sed -i 's/^request_terminate_timeout = .*/request_terminate_timeout = 1800/' "$php_fpm_pool"
+        fi
+        
+        log "PHP-FPM pool configuration updated"
+    else
+        log_error "PHP-FPM pool configuration file not found: $php_fpm_pool"
+    fi
+    
+    # Also update Apache PHP config if it exists
+    local php_apache_ini="/etc/php/$php_version/apache2/php.ini"
+    if [[ -f "$php_apache_ini" ]]; then
+        log "Also updating Apache PHP configuration: $php_apache_ini"
+        
+        # Backup and update Apache PHP config
+        local backup_file="${php_apache_ini}.backup-sql-import-$(date +%Y%m%d-%H%M%S)"
+        sudo cp "$php_apache_ini" "$backup_file"
+        
+        sudo sed -i 's/^upload_max_filesize = .*/upload_max_filesize = 256M/' "$php_apache_ini"
+        sudo sed -i 's/^post_max_size = .*/post_max_size = 256M/' "$php_apache_ini"
+        sudo sed -i 's/^memory_limit = .*/memory_limit = 1024M/' "$php_apache_ini"
+        sudo sed -i 's/^max_execution_time = .*/max_execution_time = 1800/' "$php_apache_ini"
+        sudo sed -i 's/^max_input_time = .*/max_input_time = 1800/' "$php_apache_ini"
+        sudo sed -i 's/^max_file_uploads = .*/max_file_uploads = 50/' "$php_apache_ini"
+        
+        log "Apache PHP configuration updated successfully"
+    fi
+    
+    log "PHP configuration optimized for SQL imports"
+    return 0
+}
+
+optimize_webserver_for_sql_imports() {
+    log "Optimizing web server for large SQL imports"
+    
+    # Check which web server is running
+    local webserver=""
+    if systemctl is-active --quiet nginx; then
+        webserver="nginx"
+    elif systemctl is-active --quiet apache2; then
+        webserver="apache2"
+    else
+        log_error "No active web server found (nginx or apache2)"
+        return 1
+    fi
+    
+    if [[ "$webserver" == "nginx" ]]; then
+        optimize_nginx_for_sql_imports
+    else
+        optimize_apache_for_sql_imports
+    fi
+}
+
+optimize_nginx_for_sql_imports() {
+    log "Optimizing Nginx for large SQL imports"
+    
+    # First, update the global optimization file
+    local sql_import_conf="/etc/nginx/conf.d/sql-import-optimization.conf"
+    sudo tee "$sql_import_conf" > /dev/null << 'EOF'
+# Large SQL Import Optimizations
+client_max_body_size 256M;
+client_body_timeout 300s;
+client_header_timeout 300s;
+fastcgi_read_timeout 1800s;
+fastcgi_send_timeout 1800s;
+fastcgi_connect_timeout 300s;
+fastcgi_buffer_size 256k;
+fastcgi_buffers 8 256k;
+fastcgi_busy_buffers_size 512k;
+keepalive_timeout 300s;
+EOF
+    
+    log "Global Nginx optimization configuration created"
+    
+    # Now fix site-specific configurations that might override global settings
+    local sites_dir="/etc/nginx/sites-available"
+    if [[ -d "$sites_dir" ]]; then
+        log "Checking site-specific configurations for client_max_body_size overrides"
+        
+        # Find all site configs with client_max_body_size less than 256M
+        local site_files
+        site_files=$(find "$sites_dir" -name "*.conf" -o -name "*" ! -name "*.backup*" ! -name "*.bak" ! -name "*.orig" 2>/dev/null)
+        
+        for site_file in $site_files; do
+            if [[ -f "$site_file" ]]; then
+                # Check if this site has a client_max_body_size setting
+                if grep -q "client_max_body_size" "$site_file"; then
+                    log "Found client_max_body_size in $site_file, updating to 256M"
+                    
+                    # Backup the site file
+                    local backup_file="${site_file}.backup-sql-import-$(date +%Y%m%d-%H%M%S)"
+                    sudo cp "$site_file" "$backup_file"
+                    
+                    # Update client_max_body_size to 256M
+                    sudo sed -i 's/client_max_body_size [^;]*;/client_max_body_size 256M;/g' "$site_file"
+                    
+                    log "Updated client_max_body_size in $(basename "$site_file")"
+                fi
+            fi
+        done
+    fi
+    
+    # Test Nginx configuration
+    if sudo nginx -t 2>/dev/null; then
+        log "Nginx configuration optimized for SQL imports"
+        return 0
+    else
+        log_error "Nginx configuration test failed, checking what went wrong..."
+        
+        # Show the actual error
+        local nginx_error
+        nginx_error=$(sudo nginx -t 2>&1)
+        log_error "Nginx test output: $nginx_error"
+        
+        # Try to fix common issues
+        if echo "$nginx_error" | grep -q "duplicate"; then
+            log "Attempting to fix duplicate directive issues..."
+            # Remove our optimization file and try again
+            sudo rm -f "$sql_import_conf"
+            
+            # Create a simpler version
+            sudo tee "$sql_import_conf" > /dev/null << 'EOF'
+# Large SQL Import Optimizations - Simplified
+client_max_body_size 256M;
+fastcgi_read_timeout 1800s;
+EOF
+            
+            if sudo nginx -t 2>/dev/null; then
+                log "Nginx configuration fixed with simplified settings"
+                return 0
+            fi
+        fi
+        
+        # If still failing, remove our config file
+        sudo rm -f "$sql_import_conf"
+        log_error "Could not fix Nginx configuration, removed optimization file"
+        return 1
+    fi
+}
+
+optimize_apache_for_sql_imports() {
+    log "Optimizing Apache for large SQL imports"
+    
+    # Create optimization configuration
+    local sql_import_conf="/etc/apache2/conf-available/sql-import-optimization.conf"
+    sudo tee "$sql_import_conf" > /dev/null << 'EOF'
+# Large SQL Import Optimizations
+LimitRequestBody 268435456
+Timeout 1800
+KeepAliveTimeout 300
+
+<IfModule mod_php7.c>
+    php_value max_execution_time 1800
+    php_value max_input_time 1800
+    php_value memory_limit 1024M
+    php_value upload_max_filesize 256M
+    php_value post_max_size 256M
+</IfModule>
+
+<IfModule mod_php8.c>
+    php_value max_execution_time 1800
+    php_value max_input_time 1800
+    php_value memory_limit 1024M
+    php_value upload_max_filesize 256M
+    php_value post_max_size 256M
+</IfModule>
+EOF
+    
+    # Enable the configuration
+    sudo a2enconf sql-import-optimization 2>/dev/null || {
+        log_error "Failed to enable Apache SQL import configuration"
+        return 1
+    }
+    
+    # Test Apache configuration
+    if sudo apache2ctl configtest 2>/dev/null; then
+        log "Apache configuration optimized for SQL imports"
+        return 0
+    else
+        log_error "Apache configuration test failed"
+        sudo a2disconf sql-import-optimization 2>/dev/null
+        sudo rm -f "$sql_import_conf"
+        return 1
+    fi
+}
+
+optimize_mysql_for_sql_imports() {
+    log "Optimizing MySQL/MariaDB for large SQL imports"
+    
+    local mysql_conf="/etc/mysql/conf.d/sql-import-optimization.cnf"
+    local backup_dir="/etc/mysql/conf.d/backups"
+    
+    # Create backup directory
+    sudo mkdir -p "$backup_dir" 2>/dev/null
+    
+    # Create optimization configuration
+    sudo tee "$mysql_conf" > /dev/null << 'EOF'
+[mysqld]
+# Large SQL Import Optimizations
+max_connections = 200
+connect_timeout = 300
+wait_timeout = 1800
+interactive_timeout = 1800
+net_read_timeout = 300
+net_write_timeout = 300
+innodb_buffer_pool_size = 512M
+max_allowed_packet = 256M
+bulk_insert_buffer_size = 64M
+myisam_sort_buffer_size = 128M
+tmp_table_size = 256M
+max_heap_table_size = 256M
+innodb_log_file_size = 256M
+innodb_log_buffer_size = 64M
+innodb_flush_log_at_trx_commit = 2
+EOF
+    
+    log "MySQL/MariaDB configuration optimized for SQL imports"
+    return 0
+}
+
+restart_services_for_sql_imports() {
+    log "Restarting services for SQL import optimizations"
+    
+    local services_restarted=0
+    local services_failed=()
+    
+    # Restart PHP-FPM
+    local php_version
+    php_version=$(php -v 2>/dev/null | head -n1 | cut -d' ' -f2 | cut -d'.' -f1,2)
+    if [[ -n "$php_version" ]]; then
+        if sudo systemctl restart "php${php_version}-fpm" 2>/dev/null; then
+            log "PHP-FPM restarted successfully"
+            ((services_restarted++))
+        else
+            log_error "Failed to restart PHP-FPM"
+            services_failed+=("PHP-FPM")
+        fi
+    fi
+    
+    # Restart web server
+    if systemctl is-active --quiet nginx; then
+        if sudo systemctl restart nginx 2>/dev/null; then
+            log "Nginx restarted successfully"
+            ((services_restarted++))
+        else
+            log_error "Failed to restart Nginx"
+            services_failed+=("Nginx")
+        fi
+    elif systemctl is-active --quiet apache2; then
+        if sudo systemctl restart apache2 2>/dev/null; then
+            log "Apache restarted successfully"
+            ((services_restarted++))
+        else
+            log_error "Failed to restart Apache"
+            services_failed+=("Apache")
+        fi
+    fi
+    
+    # Restart MySQL/MariaDB
+    if sudo systemctl restart mariadb 2>/dev/null; then
+        log "MariaDB restarted successfully"
+        ((services_restarted++))
+    else
+        log_error "Failed to restart MariaDB"
+        services_failed+=("MariaDB")
+    fi
+    
+    if [[ ${#services_failed[@]} -eq 0 ]]; then
+        log "All services restarted successfully ($services_restarted services)"
+        return 0
+    else
+        log_error "Some services failed to restart: ${services_failed[*]}"
+        return 1
+    fi
+}
+
+# WordPress WP-CLI Management
+wordpress_wpcli_management() {
+    while true; do
+        local wpcli_status="WP-CLI Management\n\n"
+        
+        # Check if WP-CLI is installed
+        if command -v wp >/dev/null 2>&1; then
+            local wp_version=$(wp --version 2>/dev/null | cut -d' ' -f2 || echo "Unknown")
+            wpcli_status+="📦 WP-CLI Status: ✅ Installed (Version: $wp_version)\n"
+            wpcli_status+="📍 Location: $(which wp)\n"
+        else
+            wpcli_status+="📦 WP-CLI Status: ❌ Not installed\n"
+        fi
+        
+        # Check for WordPress sites
+        local wp_sites=()
+        if [[ -d "/var/www" ]]; then
+            while IFS= read -r -d '' site_dir; do
+                if [[ -f "$site_dir/wp-config.php" ]]; then
+                    wp_sites+=("$(basename "$site_dir")")
+                fi
+            done < <(find /var/www -maxdepth 1 -type d -print0 2>/dev/null)
+        fi
+        
+        if [[ ${#wp_sites[@]} -gt 0 ]]; then
+            wpcli_status+="\n🌐 WordPress Sites Found: ${#wp_sites[@]}\n"
+            for site in "${wp_sites[@]}"; do
+                wpcli_status+="   • $site\n"
+            done
+        else
+            wpcli_status+="\n⚠️  No WordPress sites found in /var/www\n"
+        fi
+        
+        wpcli_status+="\n"
+        
+        local menu_items=(
+            "install" "(.Y.) 📥 Install WP-CLI"
+            "update" "(.Y.) 🔄 Update WP-CLI"
+            "uninstall" "(.Y.) 🗑️  Uninstall WP-CLI"
+            "" "(_*_)"
+            "test" "(.Y.) 🧪 Test WP-CLI on Sites"
+            "info" "(.Y.) ℹ️  Show WP-CLI Info & Commands"
+            "" "(_*_)"
+            "zback" "(Z) ← Back to WordPress Menu"
+        )
+        
+        local choice=$(show_menu "WP-CLI Management" "$wpcli_status" "${menu_items[@]}")
+        
+        case $choice in
+            install)
+                install_wpcli
+                ;;
+            update)
+                update_wpcli
+                ;;
+            uninstall)
+                uninstall_wpcli
+                ;;
+            test)
+                test_wpcli_sites
+                ;;
+            info)
+                show_wpcli_info
+                ;;
+            zback)
+                break
+                ;;
+        esac
+    done
+}
+
+# Install WP-CLI
+install_wpcli() {
+    log "Installing WP-CLI..."
+    
+    # Check if already installed
+    if command -v wp >/dev/null 2>&1; then
+        local wp_version=$(wp --version 2>/dev/null | cut -d' ' -f2 || echo "Unknown")
+        log_warning "WP-CLI is already installed (Version: $wp_version)"
+        read -p "Do you want to reinstall? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            return 0
+        fi
+    fi
+    
+    # Download and install WP-CLI
+    log "Downloading WP-CLI..."
+    if curl -O https://raw.githubusercontent.com/wp-cli/wp-cli/v2.8.1/utils/wp-cli.phar; then
+        log "Making WP-CLI executable..."
+        chmod +x wp-cli.phar
+        
+        log "Moving WP-CLI to /usr/local/bin/wp..."
+        if sudo mv wp-cli.phar /usr/local/bin/wp; then
+            log "Testing WP-CLI installation..."
+            if wp --info >/dev/null 2>&1; then
+                log "✅ WP-CLI installed successfully!"
+                wp --version
+            else
+                log_error "WP-CLI installation failed - command not working"
+                return 1
+            fi
+        else
+            log_error "Failed to move WP-CLI to /usr/local/bin/"
+            return 1
+        fi
+    else
+        log_error "Failed to download WP-CLI"
+        return 1
+    fi
+    
+    # Install bash completion (optional)
+    log "Installing bash completion for WP-CLI..."
+    if curl -o /tmp/wp-completion.bash https://raw.githubusercontent.com/wp-cli/wp-cli/v2.8.1/utils/wp-completion.bash 2>/dev/null; then
+        sudo mv /tmp/wp-completion.bash /etc/bash_completion.d/wp-cli
+        log "Bash completion installed"
+    else
+        log_warning "Failed to install bash completion (optional)"
+    fi
+    
+    read -p "Press Enter to continue..."
+}
+
+# Update WP-CLI
+update_wpcli() {
+    log "Updating WP-CLI..."
+    
+    if ! command -v wp >/dev/null 2>&1; then
+        log_error "WP-CLI is not installed. Please install it first."
+        read -p "Press Enter to continue..."
+        return 1
+    fi
+    
+    # Update using WP-CLI's self-update command
+    if wp cli update; then
+        log "✅ WP-CLI updated successfully!"
+        wp --version
+    else
+        log_warning "WP-CLI self-update failed. Trying manual update..."
+        install_wpcli
+    fi
+    
+    read -p "Press Enter to continue..."
+}
+
+# Uninstall WP-CLI
+uninstall_wpcli() {
+    log "Uninstalling WP-CLI..."
+    
+    if ! command -v wp >/dev/null 2>&1; then
+        log_warning "WP-CLI is not installed"
+        read -p "Press Enter to continue..."
+        return 0
+    fi
+    
+    read -p "Are you sure you want to uninstall WP-CLI? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        return 0
+    fi
+    
+    # Remove WP-CLI binary
+    if sudo rm -f /usr/local/bin/wp; then
+        log "WP-CLI binary removed"
+    else
+        log_error "Failed to remove WP-CLI binary"
+    fi
+    
+    # Remove bash completion
+    if sudo rm -f /etc/bash_completion.d/wp-cli; then
+        log "Bash completion removed"
+    fi
+    
+    log "✅ WP-CLI uninstalled successfully!"
+    read -p "Press Enter to continue..."
+}
+
+# Test WP-CLI on WordPress sites
+test_wpcli_sites() {
+    log "Testing WP-CLI on WordPress sites..."
+    
+    if ! command -v wp >/dev/null 2>&1; then
+        log_error "WP-CLI is not installed. Please install it first."
+        read -p "Press Enter to continue..."
+        return 1
+    fi
+    
+    # Find WordPress sites
+    local wp_sites=()
+    if [[ -d "/var/www" ]]; then
+        while IFS= read -r -d '' site_dir; do
+            if [[ -f "$site_dir/wp-config.php" ]]; then
+                wp_sites+=("$site_dir")
+            fi
+        done < <(find /var/www -maxdepth 1 -type d -print0 2>/dev/null)
+    fi
+    
+    if [[ ${#wp_sites[@]} -eq 0 ]]; then
+        log_warning "No WordPress sites found in /var/www"
+        read -p "Press Enter to continue..."
+        return 0
+    fi
+    
+    echo "Testing WP-CLI on found WordPress sites:"
+    echo "========================================"
+    
+    for site_dir in "${wp_sites[@]}"; do
+        local site_name=$(basename "$site_dir")
+        echo
+        echo "🌐 Testing site: $site_name"
+        echo "   Path: $site_dir"
+        
+        cd "$site_dir" || continue
+        
+        # Test basic WP-CLI functionality
+        if wp core version 2>/dev/null; then
+            echo "   ✅ WP-CLI working - WordPress version: $(wp core version 2>/dev/null)"
+            
+            # Show additional info
+            echo "   📊 Database status: $(wp db check 2>/dev/null && echo "✅ OK" || echo "❌ Error")"
+            echo "   🔌 Active plugins: $(wp plugin list --status=active --format=count 2>/dev/null || echo "Unknown")"
+            echo "   🎨 Active theme: $(wp theme list --status=active --field=name 2>/dev/null || echo "Unknown")"
+        else
+            echo "   ❌ WP-CLI not working on this site"
+            echo "   🔍 Checking permissions..."
+            ls -la wp-config.php 2>/dev/null || echo "   ⚠️  wp-config.php not readable"
+        fi
+    done
+    
+    echo
+    read -p "Press Enter to continue..."
+}
+
+# Show WP-CLI information and common commands
+show_wpcli_info() {
+    clear
+    echo "WP-CLI Information & Common Commands"
+    echo "===================================="
+    echo
+    
+    if command -v wp >/dev/null 2>&1; then
+        echo "📦 WP-CLI Version:"
+        wp --version
+        echo
+        
+        echo "📍 WP-CLI Location:"
+        which wp
+        echo
+        
+        echo "ℹ️  WP-CLI Info:"
+        wp --info
+        echo
+    else
+        echo "❌ WP-CLI is not installed"
+        echo
+    fi
+    
+    echo "🔧 Common WP-CLI Commands:"
+    echo "========================="
+    echo
+    echo "Core Management:"
+    echo "  wp core download          # Download WordPress core"
+    echo "  wp core install           # Install WordPress"
+    echo "  wp core update            # Update WordPress core"
+    echo "  wp core version           # Show WordPress version"
+    echo
+    echo "Plugin Management:"
+    echo "  wp plugin list            # List all plugins"
+    echo "  wp plugin install <name>  # Install a plugin"
+    echo "  wp plugin activate <name> # Activate a plugin"
+    echo "  wp plugin deactivate <name> # Deactivate a plugin"
+    echo "  wp plugin delete <name>   # Delete a plugin"
+    echo
+    echo "Theme Management:"
+    echo "  wp theme list             # List all themes"
+    echo "  wp theme install <name>   # Install a theme"
+    echo "  wp theme activate <name>  # Activate a theme"
+    echo "  wp theme delete <name>    # Delete a theme"
+    echo
+    echo "Database Management:"
+    echo "  wp db check               # Check database connection"
+    echo "  wp db export              # Export database"
+    echo "  wp db import <file>       # Import database"
+    echo "  wp db search <text>       # Search database"
+    echo
+    echo "User Management:"
+    echo "  wp user list              # List all users"
+    echo "  wp user create <username> # Create a new user"
+    echo "  wp user delete <username> # Delete a user"
+    echo "  wp user update <username> # Update user info"
+    echo
+    echo "Content Management:"
+    echo "  wp post list              # List posts"
+    echo "  wp post create            # Create a new post"
+    echo "  wp post delete <ID>       # Delete a post"
+    echo "  wp media import <file>    # Import media file"
+    echo
+    echo "Maintenance:"
+    echo "  wp cache flush            # Clear all caches"
+    echo "  wp rewrite flush          # Flush rewrite rules"
+    echo "  wp cron event list        # List cron events"
+    echo "  wp search-replace <old> <new> # Search and replace in database"
+    echo
+    echo "📚 For more commands, visit: https://wp-cli.org/commands/"
+    echo
+    read -p "Press Enter to continue..."
+}
+
+# ==============================================================================
+# MIRROR MANAGEMENT FUNCTIONS
+# ==============================================================================
+
+# Function to get current mirror configuration
+get_current_mirror() {
+    local sources_file="/etc/apt/sources.list"
+    local sources_dir="/etc/apt/sources.list.d"
+    
+    # First try to get from main sources.list
+    if [[ -f "$sources_file" ]]; then
+        local mirror=$(grep -E "^deb\s+https?://" "$sources_file" | grep -v "security\|backports" | head -1 | awk '{print $2}' | sed 's|https\?://||' | sed 's|/.*||')
+        if [[ -n "$mirror" && "$mirror" != "Unknown" ]]; then
+            echo "$mirror"
+            return
+        fi
+    fi
+    
+    # Try sources.list.d directory for Ubuntu sources
+    if [[ -d "$sources_dir" ]]; then
+        local mirror=$(find "$sources_dir" -name "*.list" -exec grep -l "ubuntu" {} \; | head -1 | xargs grep -E "^deb\s+https?://" | grep -v "security\|backports" | head -1 | awk '{print $2}' | sed 's|https\?://||' | sed 's|/.*||')
+        if [[ -n "$mirror" && "$mirror" != "Unknown" ]]; then
+            echo "$mirror"
+            return
+        fi
+    fi
+    
+    # Fallback: try to detect from apt-cache policy
+    local mirror=$(apt-cache policy | grep -E "^\s+\d+\s+https?://" | head -1 | awk '{print $2}' | sed 's|https\?://||' | sed 's|/.*||')
+    if [[ -n "$mirror" ]]; then
+        echo "$mirror"
+    else
+        echo "archive.ubuntu.com"
+    fi
+}
+
+# Function to check if mirrorselect is installed
+is_mirrorselect_installed() {
+    # Ubuntu doesn't use mirrorselect - we'll use apt-mirror and netselect-apt instead
+    command -v netselect-apt &>/dev/null
+}
+
+# Function to install mirror selection tools for Ubuntu
+install_mirrorselect() {
+    log "Installing Ubuntu mirror selection tools..."
+    if ! is_mirrorselect_installed; then
+        if sudo apt update && sudo apt install -y netselect-apt; then
+            log "netselect-apt installed successfully"
+            return 0
+        else
+            log "ERROR: Failed to install netselect-apt"
+            return 1
+        fi
+    else
+        log "netselect-apt is already installed"
+        return 0
+    fi
+}
+
+# Function to scan and set fastest mirror
+scan_and_set_fastest_mirror() {
+    log "Starting mirror scan and configuration"
+    
+    # Ensure mirrorselect is installed
+    if ! install_mirrorselect; then
+        ui_msg "Error" "Failed to install MirrorSelect. Cannot proceed with mirror optimization."
+        return 1
+    fi
+    
+    # Show progress dialog
+    ui_info "Mirror Optimization" "Scanning Ubuntu mirrors to find the fastest one...\n\nThis may take a few minutes. Please wait."
+    
+    # Create a temporary file for the new sources.list
+    local temp_sources="/tmp/sources.list.new"
+    
+    # Run mirrorselect to find fastest mirror
+    if sudo mirrorselect -i > "$temp_sources" 2>/dev/null; then
+        # Backup current sources.list
+        sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup.$(date +%Y%m%d_%H%M%S)
+        
+        # Apply new mirror configuration
+        sudo cp "$temp_sources" /etc/apt/sources.list
+        
+        # Update package cache
+        if sudo apt update; then
+            local new_mirror
+            new_mirror=$(get_current_mirror)
+            ui_msg "Success" "Mirror optimization completed successfully!\n\nNew fastest mirror: $new_mirror\n\nPackage cache has been updated."
+            log "Mirror optimization completed. New mirror: $new_mirror"
+        else
+            # Restore backup if update fails
+            sudo cp /etc/apt/sources.list.backup.$(date +%Y%m%d_%H%M%S) /etc/apt/sources.list
+            ui_msg "Error" "Failed to update package cache with new mirror. Configuration has been restored."
+            log "ERROR: Failed to update package cache, restored backup"
+            return 1
+        fi
+    else
+        ui_msg "Error" "Failed to scan mirrors. Please check your internet connection and try again."
+        log "ERROR: Mirror scan failed"
+        return 1
+    fi
+    
+    # Clean up
+    rm -f "$temp_sources"
+}
+
+# Local mirror management functions
+get_local_mirror_path() {
+    local config_file="/etc/apt/mirror.list"
+    if [[ -f "$config_file" ]]; then
+        grep "^set base_path" "$config_file" 2>/dev/null | awk '{print $3}' || echo "/var/spool/apt-mirror"
+    else
+        echo "/var/spool/apt-mirror"
+    fi
+}
+
+is_apt_mirror_installed() {
+    command -v apt-mirror >/dev/null 2>&1
+}
+
+install_apt_mirror() {
+    log "Installing apt-mirror"
+    ui_info "Installing apt-mirror" "Installing apt-mirror package...\n\nThis may take a few moments."
+    
+    if sudo apt-get update && sudo apt-get install -y apt-mirror; then
+        ui_msg "Installation Complete" "apt-mirror has been successfully installed!"
+        log "apt-mirror installation completed successfully"
+        return 0
+    else
+        ui_msg "Installation Failed" "Failed to install apt-mirror. Please check your internet connection and try again."
+        log "ERROR: apt-mirror installation failed"
+        return 1
+    fi
+}
+
+setup_local_mirror() {
+    log "Setting up local mirror"
+    
+    # Get mirror path from user
+    local mirror_path
+    mirror_path=$(ui_input "Local Mirror Setup" "Enter the path where you want to store the local mirror:\n\n(Default: /var/spool/apt-mirror)\n\nNote: This will require significant disk space (50GB+)" "/var/spool/apt-mirror")
+    
+    if [[ -z "$mirror_path" ]]; then
+        mirror_path="/var/spool/apt-mirror"
+    fi
+    
+    # Create directory if it doesn't exist
+    if ! mkdir -p "$mirror_path" 2>/dev/null; then
+        ui_msg "Permission Error" "Cannot create directory: $mirror_path\n\nPlease run as root or choose a different path."
+        return 1
+    fi
+    
+    # Create apt-mirror configuration
+    local config_file="/etc/apt/mirror.list"
+    local ubuntu_version
+    ubuntu_version=$(lsb_release -cs 2>/dev/null || echo "jammy")
+    
+    cat > "$config_file" << EOF
+############# config ##################
+set base_path    $mirror_path
+set mirror_path  \$base_path/mirror
+set skel_path    \$base_path/skel
+set var_path     \$base_path/var
+set cleanscript  \$var_path/clean.sh
+set defaultarch  amd64
+set postmirror_script \$var_path/postmirror.sh
+set run_postmirror 0
+set nthreads     20
+set _tilde 0
+#######################################
+
+deb http://archive.ubuntu.com/ubuntu $ubuntu_version main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu $ubuntu_version-updates main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu $ubuntu_version-backports main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu $ubuntu_version-security main restricted universe multiverse
+
+clean http://archive.ubuntu.com/ubuntu
+clean http://security.ubuntu.com/ubuntu
+EOF
+    
+    ui_msg "Configuration Created" "Local mirror configuration created at:\n$config_file\n\nMirror path: $mirror_path\n\nUse 'Update Local Mirror' to download packages."
+    log "Local mirror configuration created: $config_file"
+}
+
+update_local_mirror() {
+    log "Updating local mirror"
+    
+    if ! is_apt_mirror_installed; then
+        ui_msg "Not Installed" "apt-mirror is not installed. Please install it first."
+        return 1
+    fi
+    
+    local mirror_path
+    mirror_path=$(get_local_mirror_path)
+    
+    if ui_yesno "Update Local Mirror" "Start downloading/updating local mirror?\n\nPath: $mirror_path\n\nWarning: This will download many GB of data and may take hours.\nEnsure you have sufficient disk space and bandwidth.\n\nContinue?"; then
+        ui_info "Mirror Update" "Starting local mirror update...\n\nThis will run in a new terminal window.\nYou can monitor progress there."
+        
+        # Run apt-mirror in a new terminal
+        gnome-terminal -- bash -c "
+            echo 'Starting local mirror update...'
+            echo 'This may take several hours depending on your connection.'
+            echo 'Press Ctrl+C to cancel at any time.'
+            echo ''
+            sudo apt-mirror
+            echo ''
+            echo 'Mirror update completed!'
+            read -p 'Press Enter to close...'
+        "
+    fi
+}
+
+use_local_mirror() {
+    log "Switching to local mirror"
+    
+    local mirror_path
+    mirror_path=$(get_local_mirror_path)
+    local mirror_url="file://$mirror_path/mirror/archive.ubuntu.com/ubuntu"
+    
+    if [[ ! -d "$mirror_path/mirror/archive.ubuntu.com/ubuntu" ]]; then
+        ui_msg "Mirror Not Ready" "Local mirror not found at:\n$mirror_path/mirror/archive.ubuntu.com/ubuntu\n\nPlease update the local mirror first."
+        return 1
+    fi
+    
+    if ui_yesno "Use Local Mirror" "Switch to local mirror for package installations?\n\nThis will modify /etc/apt/sources.list to use:\n$mirror_url\n\nYour current configuration will be backed up."; then
+        # Backup current sources.list
+        local backup_file="/etc/apt/sources.list.backup.$(date +%Y%m%d_%H%M%S)"
+        cp /etc/apt/sources.list "$backup_file"
+        
+        # Create new sources.list with local mirror
+        local ubuntu_version
+        ubuntu_version=$(lsb_release -cs 2>/dev/null || echo "jammy")
+        
+        cat > /etc/apt/sources.list << EOF
+# Local mirror configuration - created by ultrabunt
+# Backup saved as: $backup_file
+
+deb $mirror_url $ubuntu_version main restricted universe multiverse
+deb $mirror_url $ubuntu_version-updates main restricted universe multiverse
+deb $mirror_url $ubuntu_version-backports main restricted universe multiverse
+deb file://$mirror_path/mirror/security.ubuntu.com/ubuntu $ubuntu_version-security main restricted universe multiverse
+EOF
+        
+        # Update package cache
+        if apt-get update; then
+            ui_msg "Success" "Successfully switched to local mirror!\n\nBackup saved as:\n$backup_file\n\nPackage cache updated."
+            log "Switched to local mirror successfully"
+        else
+            ui_msg "Update Failed" "Mirror switched but package cache update failed.\nYou may need to run 'apt update' manually."
+            log "WARNING: Package cache update failed after switching to local mirror"
+        fi
+    fi
+}
+
+# Main mirror management menu
+show_mirror_management_menu() {
+    log "Entering show_mirror_management_menu function"
+    
+    while true; do
+        local current_mirror
+        current_mirror=$(get_current_mirror)
+        
+        local mirrorselect_status="🔴 Not Installed"
+        if is_mirrorselect_installed; then
+            mirrorselect_status="🟢 Installed"
+        fi
+        
+        local apt_mirror_status="🔴 Not Installed"
+        if is_apt_mirror_installed; then
+            apt_mirror_status="🟢 Installed"
+        fi
+        
+        local local_mirror_path
+        local_mirror_path=$(get_local_mirror_path)
+        local local_mirror_status="🔴 Not Setup"
+        if [[ -d "$local_mirror_path/mirror/archive.ubuntu.com/ubuntu" ]]; then
+            local_mirror_status="🟢 Available at $local_mirror_path"
+        fi
+        
+        local menu_items=()
+        menu_items+=("current-mirror" "(.Y.) Current Mirror: $current_mirror")
+        menu_items+=("" "(_*_)")
+        menu_items+=("install-mirrorselect" "(.Y.) Install MirrorSelect Tool")
+        menu_items+=("mirrorselect-options" "(.Y.) MirrorSelect Options & Modes")
+        menu_items+=("scan-fastest" "(.Y.) Scan & Set Fastest Mirror (Quick)")
+        menu_items+=("manual-mirrorselect" "(.Y.) Open MirrorSelect Terminal (Advanced)")
+        menu_items+=("" "(_*_)")
+        menu_items+=("install-apt-mirror" "(.Y.) Install apt-mirror Tool")
+        menu_items+=("setup-local-mirror" "(.Y.) Setup Local Mirror Storage")
+        menu_items+=("update-local-mirror" "(.Y.) Update Local Mirror (Download)")
+        menu_items+=("use-local-mirror" "(.Y.) Switch to Local Mirror")
+        menu_items+=("" "(_*_)")
+        menu_items+=("back" "(Z) Back to Main Menu")
+        
+        local choice
+        choice=$(ui_menu "Mirror Management" \
+            "MirrorSelect Status: $mirrorselect_status\napt-mirror Status: $apt_mirror_status\nLocal Mirror: $local_mirror_status\nCurrent Mirror: $current_mirror\n\nOptimize your Ubuntu package downloads:" \
+            $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
+        
+        case "$choice" in
+            current-mirror)
+                local mirror_info="Current Ubuntu Mirror Configuration:\n\n"
+                mirror_info+="Mirror Server: $current_mirror\n\n"
+                mirror_info+="This is the server your system uses to download packages.\n"
+                mirror_info+="A faster mirror can significantly improve download speeds.\n\n"
+                mirror_info+="Use 'Scan & Set Fastest Mirror' to automatically find\n"
+                mirror_info+="and configure the optimal mirror for your location.\n\n"
+                mirror_info+="For offline installations, use the local mirror options\n"
+                mirror_info+="to create a complete Ubuntu repository on your system."
+                ui_info "Current Mirror Information" "$mirror_info"
+                ;;
+            install-mirrorselect)
+                if is_mirrorselect_installed; then
+                    ui_msg "Already Installed" "MirrorSelect is already installed on your system."
+                else
+                    if ui_yesno "Install MirrorSelect" "Install MirrorSelect tool for mirror optimization?\n\nThis will download and install the mirrorselect package."; then
+                        install_mirrorselect
+                    fi
+                fi
+                ;;
+            mirrorselect-options)
+                show_mirrorselect_options_menu
+                ;;
+            scan-fastest)
+                if ui_yesno "Scan for Fastest Mirror" "Scan Ubuntu mirrors and automatically set the fastest one?\n\nThis will:\n• Test multiple Ubuntu mirrors\n• Select the fastest one\n• Update your system configuration\n• Backup your current settings\n\nThis process may take a few minutes."; then
+                    scan_and_set_fastest_mirror
+                fi
+                ;;
+            manual-mirrorselect)
+                if is_mirrorselect_installed; then
+                    ui_info "Manual MirrorSelect" "Opening terminal for manual mirror selection...\n\nCommon commands:\n• mirrorselect -i (interactive mode)\n• mirrorselect -s3 (select 3 fastest)\n• mirrorselect -h (help)\n\nPress any key to continue..."
+                    # Open terminal with mirrorselect
+                    gnome-terminal -- bash -c "echo 'MirrorSelect Manual Mode - Type \"mirrorselect -h\" for help'; mirrorselect -i; read -p 'Press Enter to close...'"
+                else
+                    ui_msg "Not Installed" "MirrorSelect is not installed. Please install it first using the 'Install MirrorSelect Tool' option."
+                fi
+                ;;
+            install-apt-mirror)
+                if is_apt_mirror_installed; then
+                    ui_msg "Already Installed" "apt-mirror is already installed on your system."
+                else
+                    if ui_yesno "Install apt-mirror" "Install apt-mirror tool for local repository creation?\n\nThis will download and install the apt-mirror package."; then
+                        install_apt_mirror
+                    fi
+                fi
+                ;;
+            setup-local-mirror)
+                if ! is_apt_mirror_installed; then
+                    ui_msg "Not Installed" "apt-mirror is not installed. Please install it first."
+                else
+                    setup_local_mirror
+                fi
+                ;;
+            update-local-mirror)
+                update_local_mirror
+                ;;
+            use-local-mirror)
+                use_local_mirror
+                ;;
+            back|z|"")
+                break
+                ;;
+        esac
+    done
+    
+    log "Exiting show_mirror_management_menu function"
+}
+
+# Function to show mirrorselect options submenu
+show_mirrorselect_options_menu() {
+    log "Entering show_mirrorselect_options_menu function"
+    
+    if ! is_mirrorselect_installed; then
+        ui_msg "MirrorSelect Not Installed" "MirrorSelect is not installed on your system.\n\nPlease install it first from the Mirror Management menu."
+        return
+    fi
+    
+    while true; do
+        local menu_items=()
+        menu_items+=("interactive" "(.Y.) Interactive Mode - Select from list")
+        menu_items+=("deep" "(.Y.) Deep Mode - Accurate speed test (100k file)")
+        menu_items+=("auto" "(.Y.) Automatic Mode - Select fastest mirrors")
+        menu_items+=("" "(_*_)")
+        menu_items+=("country" "(.Y.) Filter by Country")
+        menu_items+=("region" "(.Y.) Filter by Region")
+        menu_items+=("" "(_*_)")
+        menu_items+=("http-only" "(.Y.) HTTP Only Mode")
+        menu_items+=("ftp-only" "(.Y.) FTP Only Mode")
+        menu_items+=("ipv4-only" "(.Y.) IPv4 Only Mode")
+        menu_items+=("ipv6-only" "(.Y.) IPv6 Only Mode")
+        menu_items+=("" "(_*_)")
+        menu_items+=("custom" "(.Y.) Custom Command Builder")
+        menu_items+=("" "(_*_)")
+        menu_items+=("zback" "(Z) ← Back to Mirror Management")
+        
+        local choice
+        choice=$(ui_menu "MirrorSelect Options" \
+            "Choose how to run MirrorSelect:\n\n• Interactive: Select mirrors from a list\n• Deep: More accurate but slower testing\n• Automatic: Let mirrorselect choose the fastest\n• Filters: Limit by country, region, or protocol" \
+            $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
+        
+        case "$choice" in
+            interactive)
+                run_mirrorselect_interactive
+                ;;
+            deep)
+                run_mirrorselect_deep
+                ;;
+            auto)
+                run_mirrorselect_auto
+                ;;
+            country)
+                run_mirrorselect_country
+                ;;
+            region)
+                run_mirrorselect_region
+                ;;
+            http-only)
+                run_mirrorselect_protocol "http"
+                ;;
+            ftp-only)
+                run_mirrorselect_protocol "ftp"
+                ;;
+            ipv4-only)
+                run_mirrorselect_protocol "ipv4"
+                ;;
+            ipv6-only)
+                run_mirrorselect_protocol "ipv6"
+                ;;
+            custom)
+                run_mirrorselect_custom
+                ;;
+            zback|back|z|"")
+                break
+                ;;
+        esac
+    done
+    
+    log "Exiting show_mirrorselect_options_menu function"
+}
+
+# Function to run mirrorselect in interactive mode
+run_mirrorselect_interactive() {
+    log "Running mirrorselect in interactive mode"
+    
+    if ui_yesno "Interactive Mirror Selection" "Run MirrorSelect in interactive mode?\n\nThis will present a list of mirrors for you to select from.\nThe selected mirrors will be applied to your system."; then
+        ui_msg "Running MirrorSelect" "Starting interactive mirror selection...\n\nPlease wait while the mirror list is loaded."
+        
+        if sudo mirrorselect -i; then
+            ui_msg "Success" "Mirror selection completed successfully!\n\nYour system has been updated with the selected mirrors."
+            log "MirrorSelect interactive mode completed successfully"
+        else
+            ui_msg "Error" "MirrorSelect failed to complete.\n\nPlease check your internet connection and try again."
+            log "MirrorSelect interactive mode failed"
+        fi
+    fi
+}
+
+# Function to run mirrorselect in deep mode
+run_mirrorselect_deep() {
+    log "Running mirrorselect in deep mode"
+    
+    local warning_msg="Deep Mode Warning:\n\n"
+    warning_msg+="• Downloads a 100KB file from each server\n"
+    warning_msg+="• More accurate but significantly slower\n"
+    warning_msg+="• Recommended only for good connections\n"
+    warning_msg+="• May take several minutes to complete\n\n"
+    warning_msg+="Continue with deep mode testing?"
+    
+    if ui_yesno "Deep Mode Mirror Testing" "$warning_msg"; then
+        ui_msg "Running Deep Mode" "Starting deep mode mirror testing...\n\nThis will take several minutes.\nPlease be patient while testing completes."
+        
+        if sudo mirrorselect -D -i; then
+            ui_msg "Success" "Deep mode mirror selection completed!\n\nYour system has been updated with the fastest mirrors."
+            log "MirrorSelect deep mode completed successfully"
+        else
+            ui_msg "Error" "Deep mode testing failed.\n\nPlease check your internet connection and try again."
+            log "MirrorSelect deep mode failed"
+        fi
+    fi
+}
+
+# Function to run mirrorselect in automatic mode
+run_mirrorselect_auto() {
+    log "Running automatic mirror selection for Ubuntu"
+    
+    local servers
+    servers=$(ui_input "Number of Servers" "How many servers should be tested for speed?\n\nEnter a number between 1 and 10:" "3")
+    
+    if [[ -z "$servers" ]] || ! [[ "$servers" =~ ^[0-9]+$ ]] || [[ "$servers" -lt 1 ]] || [[ "$servers" -gt 10 ]]; then
+        ui_msg "Invalid Input" "Please enter a valid number between 1 and 10."
+        return
+    fi
+    
+    if ui_yesno "Automatic Mirror Selection" "Test and select the fastest Ubuntu mirror?\n\nThis will test multiple mirrors and configure the fastest one."; then
+        ui_msg "Testing Mirrors" "Testing Ubuntu mirrors for speed...\n\nThis may take a few minutes. Please wait."
+        
+        # Create temporary directory for netselect-apt
+        local temp_dir=$(mktemp -d)
+        cd "$temp_dir" || return 1
+        
+        # Run netselect-apt to find fastest mirror
+        if sudo netselect-apt -n -o sources.list; then
+            # Extract the mirror URL from the generated sources.list
+            local new_mirror=$(grep -E "^deb\s+https?://" sources.list | head -1 | awk '{print $2}' | sed 's|https\?://||' | sed 's|/.*||')
+            
+            if [[ -n "$new_mirror" ]]; then
+                # Backup current sources.list
+                sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup.$(date +%Y%m%d_%H%M%S)
+                
+                # Replace the mirror in sources.list
+                sudo sed -i.bak "s|archive\.ubuntu\.com|$new_mirror|g; s|[a-z][a-z]\.archive\.ubuntu\.com|$new_mirror|g" /etc/apt/sources.list
+                
+                # Update package lists
+                if sudo apt update; then
+                    ui_msg "Success" "Fastest mirror configured successfully!\n\nNew mirror: $new_mirror\n\nPackage lists have been updated."
+                    log "Mirror selection completed: $new_mirror"
+                else
+                    ui_msg "Warning" "Mirror configured but package update failed.\n\nNew mirror: $new_mirror\n\nYou may need to run 'sudo apt update' manually."
+                fi
+            else
+                ui_msg "Error" "Could not determine fastest mirror.\n\nPlease try again or select a mirror manually."
+                log "Mirror selection failed - no mirror found"
+            fi
+        else
+            ui_msg "Error" "Mirror testing failed.\n\nPlease check your internet connection and try again."
+            log "netselect-apt failed"
+        fi
+        
+        # Cleanup
+        cd - >/dev/null
+        rm -rf "$temp_dir"
+    fi
+}
+
+# Function to run mirrorselect with country filter
+run_mirrorselect_country() {
+    log "Running mirrorselect with country filter"
+    
+    local country
+    country=$(ui_input "Country Filter" "Enter the country name to filter mirrors:\n\nExamples:\n• United States\n• Germany\n• Japan\n• 'South Korea' (use quotes for spaces)\n\nCountry name:" "")
+    
+    if [[ -z "$country" ]]; then
+        ui_msg "No Country" "No country specified. Operation cancelled."
+        return
+    fi
+    
+    if ui_yesno "Country Filter" "Filter mirrors by country: $country\n\nThis will show only mirrors from the specified country."; then
+        ui_msg "Filtering by Country" "Loading mirrors from $country...\n\nPlease wait while the list is prepared."
+        
+        if sudo mirrorselect -c "$country" -i; then
+            ui_msg "Success" "Country-filtered mirror selection completed!"
+            log "MirrorSelect country filter completed for: $country"
+        else
+            ui_msg "Error" "Country filtering failed.\n\nPlease check the country name and try again."
+            log "MirrorSelect country filter failed for: $country"
+        fi
+    fi
+}
+
+# Function to run mirrorselect with region filter
+run_mirrorselect_region() {
+    log "Running mirrorselect with region filter"
+    
+    local region
+    region=$(ui_input "Region Filter" "Enter the region name to filter mirrors:\n\nExamples:\n• North America\n• Europe\n• Asia\n• 'South America' (use quotes for spaces)\n\nRegion name:" "")
+    
+    if [[ -z "$region" ]]; then
+        ui_msg "No Region" "No region specified. Operation cancelled."
+        return
+    fi
+    
+    if ui_yesno "Region Filter" "Filter mirrors by region: $region\n\nThis will show only mirrors from the specified region."; then
+        ui_msg "Filtering by Region" "Loading mirrors from $region...\n\nPlease wait while the list is prepared."
+        
+        if sudo mirrorselect -R "$region" -i; then
+            ui_msg "Success" "Region-filtered mirror selection completed!"
+            log "MirrorSelect region filter completed for: $region"
+        else
+            ui_msg "Error" "Region filtering failed.\n\nPlease check the region name and try again."
+            log "MirrorSelect region filter failed for: $region"
+        fi
+    fi
+}
+
+# Function to run mirrorselect with protocol filter
+run_mirrorselect_protocol() {
+    local protocol="$1"
+    log "Running mirrorselect with $protocol protocol filter"
+    
+    local protocol_flag=""
+    local protocol_name=""
+    
+    case "$protocol" in
+        http)
+            protocol_flag="-H"
+            protocol_name="HTTP"
+            ;;
+        ftp)
+            protocol_flag="-F"
+            protocol_name="FTP"
+            ;;
+        ipv4)
+            protocol_flag="-4"
+            protocol_name="IPv4"
+            ;;
+        ipv6)
+            protocol_flag="-6"
+            protocol_name="IPv6"
+            ;;
+    esac
+    
+    if ui_yesno "$protocol_name Only Mode" "Filter mirrors to $protocol_name only?\n\nThis will show only mirrors that support $protocol_name."; then
+        ui_msg "Filtering by $protocol_name" "Loading $protocol_name mirrors...\n\nPlease wait while the list is prepared."
+        
+        if sudo mirrorselect "$protocol_flag" -i; then
+            ui_msg "Success" "$protocol_name-filtered mirror selection completed!"
+            log "MirrorSelect $protocol filter completed"
+        else
+            ui_msg "Error" "$protocol_name filtering failed.\n\nPlease try again."
+            log "MirrorSelect $protocol filter failed"
+        fi
+    fi
+}
+
+# Function to build custom mirrorselect command
+run_mirrorselect_custom() {
+    log "Building custom mirrorselect command"
+    
+    local custom_info="Custom MirrorSelect Command Builder\n\n"
+    custom_info+="Build your own mirrorselect command with specific options.\n"
+    custom_info+="You can combine multiple flags for advanced usage.\n\n"
+    custom_info+="Available options:\n"
+    custom_info+="• -i: Interactive mode\n"
+    custom_info+="• -D: Deep mode (100k test)\n"
+    custom_info+="• -s N: Select N servers\n"
+    custom_info+="• -b N: Block size for testing\n"
+    custom_info+="• -c 'Country': Filter by country\n"
+    custom_info+="• -R 'Region': Filter by region\n"
+    custom_info+="• -H: HTTP only\n"
+    custom_info+="• -F: FTP only\n"
+    custom_info+="• -4: IPv4 only\n"
+    custom_info+="• -6: IPv6 only\n"
+    custom_info+="• -t N: Timeout in seconds\n"
+    custom_info+="• -q: Quiet mode\n"
+    
+    ui_info "Custom Command Builder" "$custom_info"
+    
+    local custom_flags
+    custom_flags=$(ui_input "Custom Flags" "Enter mirrorselect flags (without 'sudo mirrorselect'):\n\nExample: -D -s 3 -c 'United States'\nExample: -i -H -4\n\nFlags:" "-i")
+    
+    if [[ -z "$custom_flags" ]]; then
+        ui_msg "No Flags" "No flags specified. Operation cancelled."
+        return
+    fi
+    
+    local full_command="sudo mirrorselect $custom_flags"
+    
+    if ui_yesno "Execute Custom Command" "Execute this command?\n\n$full_command\n\nThis will run mirrorselect with your custom options."; then
+        ui_msg "Running Custom Command" "Executing: $full_command\n\nPlease wait..."
+        
+        if eval "$full_command"; then
+            ui_msg "Success" "Custom mirrorselect command completed successfully!"
+            log "Custom mirrorselect command completed: $full_command"
+        else
+            ui_msg "Error" "Custom command failed.\n\nPlease check your flags and try again."
+            log "Custom mirrorselect command failed: $full_command"
+        fi
     fi
 }
 
@@ -6580,14 +13008,82 @@ view_log_file() {
     local file_size
     file_size=$(du -h "$log_file" 2>/dev/null | cut -f1)
     
-    # Show last 100 lines by default
-    local temp_file="/tmp/ultrabunt_log_view_$$"
-    tail -n 100 "$log_file" > "$temp_file" 2>/dev/null
+    # Show options for viewing the log
+    local choice
+    choice=$(ui_menu "$log_name" \
+        "File: $log_file (Size: $file_size)\nChoose how to view the log:" \
+        15 70 4 \
+        "last100" "View Last 100 Lines (Scrollable)" \
+        "last500" "View Last 500 Lines (Scrollable)" \
+        "full" "View Full Log File (Scrollable)" \
+        "tail-follow" "Follow Live Updates (tail -f)")
     
-    if [[ -s "$temp_file" ]]; then
-        ui_msg "$log_name" "File: $log_file\nSize: $file_size\nShowing last 100 lines:\n\n$(cat "$temp_file")\n\n💡 Tip: Use 'tail -f $log_file' to follow live updates"
+    case "$choice" in
+        last100)
+            view_log_with_pager "$log_file" "$log_name" 100
+            ;;
+        last500)
+            view_log_with_pager "$log_file" "$log_name" 500
+            ;;
+        full)
+            view_log_with_pager "$log_file" "$log_name" "full"
+            ;;
+        tail-follow)
+            clear
+            echo "=== Following $log_name ==="
+            echo "File: $log_file"
+            echo "Press Ctrl+C to exit"
+            echo "=========================="
+            echo
+            sudo tail -f "$log_file" 2>/dev/null || tail -f "$log_file" 2>/dev/null
+            ;;
+        *)
+            return 0
+            ;;
+    esac
+}
+
+view_log_with_pager() {
+    local log_file="$1"
+    local log_name="$2"
+    local lines="$3"
+    
+    local temp_file="/tmp/ultrabunt_log_view_$$"
+    
+    # Create header with file info
+    {
+        echo "=== $log_name ==="
+        echo "File: $log_file"
+        echo "Size: $(du -h "$log_file" 2>/dev/null | cut -f1)"
+        if [[ "$lines" == "full" ]]; then
+            echo "Showing: Full file"
+        else
+            echo "Showing: Last $lines lines"
+        fi
+        echo "Navigation: Use arrow keys, Page Up/Down, 'q' to quit"
+        echo "=============================================="
+        echo
+    } > "$temp_file"
+    
+    # Add log content
+    if [[ "$lines" == "full" ]]; then
+        sudo cat "$log_file" 2>/dev/null >> "$temp_file" || cat "$log_file" 2>/dev/null >> "$temp_file"
     else
-        ui_msg "$log_name" "File: $log_file\nSize: $file_size\n\nThe log file is empty or could not be read."
+        sudo tail -n "$lines" "$log_file" 2>/dev/null >> "$temp_file" || tail -n "$lines" "$log_file" 2>/dev/null >> "$temp_file"
+    fi
+    
+    # Use less with better options for log viewing
+    if command -v less >/dev/null 2>&1; then
+        # less with: 
+        # -R: handle ANSI colors
+        # -S: don't wrap long lines
+        # -X: don't clear screen on exit
+        # -F: quit if content fits on one screen
+        # +G: start at end of file
+        PAGER=cat less -RSX +G "$temp_file"
+    else
+        # Fallback to more if less is not available
+        more "$temp_file"
     fi
     
     rm -f "$temp_file" 2>/dev/null
@@ -7112,6 +13608,12 @@ mariadb_service_control() {
 # ==============================================================================
 
 main() {
+    # Show ASCII art splash screen first
+    show_ascii_splash
+    
+    # Parse command line arguments
+    parse_arguments "$@"
+    
     # Initialize
     init_logging
     log "Initializing Ultrabunt Ultimate Buntstaller..."
@@ -7142,5 +13644,5 @@ main() {
 }
 
 # Run main program
-main
+main "$@"
 exit 0
