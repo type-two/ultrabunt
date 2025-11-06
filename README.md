@@ -9,10 +9,18 @@ UltraBunt is the **ULTIMATE** Ubuntu setup script that transforms your fresh Ubu
 Think of it as a whole bunch of blu-tac'd together bash scripts that:
 - 🧙‍♂️ Install up to 560+ essential applications
 - 🎪 Organized into 25+ magnificent categories  
-- 🚀 Handles APT, Snap, Flatpak, and custom installations
+- 🚀 Handles `apt`, `snap`, `flatpak`, and `.deb` installers
 - 🎨 Makes your terminal look absolutely gorgeous
 - 🔒 Set up a native LAMP wordpress site that works without all the ball-ache
 - ☕ Saves you pissfarting around in terminal for hours every frikkin time you install it
+
+## ✅ Install Policy
+
+UltraBunt installs apps only via `apt`, `snap`, `.deb`, or `flatpak` on Ubuntu-based systems.
+
+- Python `pip` installations are disabled and have been removed.
+- Pip-only packages have been removed from the script and from this README.
+- Where possible, equivalents using `apt`, `snap`, `.deb`, or `flatpak` are provided.
 
 ## 🎪 THE MAGNIFICENT BUNTAGE CATEGORIES 🎪
 
@@ -50,7 +58,7 @@ Programming languages, frameworks, and development utilities:
 **Python3** - Python interpreter [APT]  
 **Python3-pip** - Python package manager [APT]  
 **Pipx** - Python app installer [APT]  
-**Poetry** - Python dependency manager [SCRIPT]  
+**Poetry** - Python dependency manager [APT]  
 **Pyenv** - Python version manager [SCRIPT]  
 **Go** - Go programming language [APT]  
 **Rust** - Rust programming language [SCRIPT]  
@@ -80,9 +88,9 @@ Programming languages, frameworks, and development utilities:
 **VirtualBox** - Virtualization [SCRIPT]  
 **QEMU** - Machine emulator [APT]  
 **Neovim** - Modern Vim editor [APT]  
-**MkDocs** - Documentation generator [SCRIPT]  
-**Insomnia** - API testing tool [SCRIPT]  
-**Zed** - High-performance code editor [SCRIPT]  
+**MkDocs** - Documentation generator [APT]  
+**Insomnia** - API testing tool [DEB]  
+**Zed** - High-performance code editor [DEB]  
 **Postman** - API development platform [SCRIPT]  
 **Bruno** - Open-source API client [SCRIPT]  
 **Bruno (Snap)** - Bruno via Snap [SNAP]  
@@ -560,9 +568,8 @@ Graphics editing and design applications:
 **GIMP (Flatpak)** - GIMP via Flatpak [FLATPAK]  
 **Inkscape (Snap)** - Inkscape via Snap [SNAP]  
 **Inkscape (Flatpak)** - Inkscape via Flatpak [FLATPAK]  
-**Webcamize** - Webcam utility [SCRIPT]  
-**Durdraw** - ASCII art editor [SCRIPT]  
-**Pastel** - Color manipulation tool [SCRIPT]  
+**Webcamize** - Webcam utility [APT]  
+**Pastel** - Color manipulation tool [APT]  
 
 ### 📄 Office & Productivity - Get Things Done
 Office suites and productivity applications:
@@ -585,22 +592,10 @@ Cutting-edge AI and machine learning tools:
 **Ollama** - Run LLMs locally [SCRIPT]  
 **Gollama** - Ollama GUI client [SCRIPT]  
 **LM Studio** - Local LLM interface [SCRIPT]  
-**Text Generation WebUI** - Local text generation [SCRIPT]  
+**Ollama** - Run LLMs locally [SCRIPT]  
+**Gollama** - Ollama GUI client [SCRIPT]  
+**LM Studio** - Local LLM interface [SCRIPT]  
 **Whisper-cpp** - Speech recognition [SCRIPT]  
-**ComfyUI** - Node-based AI interface [SCRIPT]  
-**InvokeAI** - Professional AI art [SCRIPT]  
-**LMDeploy** - LLM deployment toolkit [SCRIPT]  
-**KoboldCpp** - AI storytelling backend [SCRIPT]  
-**Automatic1111** - Popular SD interface [SCRIPT]  
-**Fooocus** - Simplified Stable Diffusion [SCRIPT]  
-**SD-Next** - Advanced Stable Diffusion [SCRIPT]  
-**Kohya SS GUI** - LoRA training interface [SCRIPT]  
-**Faster-Whisper** - Optimized speech recognition [SCRIPT]  
-**WhisperX** - Enhanced Whisper with alignment [SCRIPT]  
-**Coqui-STT** - Speech-to-text engine [SCRIPT]  
-**Piper-TTS** - Text-to-speech synthesis [SCRIPT]  
-**Mimic3** - Neural text-to-speech [SCRIPT]  
-**Coqui-TTS** - Advanced text-to-speech [SCRIPT]  
 **Yai** - AI powered terminal assistant [CUSTOM]  
 
 ### 🕹️ Gaming Emulators - Retro Gaming

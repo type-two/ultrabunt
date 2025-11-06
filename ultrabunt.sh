@@ -218,21 +218,29 @@ show_ascii_splash() {
         "                .:--::+*:..::::::............+#*-::::.:-.                        "
         "               :----:...+*:...:::.............:+*:..:....:                       "
         "                -:....    -##-:::::.:......:+#=     ......                       "
-        "                  .           -*%%#####%%#=.     .  .:::.                        "
-        "               =@@  .#@-+@%@@+*@* @#-@@%*:@@@%.@@%+*@@%@#                        "
-        "               =@@#.#@@=#@ +@++@@@@%=@#    %#  @%  -@* %#                        "
-        "               +@#@@%%@.*@ *@*-@%@@%   @+  @#  @@%-=@@%@-                        "
-        "               =@+=%=#@.*@#%@+-@ =@#.#=@@: @#  %@*:-@#-@+                                             "
-        "               .====: .  .=**= . :=++      .=**=  :=++++-                      "
-        "               -#%%%@@: %@%++@@#.=#%%%@@..%@%++%@#+#@@%#+                        "
-        "                    +@*@@=    -@*:---=%@:#@-    =@* #@=                          "
-        "               +@@@@@# @%:    :@*#@%##%@+%%:    -@# #@=                          "
-        "               *@=.*@+ -@%=::=@%-*@=::+@%-@%=::=@%: #@=.                         "
-        "               =%-  +%- .=#@@#=. +%@@@%+  .=#@@#=.  +%=                                                                                      "
-        "                        @%##* +@#*@#. @###=#@@#+                                 "
-        "                        @@% --%:   %# @:    *%                              "
-        "                           =@-%+. -@+ #@@%  *%                               "
-        "                        ####= .+##*.  #     +*                                            "
+        " ██████   ██████   █████   █████   ████  ██████   █████████ ███████ ████████  "
+        "░░██████ ██████  ███░░░███░░████ ░░██  ███░░░███░█░░░██░░█░░██░░░█░░███░░███ "
+        " ░███░█████░███ ███   ░░███░██░██ ░██ ░███  ░░░ ░   ░██ ░  ░██ █   ░███ ░███ "
+        " ░███░░███ ░███░███    ░███░██ ░██░██ ░░███████     ░██    ░████   ░██████  "
+        " ░███ ░░░  ░███░███    ░███░██  ░████    ░░░░███    ░██    ░██░█   ░███░░███ "
+        " ░███      ░███░░███  ███ ░███   ░███  ███  ░███    ░██    ░██   █ ░███ ░███ "
+        " █████     █████░░░█████░  ████  ░████░░███████   █████   ███████ ████  ████"
+        "░░░░░     ░░░░░   ░░░░░░   ░░░░░   ░░░  ░░░░░░░    ░░░░   ░░░░░░  ░░░░  ░░░░ "
+        " ███████████     ███████   ███████████     ███████    ███████████           "
+        "░░███░░░░░███  ███░░░░░███░░███░░░░░███  ███░░░░░███ ░█░░░███░░░█           "
+        " ░███    ░███ ███     ░░███░███    ░███ ███     ░░███░   ░███  ░            "
+        " ░██████████ ░███      ░███░██████████ ░███      ░███    ░███               "
+        " ░███░░░░░███░███      ░███░███░░░░░███░███      ░███    ░███               "
+        " ░███    ░███░░███     ███ ░███    ░███░░███     ███     ░███               "
+        " █████   █████░░░███████░  ███████████  ░░░███████░      █████              "
+        "░░░░░   ░░░░░   ░░░░░░░   ░░░░░░░░░░░     ░░░░░░░       ░░░░░               "
+        "  █████████     ███████   ███████████ ███████████                           "
+        " ███░░░░░███  ███░░░░░███░░███░░░░░░█░█░░░███░░░█                           "
+        "░███    ░░░  ███     ░░███░███   █ ░ ░   ░███  ░                            "
+        "░░█████████ ░███      ░███░███████       ░███                               "
+        " ░░░░░░░░███░███      ░███░███░░░█       ░███                               "
+        " ███    ░███░░███     ███ ░███  ░        ░███                               "
+        "░░█████████  ░░░███████░  █████          █████                              "
     )
     
     # Display each line with scrolling effect
@@ -600,6 +608,11 @@ log_error() {
     echo "$msg" | tee -a "$LOGFILE" >&2
 }
 
+log_warning() {
+    local msg="[$(date +'%Y-%m-%d %H:%M:%S')] WARNING: $*"
+    echo "$msg" | tee -a "$LOGFILE" >&2
+}
+
 # Ensure whiptail is available
 ensure_deps() {
     log "Checking dependencies..."
@@ -628,7 +641,7 @@ ui_msg() {
 }
 
 ui_info() {
-    whiptail --title "$1" --msgbox "$2" 20 80
+    whiptail --title "$1" --msgbox "$2" 30 100 --scrolltext
 }
 
 ui_yesno() {
@@ -707,30 +720,67 @@ get_available_methods() {
         methods+=("$base_name" "$desc")
     fi
     
-    # Check for alternative methods in preferred order: APT → Snap → Flatpak → Custom
-    for variant in "${base_name}-deb" "${base_name}-snap" "${base_name}-flatpak"; do
+    # Check for alternative methods in preferred order: APT → Snap → Flatpak → Deb
+    # Prefer repository-backed installs (APT/Snap) before Flatpak and standalone Deb
+    for variant in "${base_name}-snap" "${base_name}-flatpak" "${base_name}-deb"; do
         if [[ -n "${PACKAGES[$variant]:-}" ]]; then
             local desc="${PKG_DESC[$variant]}"
+            # Annotate snap variants if they require classic confinement
+            if [[ "$variant" == "${base_name}-snap" ]]; then
+                local snap_pkg="${PACKAGES[$variant]}"
+                if [[ -n "$snap_pkg" ]] && requires_classic_snap "$snap_pkg"; then
+                    desc+=" [classic confinement]"
+                fi
+            fi
             methods+=("$variant" "$desc")
         fi
     done
     
-    # Special cases for apps with different naming patterns
+    # Special cases for apps with different naming patterns (avoid duplicates)
     case "$base_name" in
         "vscode")
             if [[ -n "${PACKAGES[vscode-snap]:-}" ]]; then
-                methods+=("vscode-snap" "${PKG_DESC[vscode-snap]}")
+                local found=0
+                for ((i=0; i<${#methods[@]}; i+=2)); do
+                    [[ "${methods[i]}" == "vscode-snap" ]] && found=1 && break
+                done
+                if [[ $found -eq 0 ]]; then
+                    local desc="${PKG_DESC[vscode-snap]}"
+                    local snap_pkg="${PACKAGES[vscode-snap]}"
+                    if [[ -n "$snap_pkg" ]] && requires_classic_snap "$snap_pkg"; then
+                        desc+=" [classic confinement]"
+                    fi
+                    methods+=("vscode-snap" "$desc")
+                fi
             fi
             if [[ -n "${PACKAGES[vscode-flatpak]:-}" ]]; then
-                methods+=("vscode-flatpak" "${PKG_DESC[vscode-flatpak]}")
+                local found=0
+                for ((i=0; i<${#methods[@]}; i+=2)); do
+                    [[ "${methods[i]}" == "vscode-flatpak" ]] && found=1 && break
+                done
+                if [[ $found -eq 0 ]]; then
+                    methods+=("vscode-flatpak" "${PKG_DESC[vscode-flatpak]}")
+                fi
             fi
             ;;
         "discord")
-            if [[ -n "${PACKAGES[discord-deb]:-}" ]]; then
-                methods+=("discord-deb" "${PKG_DESC[discord-deb]}")
-            fi
             if [[ -n "${PACKAGES[discord-flatpak]:-}" ]]; then
-                methods+=("discord-flatpak" "${PKG_DESC[discord-flatpak]}")
+                local found=0
+                for ((i=0; i<${#methods[@]}; i+=2)); do
+                    [[ "${methods[i]}" == "discord-flatpak" ]] && found=1 && break
+                done
+                if [[ $found -eq 0 ]]; then
+                    methods+=("discord-flatpak" "${PKG_DESC[discord-flatpak]}")
+                fi
+            fi
+            if [[ -n "${PACKAGES[discord-deb]:-}" ]]; then
+                local found=0
+                for ((i=0; i<${#methods[@]}; i+=2)); do
+                    [[ "${methods[i]}" == "discord-deb" ]] && found=1 && break
+                done
+                if [[ $found -eq 0 ]]; then
+                    methods+=("discord-deb" "${PKG_DESC[discord-deb]}")
+                fi
             fi
             ;;
     esac
@@ -804,12 +854,18 @@ is_apt_installed() {
         return 1
     fi
     
-    # Use cache for fast lookup
+    # Use cache for fast lookup first
     if [[ -n "${INSTALLED_CACHE["apt:$pkg"]:-}" ]]; then
         return 0
-    else
-        return 1
     fi
+
+    # Fallback to direct dpkg check when cache is missing
+    if dpkg -l "$pkg" 2>/dev/null | grep -q "^ii"; then
+        INSTALLED_CACHE["apt:$pkg"]=1
+        return 0
+    fi
+
+    return 1
 }
 
 is_snap_installed() {
@@ -1002,9 +1058,9 @@ PKG_DESC[rustup]="Rust toolchain installer [CURL]"
 PKG_METHOD[rustup]="custom"
 PKG_CATEGORY[rustup]="dev"
 
-PACKAGES[poetry]="poetry"
-PKG_DESC[poetry]="Modern Python dependency manager [PIP]"
-PKG_METHOD[poetry]="custom"
+PACKAGES[poetry]="python3-poetry"
+PKG_DESC[poetry]="Modern Python dependency manager [APT]"
+PKG_METHOD[poetry]="apt"
 PKG_CATEGORY[poetry]="dev"
 
 PACKAGES[pipx]="pipx"
@@ -1023,8 +1079,8 @@ PKG_METHOD[bun]="custom"
 PKG_CATEGORY[bun]="dev"
 
 PACKAGES[mkdocs]="mkdocs"
-PKG_DESC[mkdocs]="Static site generator for docs (dev favorite) [PIP]"
-PKG_METHOD[mkdocs]="custom"
+PKG_DESC[mkdocs]="Static site generator for docs (dev favorite) [APT]"
+PKG_METHOD[mkdocs]="apt"
 PKG_CATEGORY[mkdocs]="dev"
 
 PACKAGES[insomnia]="insomnia"
@@ -1686,6 +1742,12 @@ PKG_METHOD[localsend]="snap"
 PKG_CATEGORY[localsend]="communication"
 PKG_DEPS[localsend]="snapd"
 
+# SNAP MANAGER (dependency for snap apps)
+PACKAGES[snapd]="snapd"
+PKG_DESC[snapd]="Snap daemon and CLI [APT]"
+PKG_METHOD[snapd]="apt"
+PKG_CATEGORY[snapd]="system"
+
 # SNAP APPS
 PACKAGES[spotify]="spotify"
 PKG_DESC[spotify]="Music streaming service [SNP]"
@@ -1767,7 +1829,7 @@ PKG_CATEGORY[seafile]="cloud"
 
 # TERMINALS
 PACKAGES[warp-terminal]="warp-terminal"
-PKG_DESC[warp-terminal]="Modern terminal with AI features [DEB]"
+PKG_DESC[warp-terminal]="Modern terminal with AI features [APT]"
 PKG_METHOD[warp-terminal]="custom"
 PKG_CATEGORY[warp-terminal]="terminals"
 
@@ -1907,10 +1969,7 @@ PKG_DESC[invokeai]="Stable Diffusion image generator [PYTHON]"
 PKG_METHOD[invokeai]="custom"
 PKG_CATEGORY[invokeai]="ai"
 
-PACKAGES[lmdeploy]="lmdeploy"
-PKG_DESC[lmdeploy]="Lightweight framework to serve LLMs efficiently [PIP]"
-PKG_METHOD[lmdeploy]="pip"
-PKG_CATEGORY[lmdeploy]="ai"
+ 
 
 PACKAGES[koboldcpp]="koboldcpp"
 PKG_DESC[koboldcpp]="LLM interface optimized for story and RP generation [BIN]"
@@ -1937,35 +1996,7 @@ PKG_DESC[kohya-ss-gui]="Fine-tune and train models with GUI [GIT]"
 PKG_METHOD[kohya-ss-gui]="custom"
 PKG_CATEGORY[kohya-ss-gui]="ai"
 
-PACKAGES[faster-whisper]="faster-whisper"
-PKG_DESC[faster-whisper]="Optimized Python Whisper with CTranslate2 [PIP]"
-PKG_METHOD[faster-whisper]="pip"
-PKG_CATEGORY[faster-whisper]="ai"
 
-PACKAGES[whisperx]="whisperx"
-PKG_DESC[whisperx]="Whisper with speaker diarization support [PIP]"
-PKG_METHOD[whisperx]="pip"
-PKG_CATEGORY[whisperx]="ai"
-
-PACKAGES[coqui-stt]="coqui-stt"
-PKG_DESC[coqui-stt]="Open-source speech-to-text engine [PIP]"
-PKG_METHOD[coqui-stt]="pip"
-PKG_CATEGORY[coqui-stt]="ai"
-
-PACKAGES[piper-tts]="piper-tts"
-PKG_DESC[piper-tts]="Modern local text-to-speech by Rhasspy [PIP]"
-PKG_METHOD[piper-tts]="pip"
-PKG_CATEGORY[piper-tts]="ai"
-
-PACKAGES[mimic3]="mimic3"
-PKG_DESC[mimic3]="Neural voice synthesis by Mycroft AI [PIP]"
-PKG_METHOD[mimic3]="pip"
-PKG_CATEGORY[mimic3]="ai"
-
-PACKAGES[coqui-tts]="coqui-tts"
-PKG_DESC[coqui-tts]="Deep-learning TTS with voice cloning [PIP]"
-PKG_METHOD[coqui-tts]="pip"
-PKG_CATEGORY[coqui-tts]="ai"
 
 PACKAGES[ffmpeg]="ffmpeg"
 PKG_DESC[ffmpeg]="Complete multimedia processing toolkit [APT]"
@@ -1973,8 +2004,8 @@ PKG_METHOD[ffmpeg]="apt"
 PKG_CATEGORY[ffmpeg]="video"
 
 PACKAGES[yt-dlp]="yt-dlp"
-PKG_DESC[yt-dlp]="Modern YouTube/media downloader (youtube-dl fork) [PIP]"
-PKG_METHOD[yt-dlp]="custom"
+PKG_DESC[yt-dlp]="Modern YouTube/media downloader (youtube-dl fork) [APT]"
+PKG_METHOD[yt-dlp]="apt"
 PKG_CATEGORY[yt-dlp]="video"
 
 PACKAGES[freetube]="freetube"
@@ -2216,6 +2247,150 @@ PKG_METHOD[n8n]="custom"
 PKG_CATEGORY[n8n]="dev"
 
 # ==============================================================================
+# SINGLE BOARD COMPUTERS & MICROCONTROLLERS
+# ==============================================================================
+
+# Raspberry Pi Tools
+PACKAGES[rpi-imager]="rpi-imager"
+PKG_DESC[rpi-imager]="Official Raspberry Pi Imager for flashing OS images to SD cards [APT]"
+PKG_METHOD[rpi-imager]="apt"
+PKG_CATEGORY[rpi-imager]="sbc"
+
+PACKAGES[balena-etcher]="balena-etcher-electron"
+PKG_DESC[balena-etcher]="Flash OS images to SD cards and USB drives [DEB]"
+PKG_METHOD[balena-etcher]="custom"
+PKG_CATEGORY[balena-etcher]="sbc"
+
+PACKAGES[rpi-config]="raspi-config"
+PKG_DESC[rpi-config]="Raspberry Pi configuration tool [APT]"
+PKG_METHOD[rpi-config]="apt"
+PKG_CATEGORY[rpi-config]="sbc"
+
+# Arduino Development
+PACKAGES[arduino-ide]="arduino-ide"
+PKG_DESC[arduino-ide]="Arduino IDE 2.0 - Modern Arduino development environment [DEB]"
+PKG_METHOD[arduino-ide]="custom"
+PKG_CATEGORY[arduino-ide]="sbc"
+
+PACKAGES[arduino-cli]="arduino-cli"
+PKG_DESC[arduino-cli]="Arduino command line interface [BINARY]"
+PKG_METHOD[arduino-cli]="custom"
+PKG_CATEGORY[arduino-cli]="sbc"
+
+PACKAGES[platformio]="platformio"
+PKG_DESC[platformio]="Professional collaborative platform for embedded development [SNP]"
+PKG_METHOD[platformio]="snap"
+PKG_CATEGORY[platformio]="sbc"
+
+# ESP32/ESP8266 Tools
+PACKAGES[esptool]="python3-esptool"
+PKG_DESC[esptool]="ESP32/ESP8266 ROM bootloader utility [APT]"
+PKG_METHOD[esptool]="apt"
+PKG_CATEGORY[esptool]="sbc"
+
+PACKAGES[esp-idf]="esp-idf"
+PKG_DESC[esp-idf]="Espressif IoT Development Framework [CUSTOM]"
+PKG_METHOD[esp-idf]="custom"
+PKG_CATEGORY[esp-idf]="sbc"
+
+# Cross-compilation and embedded tools
+PACKAGES[gcc-arm-none-eabi]="gcc-arm-none-eabi"
+PKG_DESC[gcc-arm-none-eabi]="ARM Cortex-M and Cortex-R cross-compiler [APT]"
+PKG_METHOD[gcc-arm-none-eabi]="apt"
+PKG_CATEGORY[gcc-arm-none-eabi]="sbc"
+
+PACKAGES[openocd]="openocd"
+PKG_DESC[openocd]="Open On-Chip Debugger for ARM and other processors [APT]"
+PKG_METHOD[openocd]="apt"
+PKG_CATEGORY[openocd]="sbc"
+
+PACKAGES[gdb-multiarch]="gdb-multiarch"
+PKG_DESC[gdb-multiarch]="GNU Debugger with support for multiple architectures [APT]"
+PKG_METHOD[gdb-multiarch]="apt"
+PKG_CATEGORY[gdb-multiarch]="sbc"
+
+# Orange Pi and other SBC tools
+PACKAGES[sunxi-tools]="sunxi-tools"
+PKG_DESC[sunxi-tools]="Tools for Allwinner SoCs (Orange Pi, Banana Pi) [APT]"
+PKG_METHOD[sunxi-tools]="apt"
+PKG_CATEGORY[sunxi-tools]="sbc"
+
+PACKAGES[u-boot-tools]="u-boot-tools"
+PKG_DESC[u-boot-tools]="Das U-Boot bootloader utilities [APT]"
+PKG_METHOD[u-boot-tools]="apt"
+PKG_CATEGORY[u-boot-tools]="sbc"
+
+# Serial communication
+PACKAGES[minicom]="minicom"
+PKG_DESC[minicom]="Serial communication program [APT]"
+PKG_METHOD[minicom]="apt"
+PKG_CATEGORY[minicom]="sbc"
+
+PACKAGES[screen]="screen"
+PKG_DESC[screen]="Terminal multiplexer with serial support [APT]"
+PKG_METHOD[screen]="apt"
+PKG_CATEGORY[screen]="sbc"
+
+PACKAGES[picocom]="picocom"
+PKG_DESC[picocom]="Minimal dumb-terminal emulation program [APT]"
+PKG_METHOD[picocom]="apt"
+PKG_CATEGORY[picocom]="sbc"
+
+# GPIO and hardware interfacing
+PACKAGES[wiringpi]="wiringpi"
+PKG_DESC[wiringpi]="GPIO interface library for Raspberry Pi [APT]"
+PKG_METHOD[wiringpi]="apt"
+PKG_CATEGORY[wiringpi]="sbc"
+
+PACKAGES[rpi-gpio]="python3-rpi.gpio"
+PKG_DESC[rpi-gpio]="Python library for Raspberry Pi GPIO control [APT]"
+PKG_METHOD[rpi-gpio]="apt"
+PKG_CATEGORY[rpi-gpio]="sbc"
+
+PACKAGES[gpiozero]="python3-gpiozero"
+PKG_DESC[gpiozero]="Simple GPIO library for Raspberry Pi [APT]"
+PKG_METHOD[gpiozero]="apt"
+PKG_CATEGORY[gpiozero]="sbc"
+
+# Firmware and bootloader tools
+PACKAGES[dfu-util]="dfu-util"
+PKG_DESC[dfu-util]="Device Firmware Upgrade utilities [APT]"
+PKG_METHOD[dfu-util]="apt"
+PKG_CATEGORY[dfu-util]="sbc"
+
+PACKAGES[stlink-tools]="stlink-tools"
+PKG_DESC[stlink-tools]="STMicroelectronics STLink tools [APT]"
+PKG_METHOD[stlink-tools]="apt"
+PKG_CATEGORY[stlink-tools]="sbc"
+
+PACKAGES[avrdude]="avrdude"
+PKG_DESC[avrdude]="AVR microcontroller programmer [APT]"
+PKG_METHOD[avrdude]="apt"
+PKG_CATEGORY[avrdude]="sbc"
+
+# Circuit simulation and design
+PACKAGES[kicad]="kicad"
+PKG_DESC[kicad]="Electronic schematic and PCB design suite [APT]"
+PKG_METHOD[kicad]="apt"
+PKG_CATEGORY[kicad]="sbc"
+
+PACKAGES[fritzing]="fritzing"
+PKG_DESC[fritzing]="Electronic prototyping platform [APT]"
+PKG_METHOD[fritzing]="apt"
+PKG_CATEGORY[fritzing]="sbc"
+
+# IoT and networking tools
+PACKAGES[mosquitto-clients]="mosquitto-clients"
+PKG_DESC[mosquitto-clients]="MQTT client tools [APT]"
+PKG_METHOD[mosquitto-clients]="apt"
+PKG_CATEGORY[mosquitto-clients]="sbc"
+
+PACKAGES[node-red]="node-red"
+PKG_DESC[node-red]="Flow-based programming for IoT [NPM]"
+PKG_METHOD[node-red]="npm"
+PKG_CATEGORY[node-red]="sbc"
+
+# ==============================================================================
 # ALTERNATIVE INSTALLATION METHODS
 # ==============================================================================
 # Apps that have multiple installation options - users can choose their preferred method
@@ -2329,10 +2504,6 @@ PKG_DESC[webcamize]="Webcam effects and virtual camera tool [APT]"
 PKG_METHOD[webcamize]="apt"
 PKG_CATEGORY[webcamize]="graphics"
 
-PACKAGES[durdraw]="durdraw"
-PKG_DESC[durdraw]="ASCII art drawing and animation tool [PIP]"
-PKG_METHOD[durdraw]="pip"
-PKG_CATEGORY[durdraw]="graphics"
 
 PACKAGES[pastel]="pastel"
 PKG_DESC[pastel]="Command-line tool for color manipulation and palette generation [APT]"
@@ -2393,8 +2564,8 @@ PKG_METHOD[ag]="apt"
 PKG_CATEGORY[ag]="utilities"
 
 PACKAGES[thefuck]="thefuck"
-PKG_DESC[thefuck]="Corrects errors in previous console commands [PIP]"
-PKG_METHOD[thefuck]="pip"
+PKG_DESC[thefuck]="Corrects errors in previous console commands [APT]"
+PKG_METHOD[thefuck]="apt"
 PKG_CATEGORY[thefuck]="utilities"
 
 PACKAGES[lazygit]="lazygit"
@@ -3874,6 +4045,7 @@ CATEGORIES=(
     "terminals:Terminals"
     "gaming-platforms:Gaming Platforms"
     "gaming-emulators:Gaming Emulators"
+    "sbc:Single Board Computers & Microcontrollers"
 )
 
 # Category hotkey mappings (A-Z)
@@ -3903,7 +4075,8 @@ declare -A CATEGORY_HOTKEYS=(
     ["terminals"]="W"
     ["gaming-platforms"]="X"
     ["gaming-emulators"]="Y"
-    # Note: Z is reserved for back navigation in submenus
+    ["sbc"]="Z"
+    # Note: Back navigation in submenus now uses 'B' or 'Esc'
 )
 
 # ==============================================================================
@@ -3949,6 +4122,59 @@ remove_apt_package() {
     fi
 }
 
+# Ensure snapd service and CLI are ready before any snap installation
+ensure_snapd_ready() {
+    log "Ensuring snapd is installed and ready"
+    if ! dpkg-query -W snapd &>/dev/null; then
+        log "snapd not installed; installing via APT"
+        apt_update
+        if ! sudo apt-get install -y --no-install-recommends snapd 2>&1 | tee -a "$LOGFILE"; then
+            log_error "Failed to install snapd"
+            return 1
+        fi
+    fi
+
+    # Ensure key services and socket are enabled and running
+    if command -v systemctl &>/dev/null; then
+        sudo systemctl enable --now snapd.socket 2>/dev/null || true
+        sudo systemctl enable --now snapd 2>/dev/null || true
+        # AppArmor is commonly required for snaps on Ubuntu
+        sudo systemctl enable --now apparmor 2>/dev/null || true
+    fi
+
+    # Ensure /snap symlink exists on systems where it's missing
+    if [[ ! -e /snap ]]; then
+        sudo ln -sf /var/lib/snapd/snap /snap 2>/dev/null || true
+    fi
+
+    # Wait briefly for snap daemon to be ready
+    if command -v snap &>/dev/null; then
+        sudo snap wait system seed.loaded 2>/dev/null || sleep 2
+        snap version 2>/dev/null | tee -a "$LOGFILE" || true
+    fi
+    log "snapd is ready"
+}
+
+requires_classic_snap() {
+    local pkg="$1"
+    if [[ -z "$pkg" ]]; then
+        return 1
+    fi
+    # Known snaps that use classic confinement (common IDEs/editors)
+    case "$pkg" in
+        code|code-insiders|ghostty|sublime-text|pycharm-community|pycharm-professional|intellij-idea-community|intellij-idea-ultimate|webstorm|clion|goland|rider|rubymine|datagrip|phpstorm|android-studio|flutter)
+            return 0
+            ;;
+    esac
+    # Dynamic check via snap info when available
+    if command -v snap &>/dev/null; then
+        if snap info "$pkg" 2>/dev/null | awk -F: '/^[[:space:]]*confinement/{print $2}' | grep -qi 'classic'; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
 install_snap_package() {
     local pkg="$1"
     log "Installing $pkg via Snap..."
@@ -3966,19 +4192,15 @@ install_snap_package() {
         log "Warning: Snap system not fully ready, proceeding anyway..."
     }
     
-    # Packages that require classic confinement
-    case "$pkg" in
-        ghostty)
-            log "Installing $pkg with classic confinement..."
-            timeout 300 sudo snap install "$pkg" --classic 2>&1 | tee -a "$LOGFILE"
-            local exit_code=${PIPESTATUS[0]}
-            ;;
-        *)
-            log "Installing $pkg..."
-            timeout 300 sudo snap install "$pkg" 2>&1 | tee -a "$LOGFILE"
-            local exit_code=${PIPESTATUS[0]}
-            ;;
-    esac
+    if requires_classic_snap "$pkg"; then
+        log "Installing $pkg with classic confinement..."
+        timeout 300 sudo snap install "$pkg" --classic 2>&1 | tee -a "$LOGFILE"
+        local exit_code=${PIPESTATUS[0]}
+    else
+        log "Installing $pkg..."
+        timeout 300 sudo snap install "$pkg" 2>&1 | tee -a "$LOGFILE"
+        local exit_code=${PIPESTATUS[0]}
+    fi
     
     # Check installation result
     if [ $exit_code -eq 124 ]; then
@@ -4036,26 +4258,16 @@ remove_npm_package() {
 
 install_pip_package() {
     local pkg="$1"
-    log "Installing $pkg via pip..."
-    
-    # Ensure Python3 and pip are installed
-    if ! command -v pip3 >/dev/null 2>&1; then
-        ui_msg "Python3 Required" "Installing Python3 and pip first...\n\n⏳ This process is automatic - please wait..."
-        apt_update
-        install_apt_package "python3-pip"
-        if [[ $? -ne 0 ]]; then
-            log_error "Failed to install Python3/pip prerequisite"
-            return 1
-        fi
-    fi
-    
-    pip3 install --user "$pkg" 2>&1 | tee -a "$LOGFILE"
+    log "Pip installations are disabled by policy"
+    ui_msg "Pip Install Disabled" "Installing $pkg via pip is disabled. Please use APT, SNAP, FLATPAK, or a supported method."
+    return 1
 }
 
 remove_pip_package() {
     local pkg="$1"
-    log "Removing $pkg via pip..."
-    pip3 uninstall -y "$pkg" 2>/dev/null || true
+    log "Pip removals are disabled by policy"
+    ui_msg "Pip Removal Disabled" "Removing $pkg via pip is disabled. Use the appropriate package manager if installed there."
+    return 1
 }
 
 install_cargo_package() {
@@ -4097,6 +4309,20 @@ install_docker() {
     # Remove old versions
     sudo apt-get remove -y docker docker-engine docker.io containerd runc 2>/dev/null || true
     
+    # Neutralize duplicate sources/keys that may conflict
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'download\.docker\.com/linux/ubuntu' "$f"; then
+            sudo rm -f "$f"
+            log "Removed conflicting Docker source list: $f"
+        fi
+    done
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ docker ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
+
     # Add Docker repository
     sudo install -m 0755 -d /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -4136,6 +4362,12 @@ remove_docker() {
     
     sudo rm -f /etc/apt/sources.list.d/docker.list
     sudo rm -f /etc/apt/keyrings/docker.gpg
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ docker ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
 }
 
 install_minikube() {
@@ -4234,6 +4466,21 @@ remove_lazydocker() {
 install_nodejs() {
     log "Installing Node.js ${NODE_LTS} from NodeSource..."
     
+    # Neutralize duplicate sources/keys that may conflict
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'deb\.nodesource\.com' "$f"; then
+            sudo rm -f "$f"
+            log "Removed conflicting NodeSource source list: $f"
+        fi
+    done
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ nodesource ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
+    sudo rm -f /usr/share/keyrings/nodesource.gpg /etc/apt/keyrings/nodesource.gpg
+
     curl -fsSL https://deb.nodesource.com/setup_${NODE_LTS}.x | sudo -E bash -
     apt_update
     install_apt_package "nodejs"
@@ -4244,10 +4491,33 @@ install_nodejs() {
 remove_nodejs() {
     remove_apt_package "nodejs"
     sudo rm -f /etc/apt/sources.list.d/nodesource.list
+    sudo rm -f /usr/share/keyrings/nodesource.gpg /etc/apt/keyrings/nodesource.gpg
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ nodesource ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
 }
 
 install_vscode() {
     log "Installing VS Code from Microsoft repository..."
+    
+    # Neutralize duplicate sources/keys that may conflict
+    # Remove any vendor key in trusted.gpg.d
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ microsoft ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
+    # Remove any existing sources pointing to the Microsoft Code repo
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'packages\.microsoft\.com/.*/code' "$f"; then
+            sudo rm -f "$f"
+            log "Removed conflicting Microsoft source list: $f"
+        fi
+    done
     
     wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/packages.microsoft.gpg > /dev/null
     echo "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list
@@ -4262,10 +4532,31 @@ remove_vscode() {
     remove_apt_package "code"
     sudo rm -f /etc/apt/sources.list.d/vscode.list
     sudo rm -f /usr/share/keyrings/packages.microsoft.gpg
+    # Clean up any vendor key left in trusted.gpg.d
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ microsoft ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
 }
 
 install_brave() {
     log "Installing Brave browser..."
+    
+    # Neutralize duplicate sources/keys that may conflict
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ brave ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'brave-browser-apt-release\.s3\.brave\.com' "$f"; then
+            sudo rm -f "$f"
+            log "Removed conflicting Brave source list: $f"
+        fi
+    done
     
     sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
     echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
@@ -4280,10 +4571,37 @@ remove_brave() {
     remove_apt_package "brave-browser"
     sudo rm -f /etc/apt/sources.list.d/brave-browser-release.list
     sudo rm -f /usr/share/keyrings/brave-browser-archive-keyring.gpg
+    # Clean up any vendor key or duplicate sources
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ brave ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'brave-browser-apt-release\.s3\.brave\.com' "$f"; then
+            sudo rm -f "$f"
+            log "Removed Brave source list: $f"
+        fi
+    done
 }
 
 install_sublime() {
     log "Installing Sublime Text..."
+    
+    # Neutralize duplicate sources/keys that may conflict
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ sublime ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'download\.sublimetext\.com' "$f"; then
+            sudo rm -f "$f"
+            log "Removed conflicting Sublime source list: $f"
+        fi
+    done
     
     wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/sublimehq-archive.gpg > /dev/null
     echo "deb [signed-by=/usr/share/keyrings/sublimehq-archive.gpg] https://download.sublimetext.com/ apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
@@ -4298,23 +4616,45 @@ remove_sublime() {
     remove_apt_package "sublime-text"
     sudo rm -f /etc/apt/sources.list.d/sublime-text.list
     sudo rm -f /usr/share/keyrings/sublimehq-archive.gpg
+    # Clean up any vendor key
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ sublime ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
 }
 
 install_warp() {
     log "Installing Warp terminal..."
     
-    # Add Warp's official GPG key and repository
+    # Normalize/clean any conflicting Warp repo entries and keys first
+    # Remove vendor key that may conflict with our canonical keyring path
+    if [[ -f "/etc/apt/trusted.gpg.d/warpdotdev.gpg" ]]; then
+        sudo rm -f "/etc/apt/trusted.gpg.d/warpdotdev.gpg"
+        log "Removed vendor key: /etc/apt/trusted.gpg.d/warpdotdev.gpg"
+    fi
+
+    # Remove any existing sources that point to releases.warp.dev to avoid duplicate Signed-By entries
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'releases\.warp\.dev/.*/deb' "$f"; then
+            sudo rm -f "$f"
+            log "Removed conflicting Warp source list: $f"
+        fi
+    done
+
+    # Add Warp's official GPG key and our canonical repository entry
     sudo mkdir -p /usr/share/keyrings
     if ! wget -qO- https://releases.warp.dev/linux/keys/warp.asc | sudo gpg --dearmor -o /usr/share/keyrings/warp-archive-keyring.gpg; then
         log_error "Failed to add Warp GPG key"
         return 1
     fi
-    
-    # Add Warp repository
+
     echo "deb [signed-by=/usr/share/keyrings/warp-archive-keyring.gpg] https://releases.warp.dev/linux/deb stable main" | sudo tee /etc/apt/sources.list.d/warp-terminal.list > /dev/null
-    
+    log "Added Warp source: /etc/apt/sources.list.d/warp-terminal.list"
+
     # Update package list and install
-    sudo apt-get update -qq
+    apt_update
     if install_apt_package "warp-terminal"; then
         ui_msg "Warp Installed" "Warp terminal installed successfully."
     else
@@ -4325,8 +4665,15 @@ install_warp() {
 
 remove_warp() {
     remove_apt_package "warp-terminal"
-    sudo rm -f /etc/apt/sources.list.d/warp-terminal.list
+    # Clean up both our canonical repo and any vendor leftovers
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'releases\.warp\.dev/.*/deb' "$f"; then
+            sudo rm -f "$f"
+            log "Removed Warp source list: $f"
+        fi
+    done
     sudo rm -f /usr/share/keyrings/warp-archive-keyring.gpg
+    sudo rm -f /etc/apt/trusted.gpg.d/warpdotdev.gpg
 }
 
 install_ollama() {
@@ -4352,25 +4699,25 @@ remove_ollama() {
 }
 
 install_yt-dlp() {
-    log "Installing yt-dlp..."
-    
-    # Install via pip for latest version
-    if command -v pip3 >/dev/null 2>&1; then
-        if pip3 install --user yt-dlp; then
-            ui_msg "yt-dlp Installed" "yt-dlp YouTube downloader installed successfully."
-        else
-            log_error "Failed to install yt-dlp via pip"
-            return 1
-        fi
+    log "Installing yt-dlp via apt..."
+    if sudo apt-get update && sudo apt-get install -y yt-dlp; then
+        ui_msg "yt-dlp Installed" "yt-dlp YouTube downloader installed successfully via apt."
+        return 0
     else
-        log_error "pip3 not found. Please install Python3 and pip first."
+        log_error "Failed to install yt-dlp via apt"
         return 1
     fi
 }
 
 remove_yt-dlp() {
-    log "Removing yt-dlp..."
-    pip3 uninstall -y yt-dlp 2>/dev/null || true
+    log "Removing yt-dlp via apt..."
+    if sudo apt-get remove -y yt-dlp; then
+        ui_msg "yt-dlp Removed" "yt-dlp removed successfully via apt."
+        return 0
+    else
+        log_error "Failed to remove yt-dlp via apt"
+        return 1
+    fi
 }
 
 install_invidious() {
@@ -4567,6 +4914,20 @@ remove_discord-deb() {
 install_plex() {
     log "Installing Plex Media Server..."
     
+    # Neutralize duplicate sources/keys
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'downloads\.plex\.tv/repo/deb' "$f"; then
+            sudo rm -f "$f"
+            log "Removed conflicting Plex source list: $f"
+        fi
+    done
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ plex ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
+    
     # Add Plex repository key
     curl https://downloads.plex.tv/plex-keys/PlexSign.key | sudo apt-key add -
     
@@ -4679,6 +5040,8 @@ remove_lm-studio() {
 
 install_text-generation-webui() {
     log "Installing Text Generation WebUI..."
+    ui_msg "Python/Pip Disabled" "Text Generation WebUI requires Python/pip which are disabled by policy. Please use a non-Python alternative."
+    return 1
     
     # Clone the repository
     local install_dir="/opt/text-generation-webui"
@@ -4755,6 +5118,8 @@ remove_whisper-cpp() {
 
 install_comfyui() {
     log "Installing ComfyUI..."
+    ui_msg "Python/Pip Disabled" "ComfyUI requires Python/pip which are disabled by policy. Please use a non-Python alternative."
+    return 1
     
     # Clone ComfyUI repository
     local install_dir="/opt/ComfyUI"
@@ -4789,6 +5154,8 @@ remove_comfyui() {
 
 install_invokeai() {
     log "Installing InvokeAI..."
+    ui_msg "Python/Pip Disabled" "InvokeAI requires Python/pip which are disabled by policy. Please use a non-Python alternative."
+    return 1
     
     # Install InvokeAI via pip
     if pip3 install invokeai[xformers] --upgrade 2>/dev/null; then
@@ -5281,6 +5648,20 @@ EOF
 install_bruno() {
     log "Installing Bruno API client..."
     
+    # Neutralize duplicate sources/keys that may conflict
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'debian\.usebruno\.com' "$f"; then
+            sudo rm -f "$f"
+            log "Removed conflicting Bruno source list: $f"
+        fi
+    done
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ bruno|usebruno ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
+
     # Create keyrings directory
     sudo mkdir -p /etc/apt/keyrings
     
@@ -5312,6 +5693,12 @@ remove_bruno() {
     # Remove repository and key
     sudo rm -f /etc/apt/sources.list.d/bruno.list
     sudo rm -f /etc/apt/keyrings/bruno.gpg
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ bruno|usebruno ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
     
     # Update package list
     sudo apt update
@@ -5357,6 +5744,20 @@ remove_yaak() {
 install_caddy() {
     log "Installing Caddy web server..."
     
+    # Neutralize duplicate sources/keys
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'dl\.cloudsmith\.io/public/caddy/stable' "$f"; then
+            sudo rm -f "$f"
+            log "Removed conflicting Caddy source list: $f"
+        fi
+    done
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ caddy|cloudsmith ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
+
     # Install dependencies
     sudo apt update
     sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
@@ -5378,6 +5779,12 @@ remove_caddy() {
     remove_apt_package "caddy"
     sudo rm -f /etc/apt/sources.list.d/caddy-stable.list
     sudo rm -f /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+    for k in /etc/apt/trusted.gpg.d/*.gpg; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ caddy|cloudsmith ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
 }
 
 install_ngrok() {
@@ -5391,10 +5798,26 @@ install_ngrok() {
         *) log_error "Unsupported architecture: $arch"; return 1 ;;
     esac
     
-    # Download and install ngrok
-    curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
-    echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
-    sudo apt update
+    # Neutralize duplicate sources/keys that may conflict
+    for f in /etc/apt/sources.list.d/*.list; do
+        if [[ -f "$f" ]] && grep -qE 'ngrok-agent\.s3\.amazonaws\.com' "$f"; then
+            sudo rm -f "$f"
+            log "Removed conflicting ngrok source list: $f"
+        fi
+    done
+    for k in /etc/apt/trusted.gpg.d/*; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ ngrok ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
+
+    # Add canonical keyring and repository with signed-by
+    sudo mkdir -p /usr/share/keyrings
+    curl -fsSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo gpg --dearmor -o /usr/share/keyrings/ngrok-archive-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/ngrok-archive-keyring.gpg] https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+    
+    apt_update
     install_apt_package "ngrok"
     
     ui_msg "ngrok Installed" "ngrok installed successfully. Run 'ngrok config add-authtoken <token>' to authenticate."
@@ -5403,7 +5826,13 @@ install_ngrok() {
 remove_ngrok() {
     remove_apt_package "ngrok"
     sudo rm -f /etc/apt/sources.list.d/ngrok.list
-    sudo rm -f /etc/apt/trusted.gpg.d/ngrok.asc
+    sudo rm -f /usr/share/keyrings/ngrok-archive-keyring.gpg
+    for k in /etc/apt/trusted.gpg.d/*; do
+        if [[ -f "$k" ]] && [[ "$(basename "$k")" =~ ngrok ]]; then
+            sudo rm -f "$k"
+            log "Removed vendor key: $k"
+        fi
+    done
 }
 
 install_mailhog() {
@@ -5478,6 +5907,8 @@ remove_rustup() {
 # AI Image Generation Tools
 install_automatic1111() {
     log "Installing Automatic1111 Stable Diffusion WebUI..."
+    ui_msg "Python/Pip Disabled" "Automatic1111 requires Python/pip which are disabled by policy. Please use a non-Python alternative."
+    return 1
     
     local install_dir="$HOME/automatic1111"
     
@@ -5513,6 +5944,8 @@ remove_automatic1111() {
 
 install_fooocus() {
     log "Installing Fooocus Stable Diffusion frontend..."
+    ui_msg "Python/Pip Disabled" "Fooocus requires Python/pip which are disabled by policy. Please use a non-Python alternative."
+    return 1
     
     local install_dir="$HOME/fooocus"
     
@@ -5550,6 +5983,8 @@ remove_fooocus() {
 
 install_sd-next() {
     log "Installing SD.Next (Stable Diffusion Next)..."
+    ui_msg "Python/Pip Disabled" "SD.Next requires Python/pip which are disabled by policy. Please use a non-Python alternative."
+    return 1
     
     local install_dir="$HOME/sd-next"
     
@@ -5585,6 +6020,8 @@ remove_sd-next() {
 
 install_kohya-ss-gui() {
     log "Installing Kohya-ss GUI for model training..."
+    ui_msg "Python/Pip Disabled" "Kohya-ss GUI requires Python/pip which are disabled by policy. Please use a non-Python alternative."
+    return 1
     
     local install_dir="$HOME/kohya-ss"
     
@@ -5617,6 +6054,8 @@ remove_kohya-ss-gui() {
     rm -rf "$HOME/kohya-ss"
     rm -f ~/.local/share/applications/kohya-ss.desktop
 }
+
+
 
 # Shell Enhancement Tools
 install_oh-my-zsh() {
@@ -5760,28 +6199,25 @@ remove_zoxide() {
 }
 
 install_poetry() {
-    log "Installing Poetry Python dependency manager..."
-    
-    # Install via pip3
-    if pip3 install --user poetry; then
-        # Add to PATH if not already there
-        if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc 2>/dev/null || true
-        fi
-        ui_msg "Poetry Installed" "Poetry Python dependency manager installed successfully via pip3."
+    log "Installing Poetry via apt..."
+    if sudo apt-get update && sudo apt-get install -y python3-poetry; then
+        ui_msg "Poetry Installed" "Poetry installed successfully via apt."
         return 0
     else
-        log_error "Failed to install Poetry"
+        log_error "Failed to install Poetry via apt"
         return 1
     fi
 }
 
 remove_poetry() {
-    log "Removing Poetry..."
-    pip3 uninstall -y poetry 2>/dev/null || true
-    log "Poetry removed successfully"
-    return 0
+    log "Removing Poetry via apt..."
+    if sudo apt-get remove -y python3-poetry; then
+        log "Poetry removed successfully via apt"
+        return 0
+    else
+        log_error "Failed to remove Poetry via apt"
+        return 1
+    fi
 }
 
 install_deno() {
@@ -5842,23 +6278,25 @@ remove_bun() {
 }
 
 install_mkdocs() {
-    log "Installing MkDocs static site generator..."
-    
-    # Install via pip3
-    if pip3 install --user mkdocs mkdocs-material; then
-        ui_msg "MkDocs Installed" "MkDocs static site generator installed successfully via pip3."
+    log "Installing MkDocs via apt..."
+    if sudo apt-get update && sudo apt-get install -y mkdocs; then
+        ui_msg "MkDocs Installed" "MkDocs installed successfully via apt."
         return 0
     else
-        log_error "Failed to install MkDocs"
+        log_error "Failed to install MkDocs via apt"
         return 1
     fi
 }
 
 remove_mkdocs() {
-    log "Removing MkDocs..."
-    pip3 uninstall -y mkdocs mkdocs-material 2>/dev/null || true
-    log "MkDocs removed successfully"
-    return 0
+    log "Removing MkDocs via apt..."
+    if sudo apt-get remove -y mkdocs; then
+        log "MkDocs removed successfully via apt"
+        return 0
+    else
+        log_error "Failed to remove MkDocs via apt"
+        return 1
+    fi
 }
 
 install_insomnia() {
@@ -6241,6 +6679,200 @@ install_dog() {
 }
 
 # ==============================================================================
+# SBC/MICROCONTROLLER CUSTOM INSTALLERS
+# ==============================================================================
+
+install_balena-etcher() {
+    log "Installing balenaEtcher..."
+    
+    local arch
+    case "$(uname -m)" in
+        x86_64) arch="x64" ;;
+        aarch64|arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture"; return 1 ;;
+    esac
+    
+    local latest_url=$(curl -s https://api.github.com/repos/balena-io/etcher/releases/latest | grep "browser_download_url.*${arch}.deb" | cut -d '"' -f 4)
+    
+    if [[ -z "$latest_url" ]]; then
+        log_error "Failed to get balenaEtcher download URL"
+        return 1
+    fi
+    
+    local temp_file="/tmp/balena-etcher.deb"
+    
+    if wget -O "$temp_file" "$latest_url" 2>/dev/null; then
+        sudo dpkg -i "$temp_file" || sudo apt-get install -f -y
+        rm -f "$temp_file"
+        log "balenaEtcher installed successfully"
+        return 0
+    else
+        log_error "Failed to download balenaEtcher"
+        return 1
+    fi
+}
+
+remove_balena-etcher() {
+    remove_apt_package "balena-etcher-electron"
+}
+
+install_arduino-ide() {
+    log "Installing Arduino IDE 2.0..."
+    
+    local arch
+    case "$(uname -m)" in
+        x86_64) arch="Linux_64bit" ;;
+        aarch64|arm64) arch="Linux_ARM64" ;;
+        *) log_error "Unsupported architecture"; return 1 ;;
+    esac
+    
+    local latest_url=$(curl -s https://api.github.com/repos/arduino/arduino-ide/releases/latest | grep "browser_download_url.*${arch}.zip" | cut -d '"' -f 4)
+    
+    if [[ -z "$latest_url" ]]; then
+        log_error "Failed to get Arduino IDE download URL"
+        return 1
+    fi
+    
+    local temp_file="/tmp/arduino-ide.zip"
+    local install_dir="/opt/arduino-ide"
+    
+    if wget -O "$temp_file" "$latest_url" 2>/dev/null; then
+        sudo rm -rf "$install_dir"
+        sudo mkdir -p "$install_dir"
+        sudo unzip -q "$temp_file" -d "$install_dir" --strip-components=1
+        sudo chmod +x "$install_dir/arduino-ide"
+        
+        # Create desktop entry
+        sudo tee /usr/share/applications/arduino-ide.desktop > /dev/null <<EOF
+[Desktop Entry]
+Name=Arduino IDE
+Comment=Arduino IDE 2.0
+Exec=$install_dir/arduino-ide
+Icon=$install_dir/resources/app/resources/icons/512x512.png
+Terminal=false
+Type=Application
+Categories=Development;Electronics;
+EOF
+        
+        # Create symlink
+        sudo ln -sf "$install_dir/arduino-ide" /usr/local/bin/arduino-ide
+        
+        rm -f "$temp_file"
+        log "Arduino IDE installed successfully"
+        return 0
+    else
+        log_error "Failed to download Arduino IDE"
+        return 1
+    fi
+}
+
+remove_arduino-ide() {
+    sudo rm -rf /opt/arduino-ide
+    sudo rm -f /usr/share/applications/arduino-ide.desktop
+    sudo rm -f /usr/local/bin/arduino-ide
+}
+
+install_arduino-cli() {
+    log "Installing Arduino CLI..."
+    
+    local arch
+    case "$(uname -m)" in
+        x86_64) arch="Linux_64bit" ;;
+        aarch64|arm64) arch="Linux_ARM64" ;;
+        armv7l) arch="Linux_ARMv7" ;;
+        *) log_error "Unsupported architecture"; return 1 ;;
+    esac
+    
+    local latest_url=$(curl -s https://api.github.com/repos/arduino/arduino-cli/releases/latest | grep "browser_download_url.*${arch}.tar.gz" | cut -d '"' -f 4)
+    
+    if [[ -z "$latest_url" ]]; then
+        log_error "Failed to get Arduino CLI download URL"
+        return 1
+    fi
+    
+    local temp_file="/tmp/arduino-cli.tar.gz"
+    
+    if wget -O "$temp_file" "$latest_url" 2>/dev/null; then
+        tar -xzf "$temp_file" -C /tmp/
+        sudo mv /tmp/arduino-cli /usr/local/bin/
+        sudo chmod +x /usr/local/bin/arduino-cli
+        rm -f "$temp_file"
+        log "Arduino CLI installed successfully"
+        return 0
+    else
+        log_error "Failed to download Arduino CLI"
+        return 1
+    fi
+}
+
+remove_arduino-cli() {
+    sudo rm -f /usr/local/bin/arduino-cli
+}
+
+install_esp-idf() {
+    log "Installing ESP-IDF..."
+    
+    local idf_path="$HOME/esp/esp-idf"
+    
+    # Install prerequisites
+    install_apt_package "git"
+    install_apt_package "wget"
+    install_apt_package "flex"
+    install_apt_package "bison"
+    install_apt_package "gperf"
+    install_apt_package "python3"
+    install_apt_package "python3-pip"
+    install_apt_package "python3-venv"
+    install_apt_package "cmake"
+    install_apt_package "ninja-build"
+    install_apt_package "ccache"
+    install_apt_package "libffi-dev"
+    install_apt_package "libssl-dev"
+    install_apt_package "dfu-util"
+    install_apt_package "libusb-1.0-0"
+    
+    # Clone ESP-IDF
+    mkdir -p "$HOME/esp"
+    if [[ -d "$idf_path" ]]; then
+        cd "$idf_path"
+        git pull
+    else
+        git clone --recursive https://github.com/espressif/esp-idf.git "$idf_path"
+    fi
+    
+    cd "$idf_path"
+    ./install.sh esp32
+    
+    # Add to shell profile
+    local shell_rc="$HOME/.bashrc"
+    [[ "$SHELL" == *"zsh"* ]] && shell_rc="$HOME/.zshrc"
+    
+    if ! grep -q "esp-idf/export.sh" "$shell_rc" 2>/dev/null; then
+        echo "# ESP-IDF" >> "$shell_rc"
+        echo "alias get_idf='. $idf_path/export.sh'" >> "$shell_rc"
+    fi
+    
+    ui_msg "ESP-IDF Installed" "ESP-IDF installed successfully. Run 'get_idf' to set up the environment, or restart your terminal."
+}
+
+remove_esp-idf() {
+    if ui_yesno "Remove ESP-IDF?" "This will remove ESP-IDF installation. Continue?"; then
+        rm -rf "$HOME/esp/esp-idf"
+        
+        # Remove from shell profile
+        local shell_rc="$HOME/.bashrc"
+        [[ "$SHELL" == *"zsh"* ]] && shell_rc="$HOME/.zshrc"
+        
+        if [[ -f "$shell_rc" ]]; then
+            sed -i '/# ESP-IDF/d' "$shell_rc"
+            sed -i '/get_idf=/d' "$shell_rc"
+        fi
+        
+        log "ESP-IDF removed"
+    fi
+}
+
+# ==============================================================================
 # BUNTAGE MANAGEMENT DISPATCHER
 # ==============================================================================
 
@@ -6267,6 +6899,10 @@ install_package() {
             install_result=$?
             ;;
         snap)
+            ensure_snapd_ready || {
+                ui_msg "snapd Not Ready" "snapd could not be prepared. Check logs at $LOGFILE."
+                install_result=1
+            }
             install_snap_package "$pkg"
             install_result=$?
             ;;
@@ -6275,8 +6911,8 @@ install_package() {
             install_result=$?
             ;;
         pip)
-            install_pip_package "$pkg"
-            install_result=$?
+            ui_msg "Pip Install Disabled" "Installing $name via pip is disabled. Please use APT, SNAP, FLATPAK, or a supported method."
+            install_result=1
             ;;
         cargo)
             install_cargo_package "$pkg"
@@ -6353,6 +6989,10 @@ install_package() {
                 cheat) install_cheat; install_result=$? ;;
                 broot) install_broot; install_result=$? ;;
                 dog) install_dog; install_result=$? ;;
+                balena-etcher) install_balena-etcher; install_result=$? ;;
+                arduino-ide) install_arduino-ide; install_result=$? ;;
+                arduino-cli) install_arduino-cli; install_result=$? ;;
+                esp-idf) install_esp-idf; install_result=$? ;;
                 *) log_error "Unknown custom installer: $name"; install_result=1 ;;
             esac
             ;;
@@ -6453,6 +7093,10 @@ remove_package() {
                 mergerfs) remove_mergerfs; remove_result=$? ;;
                 plex) remove_plex; remove_result=$? ;;
                 ums) remove_ums; remove_result=$? ;;
+                balena-etcher) remove_balena-etcher; remove_result=$? ;;
+                arduino-ide) remove_arduino-ide; remove_result=$? ;;
+                arduino-cli) remove_arduino-cli; remove_result=$? ;;
+                esp-idf) remove_esp-idf; remove_result=$? ;;
                 *) log_error "Unknown custom remover: $name"; remove_result=1 ;;
             esac
             ;;
@@ -6646,19 +7290,6 @@ show_category_menu() {
     local -A last_hotkey_selection
     local -A hotkey_categories
     
-    # Build reverse mapping of hotkeys to categories for cycling
-    for cat_id in "${!CATEGORY_HOTKEYS[@]}"; do
-        local hotkey="${CATEGORY_HOTKEYS[$cat_id]}"
-        if [[ -n "${hotkey_categories[$hotkey]:-}" ]]; then
-            hotkey_categories[$hotkey]="${hotkey_categories[$hotkey]} $cat_id"
-        else
-            hotkey_categories[$hotkey]="$cat_id"
-        fi
-    done
-    
-    # Add special Q hotkey handling for communication and quit
-    hotkey_categories["Q"]="communication quit"
-    
     # Start background cache refresh on first load
     refresh_cache_silent
     
@@ -6668,9 +7299,12 @@ show_category_menu() {
         
         # System management tools at the top
         log "Adding system management menu items..."
+        menu_items+=("cloudflare-setup" "(.Y.) Cloudflare Firewall Setup")
+        menu_items+=("essentials-setup" "(.Y.) First-Time Essentials Setup")
         menu_items+=("system-info" "(.Y.) System Information")
         menu_items+=("mirror-management" "(.Y.) Mirror Management")
         menu_items+=("database-management" "(.Y.) Database Management")
+        menu_items+=("swappiness" "(.Y.) Swappiness Tuning")
         menu_items+=("wordpress-setup" "(.Y.) WordPress Management")
         menu_items+=("keyboard-layout" "(.Y.) Keyboard Layout Configuration")
         menu_items+=("php-settings" "(.Y.) PHP Configuration")
@@ -6680,59 +7314,108 @@ show_category_menu() {
         menu_items+=("" "(_*_)")
         
         log "Processing categories array with ${#CATEGORIES[@]} entries"
+        # Build sortable array as name:id:installed:total for alphabetical ordering by name
+        local sortable_categories=()
         for entry in "${CATEGORIES[@]}"; do
             local cat_id="${entry%%:*}"
             local cat_name="${entry#*:}"
-            
+
             # Skip excluded categories
             if [[ -n "${EXCLUDED_CATEGORIES[$cat_id]:-}" ]]; then
                 log "Skipping excluded category: $cat_id"
                 continue
             fi
-            
+
             # Count installed buntages in category
             local total=0
             local installed=0
-            
+
             # Use a safer iteration method
             local package_names=()
             for name in "${!PACKAGES[@]}"; do
                 package_names+=("$name")
             done
-            
+
             for name in "${package_names[@]}"; do
                 local pkg_category="${PKG_CATEGORY[$name]:-}"
-                
                 if [[ "$pkg_category" == "$cat_id" ]]; then
                     total=$((total + 1))
-                    
-                    # Re-enable installation check with silent mode
                     if is_package_installed "$name" "true"; then
                         installed=$((installed + 1))
                     fi
                 fi
             done
-            
-            # Add refresh indicator if cache is still updating
-            local refresh_indicator=""
-            if ! is_cache_refresh_complete; then
-                refresh_indicator=" 🔄"
+
+            sortable_categories+=("$cat_name:$cat_id:$installed:$total")
+        done
+
+        # Sort categories alphabetically by display name
+        if [[ ${#sortable_categories[@]} -gt 0 ]]; then
+            mapfile -t sortable_categories < <(printf "%s\n" "${sortable_categories[@]}" | sort)
+        fi
+
+        # Build dynamic hotkeys based on an allowed set, skipping reserved letters
+        # Reserved: Q (Quit), Z (Back)
+        local -A dynamic_hotkeys=()
+        # Reset hotkey_categories for this render
+        hotkey_categories=()
+
+        local allowed_upper=(A B C D E F G H I J K L M N O P R S T U V W X Y)
+        local allowed_lower=(a b c d e f g h i j k l m n o p r s t u v w x y)
+        local index=0
+        for item in "${sortable_categories[@]}"; do
+            local rest="${item#*:}"
+            local cat_id="${rest%%:*}"
+            local letter=""
+            if (( index < ${#allowed_upper[@]} )); then
+                letter="${allowed_upper[$index]}"
+            else
+                local lower_index=$((index - ${#allowed_upper[@]}))
+                if (( lower_index < ${#allowed_lower[@]} )); then
+                    letter="${allowed_lower[$lower_index]}"
+                else
+                    # Fallback: cycle through allowed_upper again to ensure a tag exists
+                    letter="${allowed_upper[$((index % ${#allowed_upper[@]}))]}"
+                fi
             fi
-            
-            # Get hotkey for this category
-            local hotkey="${CATEGORY_HOTKEYS[$cat_id]:-}"
+            dynamic_hotkeys[$cat_id]="$letter"
+            hotkey_categories[$letter]="$cat_id"
+            index=$((index + 1))
+        done
+
+        # Add refresh indicator if cache is still updating
+        local refresh_indicator=""
+        if ! is_cache_refresh_complete; then
+            refresh_indicator=" 🔄"
+        fi
+
+        # Rebuild menu_items from sorted categories
+        for item in "${sortable_categories[@]}"; do
+            local cat_name="${item%%:*}"
+            local rest="${item#*:}"
+            local cat_id="${rest%%:*}"
+            local installed_total="${rest#*:}"
+            local installed="${installed_total%%:*}"
+            local total="${installed_total#*:}"
+
+            # Get dynamic hotkey for this category (A..Z based on sorted order)
+            local hotkey="${dynamic_hotkeys[$cat_id]:-}"
             local hotkey_display=""
             if [[ -n "$hotkey" ]]; then
                 hotkey_display="($hotkey) "
             fi
-            
-            menu_items+=("$cat_id" "${hotkey_display}$cat_name [$installed/$total installed]$refresh_indicator")
+
+            # Use the hotkey letter as the menu tag so typing the letter jumps
+            # directly to the row that displays that bracketed hotkey.
+            # The actual category id is recovered later via hotkey_categories.
+            menu_items+=("$hotkey" "${hotkey_display}$cat_name [$installed/$total installed]$refresh_indicator")
         done
         
         log "Adding additional menu items..."
         # System management tools at the top
         menu_items+=("" "(_*_)")
-        menu_items+=("quit" "(Q) Exit Installer")
+        # Map Quit to the displayed hotkey letter so pressing 'Q' jumps/selects it
+        menu_items+=("Q" "(Q) Exit Installer")
         
         log "Calling ui_menu with ${#menu_items[@]} menu items"
         log "Menu items array contents: ${menu_items[*]}"
@@ -6752,9 +7435,21 @@ show_category_menu() {
         fi
         
         case "$choice" in
-            quit|back|q) 
+            cloudflare-setup)
+                show_cloudflare_setup_menu || {
+                    log "ERROR: show_cloudflare_setup_menu failed"
+                    ui_msg "Error" "Failed to display Cloudflare setup menu. Please check the logs."
+                }
+                ;;
+            essentials-setup)
+                show_essentials_setup_menu || {
+                    log "ERROR: show_essentials_setup_menu failed"
+                    ui_msg "Error" "Failed to run First-Time Essentials setup. Please check the logs."
+                }
+                ;;
+            quit|back|q|Q) 
                 # Simple confirmation for quit
-                if [[ "$choice" == "quit" || "$choice" == "q" ]]; then
+                if [[ "$choice" == "quit" || "$choice" == "q" || "$choice" == "Q" ]]; then
                     if ui_yesno "Confirm Exit" "Are you sure you want to exit Ultrabunt?"; then
                         break
                     else
@@ -6806,6 +7501,12 @@ show_category_menu() {
                     ui_msg "Error" "Failed to display database management menu. Please check the logs."
                 }
                 ;;
+            swappiness)
+                show_swappiness_menu || {
+                    log "ERROR: show_swappiness_menu failed"
+                    ui_msg "Error" "Failed to display Swappiness tuning menu. Please check the logs."
+                }
+                ;;
             log-viewer)
                 show_log_viewer_menu || {
                     log "ERROR: show_log_viewer_menu failed"
@@ -6819,7 +7520,7 @@ show_category_menu() {
                 continue 
                 ;;
             *) 
-                # Handle A-Z hotkey cycling
+                # Handle A-Z hotkey selection
                 local upper_choice="${choice^^}"  # Convert to uppercase
                 
                 # Check if it's a valid hotkey (A-Y, excluding Z which is for back navigation)
@@ -6943,7 +7644,7 @@ show_buntage_list() {
         menu_items=("${sorted_items[@]}")
         
         menu_items+=("" "(_*_)")
-        menu_items+=("zback" "(Z) ← Back to Categories")
+        menu_items+=("zback" "(B) ← Back to Categories")
         
         local choice
         choice=$(ui_menu "$cat_name" \
@@ -6977,6 +7678,11 @@ show_buntage_actions() {
     
     while true; do
         local info="Buntage: $name\nDescription: $desc\nInstall Method: $method\nBuntage Name: $pkg\nStatus: $status"
+        if [[ "$method" == "snap" ]]; then
+            if requires_classic_snap "$pkg"; then
+                info+="\nNote: Snap uses classic confinement and will install with --classic"
+            fi
+        fi
         
         local menu_items=()
         
@@ -6989,7 +7695,7 @@ show_buntage_actions() {
             menu_items+=("info" "(.Y.) Show Detailed Info")
         fi
         
-        menu_items+=("zback" "(Z) ← Back to Buntage List")
+        menu_items+=("zback" "(B) ← Back to Buntage List")
         
         local choice
         choice=$(ui_menu "Manage: $name" "$info" $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}")
@@ -7340,10 +8046,698 @@ show_terminal_info() {
     ui_info "Terminal Information" "$info"
 }
 
-show_system_info() {
-    log "Starting show_system_info function"
+show_cpu_details() {
+    log "Starting show_cpu_details function"
     
-    local info="SYSTEM INFORMATION\n"
+    local info="CPU & PROCESSOR DETAILS\n"
+    info+="═══════════════════════════════════════\n\n"
+    
+    # Basic CPU Information
+    if [[ -f /proc/cpuinfo ]]; then
+        local cpu_model cpu_vendor cpu_family cpu_stepping cpu_microcode
+        cpu_model=$(grep "model name" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_model="Unknown"
+        cpu_vendor=$(grep "vendor_id" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_vendor="Unknown"
+        cpu_family=$(grep "cpu family" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_family="Unknown"
+        cpu_stepping=$(grep "stepping" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_stepping="Unknown"
+        cpu_microcode=$(grep "microcode" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_microcode="Unknown"
+        
+        info+="Model: $cpu_model\n"
+        info+="Vendor: $cpu_vendor\n"
+        info+="Family: $cpu_family\n"
+        info+="Stepping: $cpu_stepping\n"
+        info+="Microcode: $cpu_microcode\n\n"
+    fi
+    
+    # Core and Thread Information
+    local physical_cores logical_cores threads_per_core
+    physical_cores=$(grep "cpu cores" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || physical_cores="Unknown"
+    logical_cores=$(nproc 2>/dev/null) || logical_cores="Unknown"
+    if [[ "$physical_cores" != "Unknown" && "$logical_cores" != "Unknown" ]]; then
+        threads_per_core=$((logical_cores / physical_cores))
+    else
+        threads_per_core="Unknown"
+    fi
+    
+    info+="Physical Cores: $physical_cores\n"
+    info+="Logical Cores: $logical_cores\n"
+    info+="Threads per Core: $threads_per_core\n\n"
+    
+    # CPU Frequencies
+    local cpu_freq_current cpu_freq_max cpu_freq_min
+    if [[ -f /proc/cpuinfo ]]; then
+        cpu_freq_current=$(grep "cpu MHz" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_freq_current="Unknown"
+        [[ "$cpu_freq_current" != "Unknown" ]] && cpu_freq_current="${cpu_freq_current} MHz"
+    fi
+    
+    if [[ -f /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq ]]; then
+        cpu_freq_max=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq 2>/dev/null)
+        [[ -n "$cpu_freq_max" ]] && cpu_freq_max="$((cpu_freq_max / 1000)) MHz" || cpu_freq_max="Unknown"
+    else
+        cpu_freq_max="Unknown"
+    fi
+    
+    if [[ -f /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq ]]; then
+        cpu_freq_min=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq 2>/dev/null)
+        [[ -n "$cpu_freq_min" ]] && cpu_freq_min="$((cpu_freq_min / 1000)) MHz" || cpu_freq_min="Unknown"
+    else
+        cpu_freq_min="Unknown"
+    fi
+    
+    info+="Current Frequency: $cpu_freq_current\n"
+    info+="Maximum Frequency: $cpu_freq_max\n"
+    info+="Minimum Frequency: $cpu_freq_min\n\n"
+    
+    # Cache Information
+    if command -v lscpu &>/dev/null; then
+        local l1d_cache l1i_cache l2_cache l3_cache
+        l1d_cache=$(lscpu 2>/dev/null | grep "L1d cache:" | awk '{print $3}' 2>/dev/null) || l1d_cache="Unknown"
+        l1i_cache=$(lscpu 2>/dev/null | grep "L1i cache:" | awk '{print $3}' 2>/dev/null) || l1i_cache="Unknown"
+        l2_cache=$(lscpu 2>/dev/null | grep "L2 cache:" | awk '{print $3}' 2>/dev/null) || l2_cache="Unknown"
+        l3_cache=$(lscpu 2>/dev/null | grep "L3 cache:" | awk '{print $3}' 2>/dev/null) || l3_cache="Unknown"
+        
+        info+="L1 Data Cache: $l1d_cache\n"
+        info+="L1 Instruction Cache: $l1i_cache\n"
+        info+="L2 Cache: $l2_cache\n"
+        info+="L3 Cache: $l3_cache\n\n"
+    fi
+    
+    # CPU Features and Flags
+    if [[ -f /proc/cpuinfo ]]; then
+        local cpu_flags
+        cpu_flags=$(grep "flags" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_flags="Unknown"
+        if [[ "$cpu_flags" != "Unknown" ]]; then
+            local important_flags=""
+            for flag in sse sse2 sse3 ssse3 sse4_1 sse4_2 avx avx2 avx512f aes pae nx lm vmx svm; do
+                if echo "$cpu_flags" | grep -q "$flag"; then
+                    important_flags+="$flag "
+                fi
+            done
+            info+="Key Features: ${important_flags:-None detected}\n\n"
+        fi
+    fi
+    
+    # CPU Load and Temperature
+    local load_avg cpu_temp
+    load_avg=$(uptime 2>/dev/null | awk -F'load average:' '{print $2}' 2>/dev/null | sed 's/^ *//' 2>/dev/null) || load_avg="Unknown"
+    info+="Load Average:$load_avg\n"
+    
+    # Try to get CPU temperature
+    if [[ -f /sys/class/thermal/thermal_zone0/temp ]]; then
+        cpu_temp=$(cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null)
+        if [[ -n "$cpu_temp" ]]; then
+            cpu_temp="$((cpu_temp / 1000))°C"
+        else
+            cpu_temp="Unknown"
+        fi
+    else
+        cpu_temp="Unknown"
+    fi
+    info+="Temperature: $cpu_temp\n\n"
+    
+    # Vulnerabilities
+    if [[ -d /sys/devices/system/cpu/vulnerabilities ]]; then
+        info+="SECURITY VULNERABILITIES\n"
+        info+="─────────────────────────────────────\n"
+        for vuln in /sys/devices/system/cpu/vulnerabilities/*; do
+            if [[ -f "$vuln" ]]; then
+                local vuln_name status
+                vuln_name=$(basename "$vuln")
+                status=$(cat "$vuln" 2>/dev/null) || status="Unknown"
+                info+="$(printf "%-20s: %s\n" "$vuln_name" "$status")"
+            fi
+        done
+    fi
+    
+    ui_info "CPU & Processor Details" "$info"
+    return 0
+}
+
+show_memory_details() {
+    log "Starting show_memory_details function"
+    
+    local info="MEMORY & RAM INFORMATION\n"
+    info+="═══════════════════════════════════════\n\n"
+    
+    # Basic Memory Information
+    if [[ -f /proc/meminfo ]]; then
+        local mem_total mem_free mem_available mem_used mem_cached mem_buffers
+        mem_total=$(grep "MemTotal:" /proc/meminfo 2>/dev/null | awk '{print $2}' 2>/dev/null) || mem_total="0"
+        mem_free=$(grep "MemFree:" /proc/meminfo 2>/dev/null | awk '{print $2}' 2>/dev/null) || mem_free="0"
+        mem_available=$(grep "MemAvailable:" /proc/meminfo 2>/dev/null | awk '{print $2}' 2>/dev/null) || mem_available="0"
+        mem_cached=$(grep "^Cached:" /proc/meminfo 2>/dev/null | awk '{print $2}' 2>/dev/null) || mem_cached="0"
+        mem_buffers=$(grep "Buffers:" /proc/meminfo 2>/dev/null | awk '{print $2}' 2>/dev/null) || mem_buffers="0"
+        
+        if [[ "$mem_total" != "0" ]]; then
+            mem_used=$((mem_total - mem_available))
+            local mem_total_gb mem_used_gb mem_free_gb mem_available_gb
+            mem_total_gb=$(echo "scale=2; $mem_total / 1024 / 1024" | bc 2>/dev/null) || mem_total_gb="Unknown"
+            mem_used_gb=$(echo "scale=2; $mem_used / 1024 / 1024" | bc 2>/dev/null) || mem_used_gb="Unknown"
+            mem_free_gb=$(echo "scale=2; $mem_free / 1024 / 1024" | bc 2>/dev/null) || mem_free_gb="Unknown"
+            mem_available_gb=$(echo "scale=2; $mem_available / 1024 / 1024" | bc 2>/dev/null) || mem_available_gb="Unknown"
+            
+            local usage_percent
+            usage_percent=$(echo "scale=1; $mem_used * 100 / $mem_total" | bc 2>/dev/null) || usage_percent="Unknown"
+            
+            info+="Total Memory: ${mem_total_gb} GB (${mem_total} KB)\n"
+            info+="Used Memory: ${mem_used_gb} GB (${mem_used} KB)\n"
+            info+="Free Memory: ${mem_free_gb} GB (${mem_free} KB)\n"
+            info+="Available Memory: ${mem_available_gb} GB (${mem_available} KB)\n"
+            info+="Memory Usage: ${usage_percent}%\n\n"
+            
+            # Cache and Buffer Information
+            local cached_gb buffers_gb
+            cached_gb=$(echo "scale=2; $mem_cached / 1024 / 1024" | bc 2>/dev/null) || cached_gb="Unknown"
+            buffers_gb=$(echo "scale=2; $mem_buffers / 1024 / 1024" | bc 2>/dev/null) || buffers_gb="Unknown"
+            
+            info+="Cached: ${cached_gb} GB (${mem_cached} KB)\n"
+            info+="Buffers: ${buffers_gb} GB (${mem_buffers} KB)\n\n"
+        fi
+    fi
+    
+    # Swap Information
+    if [[ -f /proc/meminfo ]]; then
+        local swap_total swap_free swap_used
+        swap_total=$(grep "SwapTotal:" /proc/meminfo 2>/dev/null | awk '{print $2}' 2>/dev/null) || swap_total="0"
+        swap_free=$(grep "SwapFree:" /proc/meminfo 2>/dev/null | awk '{print $2}' 2>/dev/null) || swap_free="0"
+        
+        if [[ "$swap_total" != "0" ]]; then
+            swap_used=$((swap_total - swap_free))
+            local swap_total_gb swap_used_gb swap_usage_percent
+            swap_total_gb=$(echo "scale=2; $swap_total / 1024 / 1024" | bc 2>/dev/null) || swap_total_gb="Unknown"
+            swap_used_gb=$(echo "scale=2; $swap_used / 1024 / 1024" | bc 2>/dev/null) || swap_used_gb="Unknown"
+            swap_usage_percent=$(echo "scale=1; $swap_used * 100 / $swap_total" | bc 2>/dev/null) || swap_usage_percent="Unknown"
+            
+            info+="SWAP INFORMATION\n"
+            info+="─────────────────────────────────────\n"
+            info+="Total Swap: ${swap_total_gb} GB\n"
+            info+="Used Swap: ${swap_used_gb} GB\n"
+            info+="Swap Usage: ${swap_usage_percent}%\n\n"
+        else
+            info+="SWAP INFORMATION\n"
+            info+="─────────────────────────────────────\n"
+            info+="No swap space configured\n\n"
+        fi
+    fi
+    
+    # Memory Hardware Information (DMI)
+    if command -v dmidecode &>/dev/null; then
+        info+="MEMORY HARDWARE DETAILS\n"
+        info+="─────────────────────────────────────\n"
+        
+        local memory_devices
+        memory_devices=$(dmidecode -t memory 2>/dev/null | grep -E "(Size|Speed|Type|Manufacturer|Part Number):" | head -20 2>/dev/null)
+        if [[ -n "$memory_devices" ]]; then
+            info+="$memory_devices\n\n"
+        else
+            info+="Memory hardware details not available\n\n"
+        fi
+    fi
+    
+    # Memory Usage by Process (Top 10)
+    info+="TOP MEMORY CONSUMING PROCESSES\n"
+    info+="─────────────────────────────────────\n"
+    local top_processes
+    top_processes=$(ps aux --sort=-%mem 2>/dev/null | head -11 | tail -10 | awk '{printf "%-15s %6s %s\n", $1, $4"%", $11}' 2>/dev/null)
+    if [[ -n "$top_processes" ]]; then
+        info+="USER            MEM%   COMMAND\n"
+        info+="$top_processes\n"
+    else
+        info+="Process information not available\n"
+    fi
+    
+    ui_info "Memory & RAM Information" "$info"
+    return 0
+}
+
+show_storage_details() {
+    log "Starting show_storage_details function"
+    
+    local info="STORAGE & DISK DETAILS\n"
+    info+="═══════════════════════════════════════\n\n"
+    
+    # Disk Usage Summary
+    info+="FILESYSTEM USAGE\n"
+    info+="─────────────────────────────────────\n"
+    local disk_usage
+    disk_usage=$(df -h 2>/dev/null | grep -E '^/dev/' | grep -v -E '(tmpfs|udev|overlay)' 2>/dev/null)
+    if [[ -n "$disk_usage" ]]; then
+        info+="FILESYSTEM      SIZE  USED AVAIL USE% MOUNTED ON\n"
+        info+="$disk_usage\n\n"
+    else
+        info+="Filesystem information not available\n\n"
+    fi
+    
+    # Block Devices
+    info+="BLOCK DEVICES\n"
+    info+="─────────────────────────────────────\n"
+    if command -v lsblk &>/dev/null; then
+        local block_devices
+        block_devices=$(lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT 2>/dev/null)
+        if [[ -n "$block_devices" ]]; then
+            info+="$block_devices\n\n"
+        else
+            info+="Block device information not available\n\n"
+        fi
+    fi
+    
+    # Disk Information
+    info+="PHYSICAL DISKS\n"
+    info+="─────────────────────────────────────\n"
+    if [[ -d /sys/block ]]; then
+        for disk in /sys/block/sd* /sys/block/nvme* /sys/block/hd*; do
+            if [[ -d "$disk" ]]; then
+                local disk_name size model
+                disk_name=$(basename "$disk")
+                
+                # Get size
+                if [[ -f "$disk/size" ]]; then
+                    local sectors
+                    sectors=$(cat "$disk/size" 2>/dev/null) || sectors="0"
+                    if [[ "$sectors" != "0" ]]; then
+                        size=$(echo "scale=2; $sectors * 512 / 1024 / 1024 / 1024" | bc 2>/dev/null) || size="Unknown"
+                        size="${size} GB"
+                    else
+                        size="Unknown"
+                    fi
+                else
+                    size="Unknown"
+                fi
+                
+                # Get model
+                if [[ -f "$disk/device/model" ]]; then
+                    model=$(cat "$disk/device/model" 2>/dev/null | tr -d ' \t\n\r' 2>/dev/null) || model="Unknown"
+                else
+                    model="Unknown"
+                fi
+                
+                info+="/dev/$disk_name: $size ($model)\n"
+            fi
+        done
+        info+="\n"
+    fi
+    
+    # SMART Information (if available)
+    if command -v smartctl &>/dev/null; then
+        info+="SMART STATUS\n"
+        info+="─────────────────────────────────────\n"
+        for disk in /dev/sd? /dev/nvme?n?; do
+            if [[ -e "$disk" ]]; then
+                local smart_status
+                smart_status=$(smartctl -H "$disk" 2>/dev/null | grep "SMART overall-health" | awk '{print $6}' 2>/dev/null) || smart_status="Unknown"
+                info+="$disk: $smart_status\n"
+            fi
+        done
+        info+="\n"
+    fi
+    
+    # Mount Information
+    info+="MOUNT POINTS\n"
+    info+="─────────────────────────────────────\n"
+    local mount_info
+    mount_info=$(mount 2>/dev/null | grep -E '^/dev/' | awk '{print $1 " on " $3 " type " $5}' 2>/dev/null)
+    if [[ -n "$mount_info" ]]; then
+        info+="$mount_info\n\n"
+    else
+        info+="Mount information not available\n\n"
+    fi
+    
+    # I/O Statistics
+    if [[ -f /proc/diskstats ]]; then
+        info+="DISK I/O STATISTICS\n"
+        info+="─────────────────────────────────────\n"
+        local io_stats
+        io_stats=$(awk '$3 ~ /^(sd|nvme|hd)/ {printf "%-10s: %10s reads, %10s writes\n", $3, $4, $8}' /proc/diskstats 2>/dev/null | head -10)
+        if [[ -n "$io_stats" ]]; then
+            info+="$io_stats\n"
+        else
+            info+="I/O statistics not available\n"
+        fi
+    fi
+    
+    ui_info "Storage & Disk Details" "$info"
+    return 0
+}
+
+show_network_details() {
+    log "Starting show_network_details function"
+    
+    local info="NETWORK & CONNECTIVITY DETAILS\n"
+    info+="═══════════════════════════════════════\n\n"
+    
+    # Network Interfaces
+    info+="NETWORK INTERFACES\n"
+    info+="─────────────────────────────────────\n"
+    if command -v ip &>/dev/null; then
+        local interfaces
+        interfaces=$(ip -o link show 2>/dev/null | awk -F': ' '{print $2 " (" $3 ")"}' 2>/dev/null)
+        if [[ -n "$interfaces" ]]; then
+            info+="$interfaces\n\n"
+        else
+            info+="No interfaces detected\n\n"
+        fi
+    fi
+    
+    # IP Addresses
+    info+="IP ADDRESSES\n"
+    info+="─────────────────────────────────────\n"
+    if command -v ip &>/dev/null; then
+        local ip_addresses
+        ip_addresses=$(ip -o addr show 2>/dev/null | awk '{print $2 ": " $4}' | grep -v "127.0.0.1\|::1" 2>/dev/null)
+        if [[ -n "$ip_addresses" ]]; then
+            info+="$ip_addresses\n\n"
+        else
+            info+="No IP addresses configured\n\n"
+        fi
+    fi
+    
+    # Routing Information
+    info+="ROUTING TABLE\n"
+    info+="─────────────────────────────────────\n"
+    if command -v ip &>/dev/null; then
+        local routes
+        routes=$(ip route show 2>/dev/null | head -10 2>/dev/null)
+        if [[ -n "$routes" ]]; then
+            info+="$routes\n\n"
+        else
+            info+="No routes configured\n\n"
+        fi
+    fi
+    
+    # DNS Configuration
+    info+="DNS CONFIGURATION\n"
+    info+="─────────────────────────────────────\n"
+    if [[ -f /etc/resolv.conf ]]; then
+        local dns_servers
+        dns_servers=$(grep "^nameserver" /etc/resolv.conf 2>/dev/null | awk '{print "Nameserver: " $2}' 2>/dev/null)
+        if [[ -n "$dns_servers" ]]; then
+            info+="$dns_servers\n"
+        else
+            info+="No DNS servers configured\n"
+        fi
+        
+        local search_domains
+        search_domains=$(grep "^search" /etc/resolv.conf 2>/dev/null | cut -d' ' -f2- 2>/dev/null)
+        [[ -n "$search_domains" ]] && info+="Search domains: $search_domains\n"
+        info+="\n"
+    fi
+    
+    # Network Statistics
+    info+="NETWORK STATISTICS\n"
+    info+="─────────────────────────────────────\n"
+    if [[ -f /proc/net/dev ]]; then
+        local net_stats
+        net_stats=$(awk 'NR>2 && $1 !~ /lo:/ {gsub(/:/, "", $1); printf "%-10s: RX %10s bytes, TX %10s bytes\n", $1, $2, $10}' /proc/net/dev 2>/dev/null | head -10)
+        if [[ -n "$net_stats" ]]; then
+            info+="$net_stats\n\n"
+        else
+            info+="Network statistics not available\n\n"
+        fi
+    fi
+    
+    # Connectivity Test
+    info+="CONNECTIVITY TEST\n"
+    info+="─────────────────────────────────────\n"
+    local internet_status ping_time
+    if ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1; then
+        internet_status="Connected"
+        ping_time=$(ping -c 1 8.8.8.8 2>/dev/null | grep "time=" | awk -F'time=' '{print $2}' | awk '{print $1}' 2>/dev/null) || ping_time="Unknown"
+        info+="Internet: $internet_status (ping: ${ping_time}ms)\n"
+    else
+        internet_status="Disconnected"
+        info+="Internet: $internet_status\n"
+    fi
+    
+    ui_info "Network & Connectivity Details" "$info"
+    return 0
+}
+
+show_graphics_details() {
+    log "Starting show_graphics_details function"
+    
+    local info="GRAPHICS & DISPLAY INFORMATION\n"
+    info+="═══════════════════════════════════════\n\n"
+    
+    # GPU Information
+    info+="GRAPHICS CARDS\n"
+    info+="─────────────────────────────────────\n"
+    local gpu_info=""
+    if command -v lspci &>/dev/null; then
+        gpu_info=$(lspci 2>/dev/null | grep -i "vga\|3d\|display" | sed 's/^[0-9a-f:.]* //' 2>/dev/null)
+        if [[ -n "$gpu_info" ]]; then
+            info+="$gpu_info\n\n"
+        else
+            info+="No PCI graphics devices detected\n\n"
+        fi
+    fi
+    
+    # Display Information
+    info+="CONNECTED DISPLAYS\n"
+    info+="─────────────────────────────────────\n"
+    local display_info=""
+    
+    # Try xrandr first (X11)
+    if command -v xrandr &>/dev/null && [[ -n "$DISPLAY" ]]; then
+        display_info=$(xrandr 2>/dev/null | grep " connected" | awk '{print $1 " - " $3 " " $4}' 2>/dev/null)
+        if [[ -n "$display_info" ]]; then
+            info+="$display_info\n\n"
+        fi
+    fi
+    
+    # Fallback to DRM
+    if [[ -z "$display_info" ]] && [[ -d /sys/class/drm ]]; then
+        for connector in /sys/class/drm/card*/card*-*/status; do
+            if [[ -f "$connector" ]]; then
+                local status connector_name
+                status=$(cat "$connector" 2>/dev/null)
+                connector_name=$(basename "$(dirname "$connector")" | sed 's/card[0-9]*-//')
+                
+                if [[ "$status" == "connected" ]]; then
+                    local modes_file="$(dirname "$connector")/modes"
+                    local resolution="Unknown"
+                    if [[ -f "$modes_file" ]]; then
+                        resolution=$(head -1 "$modes_file" 2>/dev/null) || resolution="Unknown"
+                    fi
+                    info+="$connector_name - $resolution\n"
+                fi
+            fi
+        done
+        info+="\n"
+    fi
+    
+    [[ -z "$display_info" ]] && info+="No connected displays detected\n\n"
+    
+    # OpenGL Information
+    if command -v glxinfo &>/dev/null && [[ -n "$DISPLAY" ]]; then
+        info+="OPENGL INFORMATION\n"
+        info+="─────────────────────────────────────\n"
+        local gl_vendor gl_renderer gl_version
+        gl_vendor=$(glxinfo 2>/dev/null | grep "OpenGL vendor" | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || gl_vendor="Unknown"
+        gl_renderer=$(glxinfo 2>/dev/null | grep "OpenGL renderer" | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || gl_renderer="Unknown"
+        gl_version=$(glxinfo 2>/dev/null | grep "OpenGL version" | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || gl_version="Unknown"
+        
+        info+="Vendor: $gl_vendor\n"
+        info+="Renderer: $gl_renderer\n"
+        info+="Version: $gl_version\n\n"
+    fi
+    
+    # Framebuffer Information
+    if [[ -d /sys/class/graphics ]]; then
+        info+="FRAMEBUFFER DEVICES\n"
+        info+="─────────────────────────────────────\n"
+        for fb in /sys/class/graphics/fb*/virtual_size; do
+            if [[ -f "$fb" ]]; then
+                local fb_name resolution
+                fb_name=$(basename "$(dirname "$fb")")
+                resolution=$(cat "$fb" 2>/dev/null | tr ',' 'x' 2>/dev/null) || resolution="Unknown"
+                info+="$fb_name: ${resolution}\n"
+            fi
+        done
+        info+="\n"
+    fi
+    
+    ui_info "Graphics & Display Information" "$info"
+    return 0
+}
+
+show_audio_details() {
+    log "Starting show_audio_details function"
+    
+    local info="AUDIO & SOUND DEVICES\n"
+    info+="═══════════════════════════════════════\n\n"
+    
+    # ALSA Sound Cards
+    if [[ -f /proc/asound/cards ]]; then
+        info+="ALSA SOUND CARDS\n"
+        info+="─────────────────────────────────────\n"
+        local alsa_cards
+        alsa_cards=$(cat /proc/asound/cards 2>/dev/null)
+        if [[ -n "$alsa_cards" ]]; then
+            info+="$alsa_cards\n\n"
+        else
+            info+="No ALSA sound cards detected\n\n"
+        fi
+    fi
+    
+    # PCI Audio Devices
+    if command -v lspci &>/dev/null; then
+        info+="PCI AUDIO CONTROLLERS\n"
+        info+="─────────────────────────────────────\n"
+        local pci_audio
+        pci_audio=$(lspci 2>/dev/null | grep -i "audio\|sound" | sed 's/^[0-9a-f:.]* //' 2>/dev/null)
+        if [[ -n "$pci_audio" ]]; then
+            info+="$pci_audio\n\n"
+        else
+            info+="No PCI audio devices detected\n\n"
+        fi
+    fi
+    
+    # Audio Devices
+    if [[ -d /proc/asound ]]; then
+        info+="AUDIO DEVICE DETAILS\n"
+        info+="─────────────────────────────────────\n"
+        for card in /proc/asound/card*/id; do
+            if [[ -f "$card" ]]; then
+                local card_id card_name
+                card_id=$(cat "$card" 2>/dev/null) || card_id="Unknown"
+                card_name=$(cat "$(dirname "$card")/id" 2>/dev/null) || card_name="Unknown"
+                info+="Card: $card_id\n"
+                
+                # Get PCM devices for this card
+                local pcm_devices
+                pcm_devices=$(find "$(dirname "$card")" -name "pcm*p" -o -name "pcm*c" 2>/dev/null | wc -l 2>/dev/null) || pcm_devices="0"
+                info+="PCM devices: $pcm_devices\n\n"
+            fi
+        done
+    fi
+    
+    # PulseAudio Information
+    if command -v pactl &>/dev/null; then
+        info+="PULSEAUDIO INFORMATION\n"
+        info+="─────────────────────────────────────\n"
+        local pa_sinks pa_sources
+        pa_sinks=$(pactl list short sinks 2>/dev/null | wc -l 2>/dev/null) || pa_sinks="0"
+        pa_sources=$(pactl list short sources 2>/dev/null | wc -l 2>/dev/null) || pa_sources="0"
+        
+        info+="Audio sinks: $pa_sinks\n"
+        info+="Audio sources: $pa_sources\n\n"
+        
+        # Default sink
+        local default_sink
+        default_sink=$(pactl get-default-sink 2>/dev/null) || default_sink="Unknown"
+        info+="Default sink: $default_sink\n\n"
+    fi
+    
+    ui_info "Audio & Sound Devices" "$info"
+    return 0
+}
+
+show_package_details() {
+    log "Starting show_package_details function"
+    
+    local info="PACKAGE MANAGERS & SOFTWARE\n"
+    info+="═══════════════════════════════════════\n\n"
+    
+    # APT Package Manager
+    info+="APT PACKAGE MANAGER\n"
+    info+="─────────────────────────────────────\n"
+    local apt_installed apt_upgradable apt_auto_removable
+    apt_installed=$(dpkg -l 2>/dev/null | grep -c "^ii" 2>/dev/null) || apt_installed="0"
+    apt_upgradable=$(apt list --upgradable 2>/dev/null | grep -c "upgradable" 2>/dev/null) || apt_upgradable="0"
+    apt_auto_removable=$(apt autoremove --dry-run 2>/dev/null | grep -c "^Remv" 2>/dev/null) || apt_auto_removable="0"
+    
+    info+="Installed packages: $apt_installed\n"
+    info+="Upgradable packages: $apt_upgradable\n"
+    info+="Auto-removable packages: $apt_auto_removable\n\n"
+    
+    # Snap Package Manager
+    if command -v snap &>/dev/null; then
+        info+="SNAP PACKAGE MANAGER\n"
+        info+="─────────────────────────────────────\n"
+        local snap_installed snap_refreshable
+        snap_installed=$(snap list 2>/dev/null | tail -n +2 | wc -l 2>/dev/null) || snap_installed="0"
+        snap_refreshable=$(snap refresh --list 2>/dev/null | tail -n +2 | wc -l 2>/dev/null) || snap_refreshable="0"
+        
+        info+="Installed snaps: $snap_installed\n"
+        info+="Refreshable snaps: $snap_refreshable\n\n"
+    else
+        info+="SNAP PACKAGE MANAGER\n"
+        info+="─────────────────────────────────────\n"
+        info+="Snap not available\n\n"
+    fi
+    
+    # Flatpak Package Manager
+    if command -v flatpak &>/dev/null; then
+        info+="FLATPAK PACKAGE MANAGER\n"
+        info+="─────────────────────────────────────\n"
+        local flatpak_apps flatpak_updates flatpak_remotes
+        flatpak_apps=$(flatpak list --app 2>/dev/null | wc -l 2>/dev/null) || flatpak_apps="0"
+        flatpak_updates=$(flatpak remote-ls --updates 2>/dev/null | wc -l 2>/dev/null) || flatpak_updates="0"
+        flatpak_remotes=$(flatpak remotes 2>/dev/null | tail -n +2 | wc -l 2>/dev/null) || flatpak_remotes="0"
+        
+        info+="Installed applications: $flatpak_apps\n"
+        info+="Available updates: $flatpak_updates\n"
+        info+="Configured remotes: $flatpak_remotes\n\n"
+    else
+        info+="FLATPAK PACKAGE MANAGER\n"
+        info+="─────────────────────────────────────\n"
+        info+="Flatpak not available\n\n"
+    fi
+    
+    # Python Package Manager
+    if command -v pip3 &>/dev/null || command -v pip &>/dev/null; then
+        info+="PYTHON PACKAGE MANAGER\n"
+        info+="─────────────────────────────────────\n"
+        local pip_packages
+        pip_packages=$(pip3 list 2>/dev/null | tail -n +3 | wc -l 2>/dev/null) || pip_packages="0"
+        [[ "$pip_packages" == "0" ]] && pip_packages=$(pip list 2>/dev/null | tail -n +3 | wc -l 2>/dev/null) || pip_packages="0"
+        
+        info+="Installed packages: $pip_packages\n\n"
+    else
+        info+="PYTHON PACKAGE MANAGER\n"
+        info+="─────────────────────────────────────\n"
+        info+="Python pip not available\n\n"
+    fi
+    
+    # Node.js Package Manager
+    if command -v npm &>/dev/null; then
+        info+="NODE.JS PACKAGE MANAGER\n"
+        info+="─────────────────────────────────────\n"
+        local npm_global npm_version
+        npm_global=$(npm list -g --depth=0 2>/dev/null | grep -c "├──\|└──" 2>/dev/null) || npm_global="0"
+        npm_version=$(npm --version 2>/dev/null) || npm_version="Unknown"
+        
+        info+="Global packages: $npm_global\n"
+        info+="NPM version: $npm_version\n\n"
+    else
+        info+="NODE.JS PACKAGE MANAGER\n"
+        info+="─────────────────────────────────────\n"
+        info+="Node.js npm not available\n\n"
+    fi
+    
+    # Ultrabunt Package Statistics
+    info+="ULTRABUNT PACKAGE STATISTICS\n"
+    info+="─────────────────────────────────────\n"
+    local total_pkgs=${#PACKAGES[@]}
+    local installed_count=0
+    
+    for name in "${!PACKAGES[@]}"; do
+        if is_package_installed "$name" 2>/dev/null; then
+            ((installed_count++)) 2>/dev/null || true
+        fi
+    done 2>/dev/null || true
+    
+    info+="Tracked packages: $total_pkgs\n"
+    info+="Installed packages: $installed_count\n"
+    info+="Available packages: $((total_pkgs - installed_count))\n"
+    
+    ui_info "Package Managers & Software" "$info"
+    return 0
+}
+
+show_legacy_system_info() {
+    log "Starting show_legacy_system_info function"
+    
+    local info="COMPLETE SYSTEM INFORMATION\n"
     info+="═══════════════════════════════════════\n\n"
     
     # OS Info
@@ -7351,7 +8745,6 @@ show_system_info() {
         local os_name="Unknown"
         local os_version="N/A"
         
-        # Safely parse os-release
         while IFS='=' read -r key value 2>/dev/null; do
             case "$key" in
                 PRETTY_NAME) os_name="${value//\"/}" ;;
@@ -7366,24 +8759,43 @@ show_system_info() {
     # Kernel
     local kernel_version
     kernel_version=$(uname -r 2>/dev/null) || kernel_version="Unknown"
-    info+="Kernel: $kernel_version\n\n"
+    info+="Kernel: $kernel_version\n"
     
-    # Hardware Info
-    info+="HARDWARE INFORMATION\n"
-    info+="─────────────────────────────────────\n"
+    # System Model
+    local system_model="Unknown"
+    local system_vendor="Unknown"
     
-    # CPU Info
-    local cpu_info
-    if [[ -f /proc/cpuinfo ]]; then
-        cpu_info=$(grep "model name" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_info="Unknown"
-        local cpu_cores
-        cpu_cores=$(nproc 2>/dev/null) || cpu_cores="Unknown"
-        info+="CPU: $cpu_info ($cpu_cores cores)\n"
-    else
-        info+="CPU: Information not available\n"
+    if [[ -f /sys/class/dmi/id/product_name ]]; then
+        system_model=$(cat /sys/class/dmi/id/product_name 2>/dev/null | tr -d '\0' 2>/dev/null) || system_model="Unknown"
     fi
     
-    # Memory Info
+    if [[ -f /sys/class/dmi/id/sys_vendor ]]; then
+        system_vendor=$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null | tr -d '\0' 2>/dev/null) || system_vendor="Unknown"
+    fi
+    
+    if [[ "$system_vendor" != "Unknown" && "$system_model" != "Unknown" ]]; then
+        info+="System: $system_vendor $system_model\n"
+    elif [[ "$system_model" != "Unknown" ]]; then
+        info+="System: $system_model\n"
+    else
+        info+="System: Model information not available\n"
+    fi
+    
+    info+="\n"
+    
+    # Hardware Summary
+    info+="HARDWARE SUMMARY\n"
+    info+="─────────────────────────────────────\n"
+    
+    # CPU
+    if [[ -f /proc/cpuinfo ]]; then
+        local cpu_info cpu_cores
+        cpu_info=$(grep "model name" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_info="Unknown"
+        cpu_cores=$(nproc 2>/dev/null) || cpu_cores="Unknown"
+        info+="CPU: $cpu_info ($cpu_cores cores)\n"
+    fi
+    
+    # Memory
     if [[ -f /proc/meminfo ]]; then
         local mem_total mem_available
         mem_total=$(grep "MemTotal:" /proc/meminfo 2>/dev/null | awk '{print int($2/1024)}' 2>/dev/null) || mem_total="Unknown"
@@ -7391,151 +8803,42 @@ show_system_info() {
         if [[ "$mem_total" != "Unknown" && "$mem_available" != "Unknown" ]]; then
             local mem_used=$((mem_total - mem_available))
             info+="Memory: ${mem_used}MB used / ${mem_total}MB total\n"
-        else
-            info+="Memory: Information not available\n"
         fi
-    else
-        info+="Memory: Information not available\n"
     fi
     
-    # Storage Information
-    info+="STORAGE INFORMATION\n"
-    info+="─────────────────────────────────────\n"
-    
-    # Root filesystem
+    # Storage
     local disk_info
-    disk_info=$(df -h / 2>/dev/null | tail -1 2>/dev/null | awk '{print $3 " used / " $2 " total (" $5 " full)"}' 2>/dev/null) || disk_info="Information not available"
-    info+="Root (/): $disk_info\n"
+    disk_info=$(df -h / 2>/dev/null | tail -1 | awk '{print $3 " used / " $2 " total (" $5 " full)"}' 2>/dev/null) || disk_info="Information not available"
+    info+="Storage: $disk_info\n"
     
-    # All mounted filesystems (excluding special filesystems)
-    local mount_info
-    mount_info=$(df -h 2>/dev/null | grep -E '^/dev/' | grep -v -E '(tmpfs|udev|overlay)' | awk '{print $6 ": " $3 " used / " $2 " total (" $5 " full)"}' 2>/dev/null | tail -n +2 2>/dev/null)
-    if [[ -n "$mount_info" ]]; then
-        while IFS= read -r line; do
-            [[ "$line" != *"/ :"* ]] && info+="$line\n"
-        done <<< "$mount_info"
-    fi
-    
-    # Swap information
-    local swap_info
-    swap_info=$(free -h 2>/dev/null | grep "Swap:" 2>/dev/null | awk '{print $3 " used / " $2 " total"}' 2>/dev/null) || swap_info="Not available"
-    info+="Swap: $swap_info\n"
-    
-    # Disk usage summary
-    local total_disk_count
-    total_disk_count=$(lsblk -d 2>/dev/null | grep -c "disk" 2>/dev/null) || total_disk_count="Unknown"
-    info+="Physical disks: $total_disk_count detected\n\n"
-    
-    # System Uptime and Load
-    local uptime_info load_avg
-    uptime_info=$(uptime -p 2>/dev/null | sed 's/up //' 2>/dev/null) || uptime_info="Unknown"
-    load_avg=$(uptime 2>/dev/null | awk -F'load average:' '{print $2}' 2>/dev/null | sed 's/^ *//' 2>/dev/null) || load_avg="Unknown"
-    
-    info+="Uptime: $uptime_info\n"
-    info+="Load average:$load_avg\n"
-    
-    # Process count
-    local process_count
-    process_count=$(ps aux 2>/dev/null | wc -l 2>/dev/null) || process_count="Unknown"
-    [[ "$process_count" != "Unknown" ]] && process_count=$((process_count - 1))  # Subtract header line
-    info+="Running processes: $process_count\n\n"
-    
-    # Buntage Managers
-    info+="BUNTAGE MANAGERS\n"
-    info+="─────────────────────────────────────\n"
-    
-    # APT detailed info
-    local apt_count apt_upgradable apt_auto_removable
-    apt_count=$(dpkg -l 2>/dev/null | grep -c "^ii" 2>/dev/null) || apt_count="0"
-    apt_upgradable=$(apt list --upgradable 2>/dev/null | grep -c "upgradable" 2>/dev/null) || apt_upgradable="0"
-    apt_auto_removable=$(apt autoremove --dry-run 2>/dev/null | grep -c "^Remv" 2>/dev/null) || apt_auto_removable="0"
-    
-    info+="APT: $apt_count installed"
-    [[ "$apt_upgradable" != "0" ]] && info+=" ($apt_upgradable upgradable)"
-    [[ "$apt_auto_removable" != "0" ]] && info+=" ($apt_auto_removable auto-removable)"
-    info+="\n"
-    
-    # Snap detailed info
-    if command -v snap &>/dev/null; then
-        local snap_count snap_refreshable
-        snap_count=$(snap list 2>/dev/null | tail -n +2 2>/dev/null | wc -l 2>/dev/null) || snap_count="0"
-        snap_refreshable=$(snap refresh --list 2>/dev/null | tail -n +2 2>/dev/null | wc -l 2>/dev/null) || snap_refreshable="0"
-        
-        info+="Snap: $snap_count installed"
-        [[ "$snap_refreshable" != "0" ]] && info+=" ($snap_refreshable refreshable)"
-        info+="\n"
-    else
-        info+="Snap: Not available\n"
-    fi
-    
-    # Flatpak detailed info
-    if command -v flatpak &>/dev/null; then
-        local flat_count flat_updates flat_remotes
-        flat_count=$(flatpak list --app 2>/dev/null | wc -l 2>/dev/null) || flat_count="0"
-        flat_updates=$(flatpak remote-ls --updates 2>/dev/null | wc -l 2>/dev/null) || flat_updates="0"
-        flat_remotes=$(flatpak remotes 2>/dev/null | tail -n +2 2>/dev/null | wc -l 2>/dev/null) || flat_remotes="0"
-        
-        info+="Flatpak: $flat_count apps"
-        [[ "$flat_updates" != "0" ]] && info+=" ($flat_updates updates)"
-        info+=" [$flat_remotes remotes]\n"
-    else
-        info+="Flatpak: Not available\n"
-    fi
-    
-    # Additional buntage managers
-    if command -v pip3 &>/dev/null || command -v pip &>/dev/null; then
-        local pip_count
-        pip_count=$(pip3 list 2>/dev/null | tail -n +3 2>/dev/null | wc -l 2>/dev/null) || pip_count="0"
-        [[ "$pip_count" == "0" ]] && pip_count=$(pip list 2>/dev/null | tail -n +3 2>/dev/null | wc -l 2>/dev/null) || pip_count="0"
-        info+="Python (pip): $pip_count packages\n"
-    fi
-    
-    if command -v npm &>/dev/null; then
-        local npm_global_count
-        npm_global_count=$(npm list -g --depth=0 2>/dev/null | grep -c "├──\|└──" 2>/dev/null) || npm_global_count="0"
-        info+="Node.js (npm global): $npm_global_count packages\n"
-    fi
-    
-    info+="\n"
-    
-    # Network Information
-    info+="NETWORK INFORMATION\n"
-    info+="─────────────────────────────────────\n"
-    
-    # Active network interfaces
-    local active_interfaces
-    active_interfaces=$(ip -o link show 2>/dev/null | awk -F': ' '$3 !~ /lo|docker|br-/ && $3 ~ /UP/ {print $2}' 2>/dev/null | tr '\n' ' ' 2>/dev/null) || active_interfaces="Unknown"
-    [[ -n "$active_interfaces" ]] && info+="Active interfaces: $active_interfaces\n" || info+="Active interfaces: None detected\n"
-    
-    # IP addresses
+    # Network
     local primary_ip
     primary_ip=$(ip route get 8.8.8.8 2>/dev/null | awk '{print $7; exit}' 2>/dev/null) || primary_ip="Unknown"
     info+="Primary IP: $primary_ip\n"
     
-    # Internet connectivity check
-    local internet_status
-    if ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1; then
-        internet_status="Connected"
-    else
-        internet_status="Disconnected"
-    fi
-    info+="Internet: $internet_status\n"
+    # Uptime
+    local uptime_info
+    uptime_info=$(uptime -p 2>/dev/null | sed 's/up //' 2>/dev/null) || uptime_info="Unknown"
+    info+="Uptime: $uptime_info\n\n"
     
-    # DNS servers
-    local dns_servers
-    dns_servers=$(grep "^nameserver" /etc/resolv.conf 2>/dev/null | awk '{print $2}' 2>/dev/null | tr '\n' ' ' 2>/dev/null) || dns_servers="Unknown"
-    [[ -n "$dns_servers" ]] && info+="DNS servers: $dns_servers\n" || info+="DNS servers: Not configured\n"
+    # Package Summary
+    info+="PACKAGE SUMMARY\n"
+    info+="─────────────────────────────────────\n"
+    local apt_count snap_count flatpak_count
+    apt_count=$(dpkg -l 2>/dev/null | grep -c "^ii" 2>/dev/null) || apt_count="0"
+    snap_count=$(snap list 2>/dev/null | tail -n +2 | wc -l 2>/dev/null) || snap_count="0"
+    flatpak_count=$(flatpak list --app 2>/dev/null | wc -l 2>/dev/null) || flatpak_count="0"
     
-    info+="\n"
+    info+="APT packages: $apt_count\n"
+    info+="Snap packages: $snap_count\n"
+    info+="Flatpak apps: $flatpak_count\n\n"
     
     # Ultrabunt Stats
     info+="ULTRABUNT STATISTICS\n"
     info+="─────────────────────────────────────\n"
-    
     local total_pkgs=${#PACKAGES[@]}
     local installed_count=0
     
-    # Safely count installed packages
     for name in "${!PACKAGES[@]}"; do
         if is_package_installed "$name" 2>/dev/null; then
             ((installed_count++)) 2>/dev/null || true
@@ -7544,18 +8847,645 @@ show_system_info() {
     
     info+="Tracked packages: $total_pkgs\n"
     info+="Installed: $installed_count\n"
-    info+="Available: $((total_pkgs - installed_count))\n\n"
+    info+="Available: $((total_pkgs - installed_count))\n"
     
-    info+="Log file: $LOGFILE\n"
-    info+="Backup dir: $BACKUP_DIR\n"
+    ui_info "Complete System Information" "$info"
+    return 0
+}
+
+show_hardware_details() {
+    log "Starting show_hardware_details function"
     
-    log "Calling ui_info with system information"
-    ui_info "System Information" "$info" || {
-        log "ERROR: ui_info failed in show_system_info"
-        return 1
-    }
+    local info="HARDWARE & SYSTEM INFORMATION\n"
+    info+="═══════════════════════════════════════\n\n"
     
-    log "show_system_info completed successfully"
+    # System Information
+    info+="SYSTEM INFORMATION\n"
+    info+="─────────────────────────────────────\n"
+    
+    local system_vendor system_model system_version system_serial bios_vendor bios_version bios_date
+    
+    # Try DMI first
+    if command -v dmidecode &>/dev/null; then
+        system_vendor=$(dmidecode -s system-manufacturer 2>/dev/null | head -1 2>/dev/null) || system_vendor="Unknown"
+        system_model=$(dmidecode -s system-product-name 2>/dev/null | head -1 2>/dev/null) || system_model="Unknown"
+        system_version=$(dmidecode -s system-version 2>/dev/null | head -1 2>/dev/null) || system_version="Unknown"
+        system_serial=$(dmidecode -s system-serial-number 2>/dev/null | head -1 2>/dev/null) || system_serial="Unknown"
+        bios_vendor=$(dmidecode -s bios-vendor 2>/dev/null | head -1 2>/dev/null) || bios_vendor="Unknown"
+        bios_version=$(dmidecode -s bios-version 2>/dev/null | head -1 2>/dev/null) || bios_version="Unknown"
+        bios_date=$(dmidecode -s bios-release-date 2>/dev/null | head -1 2>/dev/null) || bios_date="Unknown"
+    fi
+    
+    # Fallback to /sys/class/dmi/id/
+    [[ "$system_vendor" == "Unknown" ]] && [[ -f /sys/class/dmi/id/sys_vendor ]] && system_vendor=$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null | tr -d '\0' 2>/dev/null) || system_vendor="Unknown"
+    [[ "$system_model" == "Unknown" ]] && [[ -f /sys/class/dmi/id/product_name ]] && system_model=$(cat /sys/class/dmi/id/product_name 2>/dev/null | tr -d '\0' 2>/dev/null) || system_model="Unknown"
+    [[ "$bios_vendor" == "Unknown" ]] && [[ -f /sys/class/dmi/id/bios_vendor ]] && bios_vendor=$(cat /sys/class/dmi/id/bios_vendor 2>/dev/null | tr -d '\0' 2>/dev/null) || bios_vendor="Unknown"
+    [[ "$bios_version" == "Unknown" ]] && [[ -f /sys/class/dmi/id/bios_version ]] && bios_version=$(cat /sys/class/dmi/id/bios_version 2>/dev/null | tr -d '\0' 2>/dev/null) || bios_version="Unknown"
+    [[ "$bios_date" == "Unknown" ]] && [[ -f /sys/class/dmi/id/bios_date ]] && bios_date=$(cat /sys/class/dmi/id/bios_date 2>/dev/null | tr -d '\0' 2>/dev/null) || bios_date="Unknown"
+    
+
+    
+    info+="Manufacturer: $system_vendor\n"
+    info+="Model: $system_model\n"
+    info+="Version: $system_version\n"
+    info+="Serial Number: $system_serial\n\n"
+    
+    info+="BIOS/UEFI INFORMATION\n"
+    info+="─────────────────────────────────────\n"
+    info+="Vendor: $bios_vendor\n"
+    info+="Version: $bios_version\n"
+    info+="Release Date: $bios_date\n\n"
+    
+    # Motherboard Information
+    if command -v dmidecode &>/dev/null; then
+        info+="MOTHERBOARD INFORMATION\n"
+        info+="─────────────────────────────────────\n"
+        local mb_manufacturer mb_product mb_version mb_serial
+        mb_manufacturer=$(dmidecode -s baseboard-manufacturer 2>/dev/null | head -1 2>/dev/null) || mb_manufacturer="Unknown"
+        mb_product=$(dmidecode -s baseboard-product-name 2>/dev/null | head -1 2>/dev/null) || mb_product="Unknown"
+        mb_version=$(dmidecode -s baseboard-version 2>/dev/null | head -1 2>/dev/null) || mb_version="Unknown"
+        mb_serial=$(dmidecode -s baseboard-serial-number 2>/dev/null | head -1 2>/dev/null) || mb_serial="Unknown"
+        
+        info+="Manufacturer: $mb_manufacturer\n"
+        info+="Product: $mb_product\n"
+        info+="Version: $mb_version\n"
+        info+="Serial: $mb_serial\n\n"
+    fi
+    
+    # PCI Devices
+    if command -v lspci &>/dev/null; then
+        info+="PCI DEVICES\n"
+        info+="─────────────────────────────────────\n"
+        local pci_devices
+        pci_devices=$(lspci 2>/dev/null | head -15 | sed 's/^[0-9a-f:.]* //' 2>/dev/null)
+        if [[ -n "$pci_devices" ]]; then
+            info+="$pci_devices\n"
+            local pci_count
+            pci_count=$(lspci 2>/dev/null | wc -l 2>/dev/null) || pci_count="0"
+            [[ "$pci_count" -gt 15 ]] && info+="... and $((pci_count - 15)) more devices\n"
+        else
+            info+="PCI device information not available\n"
+        fi
+        info+="\n"
+    fi
+    
+    # System Uptime and Load
+    info+="SYSTEM STATUS\n"
+    info+="─────────────────────────────────────\n"
+    local uptime_info load_avg boot_time
+    uptime_info=$(uptime -p 2>/dev/null | sed 's/up //' 2>/dev/null) || uptime_info="Unknown"
+    load_avg=$(uptime 2>/dev/null | awk -F'load average:' '{print $2}' 2>/dev/null | sed 's/^ *//' 2>/dev/null) || load_avg="Unknown"
+    boot_time=$(who -b 2>/dev/null | awk '{print $3 " " $4}' 2>/dev/null) || boot_time="Unknown"
+    
+    info+="Uptime: $uptime_info\n"
+    info+="Load Average:$load_avg\n"
+    info+="Boot Time: $boot_time\n\n"
+    
+    # Process Information
+    local process_count zombie_count
+    process_count=$(ps aux 2>/dev/null | wc -l 2>/dev/null) || process_count="Unknown"
+    [[ "$process_count" != "Unknown" ]] && process_count=$((process_count - 1))
+    zombie_count=$(ps aux 2>/dev/null | awk '$8 ~ /^Z/ {count++} END {print count+0}' 2>/dev/null) || zombie_count="0"
+    
+    info+="Running Processes: $process_count\n"
+    info+="Zombie Processes: $zombie_count\n"
+    
+    ui_info "Hardware & System Information" "$info"
+    return 0
+}
+
+show_system_info() {
+    log "Starting enhanced show_system_info function"
+    
+    while true; do
+        local menu_items=()
+        
+        # Check if running as root/sudo for enhanced information
+        local sudo_warning=""
+        if [[ $EUID -ne 0 ]]; then
+            sudo_warning="⚠️  Run this script as superuser (sudo) to see the magic inside!\n\n"
+        fi
+        
+        # Get key system info for overview
+        local os_name="Unknown"
+        local os_version="N/A"
+        if [[ -f /etc/os-release ]]; then
+            while IFS='=' read -r key value 2>/dev/null; do
+                case "$key" in
+                    PRETTY_NAME) os_name="${value//\"/}" ;;
+                    VERSION) os_version="${value//\"/}" ;;
+                esac
+            done < /etc/os-release 2>/dev/null || true
+        fi
+        
+        local kernel_version
+        kernel_version=$(uname -r 2>/dev/null) || kernel_version="Unknown"
+        
+        # Enhanced CPU information extraction
+        local cpu_model cpu_cores cpu_threads cpu_freq cpu_max_freq cpu_family
+        if [[ -f /proc/cpuinfo ]]; then
+            cpu_model=$(grep "model name" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_model="Unknown"
+            cpu_cores=$(grep "cpu cores" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_cores="Unknown"
+            cpu_threads=$(grep -c "^processor" /proc/cpuinfo 2>/dev/null) || cpu_threads="Unknown"
+            cpu_freq=$(grep "cpu MHz" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_freq="Unknown"
+            cpu_family=$(grep "cpu family" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_family="Unknown"
+            
+            # Fallback for cores if "cpu cores" not found
+            if [[ "$cpu_cores" == "Unknown" ]]; then
+                cpu_cores=$(grep "siblings" /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_cores="$cpu_threads"
+            fi
+            
+            # Get max frequency from lscpu if available
+            if command -v lscpu &>/dev/null; then
+                cpu_max_freq=$(lscpu 2>/dev/null | grep "CPU max MHz" | awk '{print $4}' 2>/dev/null) || cpu_max_freq="Unknown"
+                [[ "$cpu_max_freq" != "Unknown" ]] && cpu_max_freq="${cpu_max_freq} MHz"
+                
+                # Also try to get model from lscpu if /proc/cpuinfo failed
+                if [[ "$cpu_model" == "Unknown" ]]; then
+                    cpu_model=$(lscpu 2>/dev/null | grep "Model name:" | cut -d: -f2 | sed 's/^ *//' 2>/dev/null) || cpu_model="Unknown"
+                fi
+            else
+                cpu_max_freq="Unknown"
+            fi
+            
+            [[ "$cpu_freq" != "Unknown" ]] && cpu_freq="${cpu_freq} MHz"
+        else
+            cpu_model="Unknown"
+            cpu_cores="Unknown"
+            cpu_threads="Unknown"
+            cpu_freq="Unknown"
+            cpu_max_freq="Unknown"
+            cpu_family="Unknown"
+        fi
+        
+        # System model and serial information with enhanced detection
+        local system_model system_serial system_manufacturer system_family system_version
+        if command -v dmidecode &>/dev/null && [[ $EUID -eq 0 ]]; then
+            system_manufacturer=$(dmidecode -s system-manufacturer 2>/dev/null | head -1 2>/dev/null) || system_manufacturer="Unknown"
+            system_model=$(dmidecode -s system-product-name 2>/dev/null | head -1 2>/dev/null) || system_model="Unknown"
+            system_serial=$(dmidecode -s system-serial-number 2>/dev/null | head -1 2>/dev/null) || system_serial="Unknown"
+            system_family=$(dmidecode -s system-family 2>/dev/null | head -1 2>/dev/null) || system_family="Unknown"
+            system_version=$(dmidecode -s system-version 2>/dev/null | head -1 2>/dev/null) || system_version="Unknown"
+        else
+            # Fallback methods for non-root users
+            system_manufacturer=$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null) || system_manufacturer="Unknown"
+            system_model=$(cat /sys/class/dmi/id/product_name 2>/dev/null) || system_model="Unknown"
+            system_serial=$(cat /sys/class/dmi/id/product_serial 2>/dev/null) || system_serial="Unknown"
+            system_family=$(cat /sys/class/dmi/id/product_family 2>/dev/null) || system_family="Unknown"
+            system_version=$(cat /sys/class/dmi/id/product_version 2>/dev/null) || system_version="Unknown"
+        fi
+        
+        # Memory information with detailed specs - convert to GB for consistency
+        local memory_total memory_used memory_available memory_speed memory_type memory_slots
+        if command -v free &>/dev/null; then
+            # Get memory in bytes and convert to GB for cleaner display
+            local mem_total_bytes mem_used_bytes mem_available_bytes
+            mem_total_bytes=$(free -b 2>/dev/null | grep "Mem:" | awk '{print $2}' 2>/dev/null) || mem_total_bytes="0"
+            mem_used_bytes=$(free -b 2>/dev/null | grep "Mem:" | awk '{print $3}' 2>/dev/null) || mem_used_bytes="0"
+            mem_available_bytes=$(free -b 2>/dev/null | grep "Mem:" | awk '{print $7}' 2>/dev/null) || mem_available_bytes="0"
+            
+            # Convert bytes to GB (decimal) for cleaner display
+            if [[ "$mem_total_bytes" -gt 0 ]]; then
+                memory_total=$(awk "BEGIN {printf \"%.1fGB\", $mem_total_bytes/1000000000}")
+            else
+                memory_total="Unknown"
+            fi
+            
+            if [[ "$mem_used_bytes" -gt 0 ]]; then
+                memory_used=$(awk "BEGIN {printf \"%.1fGB\", $mem_used_bytes/1000000000}")
+            else
+                memory_used="Unknown"
+            fi
+            
+            if [[ "$mem_available_bytes" -gt 0 ]]; then
+                memory_available=$(awk "BEGIN {printf \"%.1fGB\", $mem_available_bytes/1000000000}")
+            else
+                memory_available="Unknown"
+            fi
+        else
+            memory_total="Unknown"
+            memory_used="Unknown"
+            memory_available="Unknown"
+        fi
+        
+        if command -v dmidecode &>/dev/null && [[ $EUID -eq 0 ]]; then
+            # Get memory type - try multiple approaches
+            memory_type=$(dmidecode -t memory 2>/dev/null | grep -E "^\s*Type:" | grep -v "Unknown" | grep -v "Error Correction Type" | head -1 | awk '{print $2}' 2>/dev/null) || memory_type="Unknown"
+            if [[ "$memory_type" == "Unknown" ]]; then
+                memory_type=$(dmidecode -t 17 2>/dev/null | grep -E "^\s*Type:" | grep -v "Unknown" | head -1 | awk '{print $2}' 2>/dev/null) || memory_type="Unknown"
+            fi
+            
+            # Get memory speed - try multiple approaches
+            memory_speed=$(dmidecode -t memory 2>/dev/null | grep -E "^\s*Speed:" | grep -v "Unknown" | head -1 | awk '{print $2, $3}' 2>/dev/null) || memory_speed="Unknown"
+            if [[ "$memory_speed" == "Unknown" ]]; then
+                memory_speed=$(dmidecode -t 17 2>/dev/null | grep -E "^\s*Speed:" | grep -v "Unknown" | head -1 | awk '{print $2, $3}' 2>/dev/null) || memory_speed="Unknown"
+            fi
+            
+            # Count memory slots with actual memory
+            memory_slots=$(dmidecode -t memory 2>/dev/null | grep -E "^\s*Size:" | grep -v "No Module Installed" | wc -l 2>/dev/null) || memory_slots="Unknown"
+            if [[ "$memory_slots" == "0" || "$memory_slots" == "Unknown" ]]; then
+                memory_slots=$(dmidecode -t 17 2>/dev/null | grep -E "^\s*Size:" | grep -v "No Module Installed" | wc -l 2>/dev/null) || memory_slots="Unknown"
+            fi
+        else
+            memory_type="Unknown"
+            memory_speed="Unknown"
+            memory_slots="Unknown"
+        fi
+        
+        # Storage information with usage percentage
+        local storage_total storage_used storage_available storage_usage_percent storage_model storage_type
+        if command -v df &>/dev/null; then
+            local df_output
+            df_output=$(df -h / 2>/dev/null | tail -1)
+            storage_total=$(echo "$df_output" | awk '{print $2}' 2>/dev/null) || storage_total="Unknown"
+            storage_used=$(echo "$df_output" | awk '{print $3}' 2>/dev/null) || storage_used="Unknown"
+            storage_available=$(echo "$df_output" | awk '{print $4}' 2>/dev/null) || storage_available="Unknown"
+            storage_usage_percent=$(echo "$df_output" | awk '{print $5}' 2>/dev/null) || storage_usage_percent="Unknown"
+        else
+            storage_total="Unknown"
+            storage_used="Unknown"
+            storage_available="Unknown"
+            storage_usage_percent="Unknown"
+        fi
+        
+        # Enhanced storage model detection with multiple devices
+        local storage_devices=""
+        if command -v lsblk &>/dev/null; then
+            # Get all block devices with size and model info
+            local block_devices=$(lsblk -dno NAME,SIZE,MODEL 2>/dev/null | grep -E "^(sd|hd|nvme|mmcblk)" 2>/dev/null)
+            if [[ -n "$block_devices" ]]; then
+                while IFS= read -r line; do
+                    local device_name=$(echo "$line" | awk '{print $1}')
+                    local device_size=$(echo "$line" | awk '{print $2}')
+                    local device_model=$(echo "$line" | awk '{for(i=3;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/[[:space:]]*$//')
+                    
+                    if [[ -n "$device_name" && -n "$device_size" ]]; then
+                        if [[ -z "$device_model" || "$device_model" == " " ]]; then
+                            device_model="Unknown Model"
+                        fi
+                        if [[ -n "$storage_devices" ]]; then
+                            storage_devices="$storage_devices, "
+                        fi
+                        storage_devices="$storage_devices$device_name ($device_size, $device_model)"
+                    fi
+                done <<< "$block_devices"
+            fi
+        fi
+        
+        # Fallback to single device detection if no devices found
+        if [[ -z "$storage_devices" ]]; then
+            if [[ -f /sys/block/sda/device/model ]]; then
+                storage_model=$(cat /sys/block/sda/device/model 2>/dev/null | tr -d ' \t\n\r' 2>/dev/null) || storage_model="Unknown"
+            elif command -v lsblk &>/dev/null; then
+                storage_model=$(lsblk -d -o MODEL 2>/dev/null | grep -v "MODEL" | head -1 | tr -d ' \t\n\r' 2>/dev/null) || storage_model="Unknown"
+            else
+                storage_model="Unknown"
+            fi
+            storage_devices="Primary: $storage_model"
+        fi
+        
+        # Detect storage type (SSD/HDD)
+        if [[ -f /sys/block/sda/queue/rotational ]]; then
+            local rotational
+            rotational=$(cat /sys/block/sda/queue/rotational 2>/dev/null)
+            if [[ "$rotational" == "0" ]]; then
+                storage_type="SSD"
+            else
+                storage_type="HDD"
+            fi
+        else
+            storage_type="Unknown"
+        fi
+        
+        # GPU information
+        local gpu_info
+        if command -v lspci &>/dev/null; then
+            gpu_info=$(lspci 2>/dev/null | grep -i "vga\|3d\|display" | sed 's/^[0-9a-f:.]* //' | head -1 2>/dev/null) || gpu_info="Unknown"
+        else
+            gpu_info="Unknown"
+        fi
+        
+        # Enhanced port detection with proper formatting - avoid double counting
+        local usb_ports_list display_ports_list audio_ports_list thunderbolt_count
+        usb_ports_list=""
+        display_ports_list=""
+        audio_ports_list=""
+        thunderbolt_count="0"
+        
+        if command -v dmidecode &>/dev/null && [[ $EUID -eq 0 ]]; then
+            # Get unique port connectors from dmidecode to avoid duplicates
+            local port_connectors
+            port_connectors=$(dmidecode -t 8 2>/dev/null | grep -E "External Reference Designator|Port Type" | paste - - 2>/dev/null)
+            
+            # Count USB ports more accurately
+            local usb2_count usb3_count usbc_count
+            usb2_count=$(echo "$port_connectors" | grep -i "USB.*2\|USB" | grep -v "USB.*3\|USB-C" | wc -l 2>/dev/null) || usb2_count="0"
+            usb3_count=$(echo "$port_connectors" | grep -i "USB.*3" | wc -l 2>/dev/null) || usb3_count="0"
+            usbc_count=$(echo "$port_connectors" | grep -i "USB-C\|Type-C" | wc -l 2>/dev/null) || usbc_count="0"
+            
+            # If dmidecode shows no USB ports, use lsusb as fallback but be conservative
+            if [[ "$usb2_count" -eq 0 && "$usb3_count" -eq 0 && "$usbc_count" -eq 0 ]]; then
+                if command -v lsusb &>/dev/null; then
+                    # Count USB controllers and estimate conservatively
+                    local usb_controllers
+                    usb_controllers=$(lspci 2>/dev/null | grep -i "usb controller" | wc -l 2>/dev/null) || usb_controllers="0"
+                    if [[ "$usb_controllers" -gt 0 ]]; then
+                        # Conservative estimate: 1-2 ports per controller
+                        usb3_count="$usb_controllers"
+                    fi
+                fi
+            fi
+            
+            # Format USB ports cleanly
+            local usb_parts=()
+            [[ "$usb2_count" -gt 0 ]] && usb_parts+=("${usb2_count} x USB 2.0")
+            [[ "$usb3_count" -gt 0 ]] && usb_parts+=("${usb3_count} x USB 3.0")
+            [[ "$usbc_count" -gt 0 ]] && usb_parts+=("${usbc_count} x USB-C")
+            
+            if [[ ${#usb_parts[@]} -gt 0 ]]; then
+                usb_ports_list=$(IFS=', '; echo "${usb_parts[*]}")
+            else
+                usb_ports_list="No USB ports detected"
+            fi
+            
+            # Count display ports more accurately
+            local hdmi_count mini_dp_count dp_count vga_count
+            hdmi_count=$(echo "$port_connectors" | grep -i "HDMI" | wc -l 2>/dev/null) || hdmi_count="0"
+            mini_dp_count=$(echo "$port_connectors" | grep -i "Mini.*Display\|Mini.*DP" | wc -l 2>/dev/null) || mini_dp_count="0"
+            dp_count=$(echo "$port_connectors" | grep -i "DisplayPort\|Display Port" | grep -v -i "Mini" | wc -l 2>/dev/null) || dp_count="0"
+            vga_count=$(echo "$port_connectors" | grep -i "VGA\|D-Sub" | wc -l 2>/dev/null) || vga_count="0"
+            
+            # Format display ports
+            local display_parts=()
+            [[ "$hdmi_count" -gt 0 ]] && display_parts+=("${hdmi_count} x HDMI")
+            [[ "$mini_dp_count" -gt 0 ]] && display_parts+=("${mini_dp_count} x Mini DisplayPort")
+            [[ "$dp_count" -gt 0 ]] && display_parts+=("${dp_count} x DisplayPort")
+            [[ "$vga_count" -gt 0 ]] && display_parts+=("${vga_count} x VGA")
+            
+            if [[ ${#display_parts[@]} -gt 0 ]]; then
+                display_ports_list=$(IFS=', '; echo "${display_parts[*]}")
+            else
+                display_ports_list="No display ports detected"
+            fi
+            
+            # Count Thunderbolt ports accurately
+            thunderbolt_count=$(echo "$port_connectors" | grep -i "Thunderbolt" | wc -l 2>/dev/null) || thunderbolt_count="0"
+            
+            # Count audio ports more accurately
+            local audio_count
+            audio_count=$(echo "$port_connectors" | grep -i "Audio\|Headphone\|Microphone" | wc -l 2>/dev/null) || audio_count="0"
+            [[ "$audio_count" -gt 0 ]] && audio_ports_list="${audio_count} x Audio"
+        else
+            # Simplified fallback for non-root users
+            usb_ports_list="Port detection requires sudo"
+            display_ports_list="Port detection requires sudo"
+            audio_ports_list="Port detection requires sudo"
+        fi
+        
+        # Network adapter information with connectivity
+        local network_adapters internet_status wifi_adapter eth_adapter
+        network_adapters=""
+        internet_status="❌ No connection"
+        wifi_adapter="Not detected"
+        eth_adapter="Not detected"
+        
+        # Check internet connectivity
+        if ping -c 1 8.8.8.8 &>/dev/null || ping -c 1 1.1.1.1 &>/dev/null; then
+            internet_status="✅ Connected"
+        fi
+        
+        # Detect network adapters
+        if command -v ip &>/dev/null; then
+            # Check for Wi-Fi adapter
+            if ip link show 2>/dev/null | grep -q "wl"; then
+                local wifi_interface
+                wifi_interface=$(ip link show 2>/dev/null | grep "wl" | head -1 | awk -F: '{print $2}' | tr -d ' ' 2>/dev/null)
+                if [[ -n "$wifi_interface" ]]; then
+                    wifi_adapter="$wifi_interface (Wi-Fi)"
+                    # Check if Wi-Fi is connected
+                    if ip addr show "$wifi_interface" 2>/dev/null | grep -q "inet "; then
+                        wifi_adapter="$wifi_adapter - Connected"
+                    else
+                        wifi_adapter="$wifi_adapter - Disconnected"
+                    fi
+                fi
+            fi
+            
+            # Check for Ethernet adapter
+            if ip link show 2>/dev/null | grep -q "en\|eth"; then
+                local eth_interface
+                eth_interface=$(ip link show 2>/dev/null | grep -E "en|eth" | head -1 | awk -F: '{print $2}' | tr -d ' ' 2>/dev/null)
+                if [[ -n "$eth_interface" ]]; then
+                    eth_adapter="$eth_interface (Ethernet)"
+                    # Check if Ethernet is connected
+                    if ip addr show "$eth_interface" 2>/dev/null | grep -q "inet "; then
+                        eth_adapter="$eth_adapter - Connected"
+                    else
+                        eth_adapter="$eth_adapter - Disconnected"
+                    fi
+                fi
+            fi
+        fi
+        
+        # Audio driver information
+        local audio_drivers audio_devices
+        audio_drivers="Unknown"
+        audio_devices="Unknown"
+        
+        if command -v lspci &>/dev/null; then
+            audio_drivers=$(lspci 2>/dev/null | grep -i "audio" | sed 's/^[0-9a-f:.]* //' | head -1 2>/dev/null) || audio_drivers="Unknown"
+        fi
+        
+        if [[ -d /proc/asound ]]; then
+            audio_devices=$(cat /proc/asound/cards 2>/dev/null | grep -E "^\s*[0-9]" | wc -l 2>/dev/null) || audio_devices="0"
+            [[ "$audio_devices" -gt 0 ]] && audio_devices="${audio_devices} audio device(s)"
+        fi
+        
+        local uptime_info
+        uptime_info=$(uptime -p 2>/dev/null | sed 's/up //' 2>/dev/null) || uptime_info="Unknown"
+        
+        # Get additional comprehensive system information
+        local bios_vendor bios_version bios_date mb_manufacturer mb_product mb_version mb_serial
+        local apt_count snap_count flatpak_count process_count zombie_count boot_time load_avg
+        
+        # BIOS/UEFI Information
+        if command -v dmidecode &>/dev/null && [[ $EUID -eq 0 ]]; then
+            bios_vendor=$(dmidecode -s bios-vendor 2>/dev/null | head -1 2>/dev/null) || bios_vendor="Unknown"
+            bios_version=$(dmidecode -s bios-version 2>/dev/null | head -1 2>/dev/null) || bios_version="Unknown"
+            bios_date=$(dmidecode -s bios-release-date 2>/dev/null | head -1 2>/dev/null) || bios_date="Unknown"
+            mb_manufacturer=$(dmidecode -s baseboard-manufacturer 2>/dev/null | head -1 2>/dev/null) || mb_manufacturer="Unknown"
+            mb_product=$(dmidecode -s baseboard-product-name 2>/dev/null | head -1 2>/dev/null) || mb_product="Unknown"
+            mb_version=$(dmidecode -s baseboard-version 2>/dev/null | head -1 2>/dev/null) || mb_version="Unknown"
+            mb_serial=$(dmidecode -s baseboard-serial-number 2>/dev/null | head -1 2>/dev/null) || mb_serial="Unknown"
+        else
+            # Fallback to /sys/class/dmi/id/
+            [[ -f /sys/class/dmi/id/bios_vendor ]] && bios_vendor=$(cat /sys/class/dmi/id/bios_vendor 2>/dev/null | tr -d '\0' 2>/dev/null) || bios_vendor="Unknown"
+            [[ -f /sys/class/dmi/id/bios_version ]] && bios_version=$(cat /sys/class/dmi/id/bios_version 2>/dev/null | tr -d '\0' 2>/dev/null) || bios_version="Unknown"
+            [[ -f /sys/class/dmi/id/bios_date ]] && bios_date=$(cat /sys/class/dmi/id/bios_date 2>/dev/null | tr -d '\0' 2>/dev/null) || bios_date="Unknown"
+            [[ -f /sys/class/dmi/id/board_vendor ]] && mb_manufacturer=$(cat /sys/class/dmi/id/board_vendor 2>/dev/null | tr -d '\0' 2>/dev/null) || mb_manufacturer="Unknown"
+            [[ -f /sys/class/dmi/id/board_name ]] && mb_product=$(cat /sys/class/dmi/id/board_name 2>/dev/null | tr -d '\0' 2>/dev/null) || mb_product="Unknown"
+            [[ -f /sys/class/dmi/id/board_version ]] && mb_version=$(cat /sys/class/dmi/id/board_version 2>/dev/null | tr -d '\0' 2>/dev/null) || mb_version="Unknown"
+            [[ -f /sys/class/dmi/id/board_serial ]] && mb_serial=$(cat /sys/class/dmi/id/board_serial 2>/dev/null | tr -d '\0' 2>/dev/null) || mb_serial="Unknown"
+        fi
+        
+        # Package counts
+        apt_count=$(dpkg -l 2>/dev/null | grep -c "^ii" 2>/dev/null) || apt_count="0"
+        snap_count=$(snap list 2>/dev/null | tail -n +2 | wc -l 2>/dev/null) || snap_count="0"
+        flatpak_count=$(flatpak list --app 2>/dev/null | wc -l 2>/dev/null) || flatpak_count="0"
+        
+        # Process information
+        process_count=$(ps aux 2>/dev/null | wc -l 2>/dev/null) || process_count="Unknown"
+        [[ "$process_count" != "Unknown" ]] && process_count=$((process_count - 1))
+        zombie_count=$(ps aux 2>/dev/null | awk '$8 ~ /^Z/ {count++} END {print count+0}' 2>/dev/null) || zombie_count="0"
+        
+        # System status
+        boot_time=$(who -b 2>/dev/null | awk '{print $3 " " $4}' 2>/dev/null) || boot_time="Unknown"
+        load_avg=$(uptime 2>/dev/null | awk -F'load average:' '{print $2}' 2>/dev/null | sed 's/^ *//' 2>/dev/null) || load_avg="Unknown"
+        
+        # Ultrabunt package statistics
+        local total_pkgs=${#PACKAGES[@]}
+        local installed_count=0
+        for name in "${!PACKAGES[@]}"; do
+            if is_package_installed "$name" 2>/dev/null; then
+                ((installed_count++)) 2>/dev/null || true
+            fi
+        done 2>/dev/null || true
+        
+        # Ensure all variables are initialized with fallback values
+        [[ -z "$cpu_model" ]] && cpu_model="Unknown"
+        [[ -z "$cpu_cores" ]] && cpu_cores="Unknown"
+        [[ -z "$cpu_threads" ]] && cpu_threads="Unknown"
+        [[ -z "$cpu_freq" ]] && cpu_freq="Unknown"
+        [[ -z "$cpu_max_freq" ]] && cpu_max_freq="Unknown"
+        [[ -z "$cpu_family" ]] && cpu_family="Unknown"
+        [[ -z "$memory_used" ]] && memory_used="Unknown"
+        [[ -z "$memory_total" ]] && memory_total="Unknown"
+        [[ -z "$memory_type" ]] && memory_type="Unknown"
+        [[ -z "$memory_speed" ]] && memory_speed="Unknown"
+        [[ -z "$memory_slots" ]] && memory_slots="Unknown"
+        [[ -z "$storage_used" ]] && storage_used="Unknown"
+        [[ -z "$storage_total" ]] && storage_total="Unknown"
+        [[ -z "$storage_usage_percent" ]] && storage_usage_percent="Unknown"
+        [[ -z "$storage_devices" ]] && storage_devices="Unknown"
+        [[ -z "$storage_type" ]] && storage_type="Unknown"
+        [[ -z "$usb_ports_list" ]] && usb_ports_list="Unknown"
+        [[ -z "$display_ports_list" ]] && display_ports_list="Unknown"
+        [[ -z "$thunderbolt_count" ]] && thunderbolt_count="0"
+        [[ -z "$audio_ports_list" ]] && audio_ports_list="Unknown"
+        [[ -z "$internet_status" ]] && internet_status="Unknown"
+        [[ -z "$wifi_adapter" ]] && wifi_adapter="Unknown"
+        [[ -z "$eth_adapter" ]] && eth_adapter="Unknown"
+        [[ -z "$gpu_info" ]] && gpu_info="Unknown"
+        [[ -z "$audio_drivers" ]] && audio_drivers="Unknown"
+        [[ -z "$audio_devices" ]] && audio_devices="Unknown"
+        [[ -z "$bios_vendor" ]] && bios_vendor="Unknown"
+        [[ -z "$bios_version" ]] && bios_version="Unknown"
+        [[ -z "$bios_date" ]] && bios_date="Unknown"
+        [[ -z "$mb_manufacturer" ]] && mb_manufacturer="Unknown"
+        [[ -z "$mb_product" ]] && mb_product="Unknown"
+        [[ -z "$mb_version" ]] && mb_version="Unknown"
+        [[ -z "$mb_serial" ]] && mb_serial="Unknown"
+        [[ -z "$apt_count" ]] && apt_count="0"
+        [[ -z "$snap_count" ]] && snap_count="0"
+        [[ -z "$flatpak_count" ]] && flatpak_count="0"
+        [[ -z "$process_count" ]] && process_count="Unknown"
+        [[ -z "$zombie_count" ]] && zombie_count="0"
+        [[ -z "$boot_time" ]] && boot_time="Unknown"
+        [[ -z "$load_avg" ]] && load_avg="Unknown"
+        [[ -z "$uptime_info" ]] && uptime_info="Unknown"
+        [[ -z "$total_pkgs" ]] && total_pkgs="0"
+        [[ -z "$installed_count" ]] && installed_count="0"
+        
+        # Create compact overview text with single-line format
+        local overview=""
+        [[ -n "$sudo_warning" ]] && overview+="$sudo_warning"
+        
+        overview+="SYSTEM INFORMATION (Compact View)\n"
+        overview+="═══════════════════════════════════════\n"
+        
+        # Compact single-line format as requested
+        overview+="OS: $os_name                                                                                                                   \n"
+        overview+="Kernel: $kernel_version                                                                                                                \n"
+        overview+="CPU: $cpu_model                                                                                            \n"
+        overview+="Cores: $cpu_cores | Threads: $cpu_threads                                                                                                                    \n"
+        overview+="Current: $cpu_freq"
+        [[ "$cpu_max_freq" != "Unknown" ]] && overview+=" | Max: $cpu_max_freq"
+        overview+="                                                                                               \n"
+        overview+="RAM: $memory_used / $memory_total used"
+        [[ "$memory_type" != "Unknown" ]] && overview+=" ($memory_type"
+        [[ "$memory_speed" != "Unknown" ]] && overview+=" @ $memory_speed"
+        [[ "$memory_slots" != "Unknown" ]] && overview+=" - $memory_slots slots"
+        [[ "$memory_type" != "Unknown" ]] && overview+=")"
+        overview+="                                                                                     \n"
+        overview+="Storage: $storage_used / $storage_total used ($storage_usage_percent)"
+        [[ "$storage_devices" != "Unknown" ]] && overview+=" - $storage_devices"
+        [[ "$storage_type" != "Unknown" ]] && overview+=" ($storage_type)"
+        overview+="                                                                   \n"
+        overview+="USB Ports: $usb_ports_list                                                                                                       \n"
+        overview+="Display Ports: $display_ports_list                                                                                             \n"
+        [[ "$thunderbolt_count" -gt 0 ]] && overview+="Thunderbolt: ${thunderbolt_count} x Thunderbolt                                                                                                             \n"
+        [[ -n "$audio_ports_list" ]] && overview+="Audio Ports: $audio_ports_list                                                                                                                   \n"
+        overview+="Internet: $internet_status                                                                                                                   \n"
+        overview+="Wi-Fi: $wifi_adapter                                                                                                        \n"
+        overview+="Ethernet: $eth_adapter                                                                                                      \n"
+        overview+="Graphics: $gpu_info                               \n"
+        overview+="Audio Driver: $audio_drivers                                                   \n"
+        [[ "$audio_devices" != "Unknown" ]] && overview+="Audio Devices: $audio_devices                                                                                                         \n"
+        overview+="BIOS Vendor: $bios_vendor                                                                                                                  \n"
+        overview+="BIOS Version: $bios_version                                                                                                                \n"
+        overview+="BIOS Date: $bios_date                                                                                                                    \n"
+        overview+="Motherboard: $mb_manufacturer $mb_product                                                                                             \n"
+        [[ "$mb_version" != "Unknown" ]] && overview+="MB Version: $mb_version                                                                                                                \n"
+        [[ "$mb_serial" != "Unknown" ]] && overview+="MB Serial: $mb_serial                                                                                                             \n"
+        overview+="\n"
+        overview+="Select a category below for detailed information:\n"
+        
+        # Build menu items
+        menu_items+=("cpu" "🖥️  CPU & Processor Details")
+        menu_items+=("memory" "🧠 Memory & RAM Information")
+        menu_items+=("storage" "💾 Storage & Disk Details")
+        menu_items+=("hardware" "⚙️  Hardware & System Info")
+        menu_items+=("network" "🌐 Network & Connectivity")
+        menu_items+=("graphics" "🎮 Graphics & Display Info")
+        menu_items+=("audio" "🔊 Audio & Sound Devices")
+        menu_items+=("packages" "📦 Package Managers & Software")
+        menu_items+=("zback" "(B) Back to Main Menu")
+        
+        local choice
+        choice=$(ui_menu "System Information Hub" "$overview" 50 140 8 "${menu_items[@]}") || break
+        
+        case "$choice" in
+            cpu)
+                show_cpu_details
+                ;;
+            memory)
+                show_memory_details
+                ;;
+            storage)
+                show_storage_details
+                ;;
+            hardware)
+                show_hardware_details
+                ;;
+            network)
+                show_network_details
+                ;;
+            graphics)
+                show_graphics_details
+                ;;
+            audio)
+                show_audio_details
+                ;;
+            packages)
+                show_package_details
+                ;;
+            zback|back|""|q|z)
+                break
+                ;;
+        esac
+    done
+    
+    log "Enhanced show_system_info completed"
     return 0
 }
 
@@ -7883,6 +9813,65 @@ export_package_list() {
 # ADVANCED FEATURES
 # ==============================================================================
 
+show_essentials_setup_menu() {
+    log "Entering show_essentials_setup_menu"
+
+    while true; do
+        local menu_items=(
+            "install" "(.Y.) Install Essentials (curl, wget, zip, unzip, htop, snapd)"
+            "" "(_*_)"
+            "back" "(Z) ← Back to Main Menu"
+        )
+
+        local choice
+        choice=$(ui_menu "First-Time Essentials" \
+            "Install minimal tools to continue." \
+            $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
+
+        case "$choice" in
+            install)
+                install_essentials_bundle || ui_msg "Install Error" "Failed to install essentials. Check $LOGFILE"
+                ;;
+            back|zback|z|"")
+                break
+                ;;
+        esac
+    done
+}
+
+install_essentials_bundle() {
+    log "Installing First-Time Essentials bundle"
+    ui_msg "Essentials" "Installing core tools: curl, wget, zip, unzip, htop\n\nThis may take a minute."
+
+    apt_update
+
+    # Ensure APT prerequisites for repository keys
+    install_apt_package "ca-certificates" || true
+    install_apt_package "gnupg" || true
+
+    # Install core tools
+    local tools=(curl wget zip unzip htop)
+    local failures=()
+    for t in "${tools[@]}"; do
+        if ! install_apt_package "$t"; then
+            failures+=("$t")
+        fi
+    done
+
+    # Prepare snapd
+    if ! ensure_snapd_ready; then
+        ui_msg "snapd Issue" "snapd could not be prepared. You can retry from this menu."
+    fi
+
+    if [[ ${#failures[@]} -gt 0 ]]; then
+        ui_msg "Install Partial" "Some tools failed to install:\n\n${failures[*]}\n\nPlease check the log: $LOGFILE"
+        return 1
+    else
+        ui_msg "Essentials Installed" "All core tools installed and snapd prepared."
+        return 0
+    fi
+}
+
 install_oh_my_zsh() {
     if [[ -d "$HOME/.oh-my-zsh" ]]; then
         ui_msg "Already Installed" "Oh My Zsh is already installed!"
@@ -7910,6 +9899,194 @@ install_oh_my_zsh() {
 # WORDPRESS INSTALLATION SYSTEM
 # ==============================================================================
 
+# ==============================================================================
+# CLOUDFLARE FIREWALL SETUP
+# ============================================================================
+
+cloudflare_check_dependencies() {
+    local missing=()
+    if ! command -v curl >/dev/null 2>&1; then missing+=("curl"); fi
+    if ! command -v jq >/dev/null 2>&1; then missing+=("jq"); fi
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        local list="${missing[*]}"
+        speak_if_enabled "Cloudflare setup requires $list."
+        if ui_yesno "Install Dependencies" "Cloudflare setup requires: ${list}\n\nInstall them now via apt?"; then
+            sudo apt-get update -y || true
+            sudo apt-get install -y ${list} || {
+                ui_msg "Install Failed" "Failed to install dependencies: ${list}. Please install manually and retry."
+                return 1
+            }
+        else
+            ui_msg "Missing Dependencies" "Cannot continue without: ${list}."
+            return 1
+        fi
+    fi
+}
+
+cloudflare_create_rule() {
+    local zone_id="$1"
+    local api_token="$2"
+    local desc="$3"
+    local expr="$4"
+    local action="block"
+    local api="https://api.cloudflare.com/client/v4/zones/${zone_id}/firewall/rules"
+
+    # Build JSON payload safely
+    local payload
+    payload=$(printf '[{"description":"%s","action":"%s","filter":{"expression":"%s"}}]' \
+        "$desc" "$action" "$expr")
+
+    speak_if_enabled "Creating Cloudflare rule: $desc"
+    log "Cloudflare POST payload: $payload"
+    local resp
+    resp=$(curl -s -X POST "$api" \
+        -H "Authorization: Bearer ${api_token}" \
+        -H "Content-Type: application/json" \
+        --data "$payload")
+    log "Cloudflare response: $resp"
+
+    local ok
+    ok=$(echo "$resp" | jq -r '.success // false' 2>/dev/null)
+    if [[ "$ok" == "true" ]]; then
+        ui_msg "Cloudflare" "✅ Rule created: ${desc}"
+        return 0
+    else
+        local errs
+        errs=$(echo "$resp" | jq -r '.errors | map(.message) | join("; ")' 2>/dev/null)
+        ui_info "Cloudflare API Error" "Failed to create rule: ${desc}\n\nErrors: ${errs}\n\nFull Response:\n$(echo "$resp" | jq . 2>/dev/null || echo "$resp")"
+        return 1
+    fi
+}
+
+show_cloudflare_setup_menu() {
+    log "Entering show_cloudflare_setup_menu"
+
+    # Ensure deps
+    cloudflare_check_dependencies || return 1
+
+    # Minimal instructions (Quick Guide)
+    local cf_quick
+    cf_quick="Cloudflare Setup — Quick Guide\n\n"
+    cf_quick+="Dependencies: curl + jq (auto-install if missing).\n\n"
+    cf_quick+="Zone ID: Cloudflare Dashboard → your domain → Overview → API → Zone ID.\n"
+    cf_quick+="API Token: My Profile → API Tokens → Create Custom Token.\n"
+    cf_quick+="Permissions: Zone → Firewall Services → Edit; Zone Resources → Specific Zone (your domain).\n"
+    cf_quick+="Optional: Verify token works:\n"
+    cf_quick+="curl -X GET https://api.cloudflare.com/client/v4/user/tokens/verify \\\n+ -H 'Authorization: Bearer YOUR_API_TOKEN' -H 'Content-Type: application/json'\n\n"
+    cf_quick+="You will enter: Zone ID, API Token, Domain.\n"
+    cf_quick+="Then choose: light/moderate/extreme, and optional bot blocking.\n"
+    cf_quick+="This will create the corresponding firewall rules."
+    ui_info "Cloudflare Setup (Minimal Instructions)" "$cf_quick"
+
+    # Collect inputs
+    local cf_email zone_id api_token domain level botblock
+    cf_email=$(ui_input "Cloudflare Email (optional)" "Enter your Cloudflare email (optional, for logs only):" "") || return
+    zone_id=$(ui_input "Cloudflare Zone ID" "Enter your Cloudflare Zone ID:" "") || return
+    api_token=$(ui_input "Cloudflare API Token" "Enter your Cloudflare API Token (must have Firewall Rules permissions):" "") || return
+    domain=$(ui_input "Domain Name" "Enter your domain name (e.g. example.com):" "") || return
+
+    if [[ -z "$zone_id" || -z "$api_token" || -z "$domain" ]]; then
+        ui_msg "Missing Inputs" "Zone ID, API Token, and Domain are required."
+        return 1
+    fi
+
+    # Choose security level
+    level=$(ui_menu "Security Level" \
+        "Choose Cloudflare security level:" 12 60 6 \
+        "light" "🟢 Light (basic protection)" \
+        "moderate" "🟡 Moderate (adds wp-admin/wp-login limits)" \
+        "extreme" "🔴 Extreme (adds country blocks)") || return
+
+    # Bot blocking?
+    if ui_yesno "Advanced Bot Blocking" "Enable advanced bot blocking (AI & SEO bots)?"; then
+        botblock="y"
+    else
+        botblock="n"
+    fi
+
+    speak_if_enabled "Applying Cloudflare firewall rules"
+    ui_msg "Applying Rules" "Applying Cloudflare firewall rules for ${domain} (${level}).\n\nThis may take a few seconds..."
+
+    # Build expressions from instructions
+    local expr_light expr_moderate expr_extreme expr_bots
+    expr_light=$(printf '(http.request.uri.path contains "/xmlrpc.php") or ((http.request.uri.path eq "/wp-content/" or http.request.uri.path eq "/wp-includes/") and not http.referer contains "%s")' "$domain")
+
+    expr_moderate='(
+  http.request.uri.path contains "/wp-login.php" or
+  (http.request.uri.path contains "/wp-admin/" and http.request.uri.path ne "/wp-admin/admin-ajax.php")
+)
+and not (ip.geoip.country in {"AU" "US" "UK"})'
+
+    expr_extreme='(
+  ip.geoip.country in {"RU" "CN" "KP" "IR" "VN" "TR" "IN" "NG"}
+)
+and not cf.client.bot'
+
+    expr_bots='(http.request.uri.path ne "/robots.txt") and (
+  (http.user_agent contains "SemrushBot") or
+  (http.user_agent contains "AhrefsBot") or
+  (http.user_agent contains "Barkrowler") or
+  (http.user_agent contains "MJ12bot") or
+  (http.user_agent contains "DotBot") or
+  (http.user_agent contains "Exabot") or
+  (http.user_agent contains "Sogou") or
+  (http.user_agent contains "YandexBot") or
+  (http.user_agent contains "Baidu") or
+  (http.user_agent contains "ia_archiver") or
+  (http.user_agent contains "SemanticaBot") or
+  (http.user_agent contains "SiteLockSpider") or
+  (http.user_agent contains "SeznamBot") or
+  (http.user_agent contains "OpenLinkProfiler") or
+  (http.user_agent contains "SiteBot") or
+  (http.user_agent contains "Screaming Frog") or
+  (http.user_agent contains "DataForSeoBot") or
+  (http.user_agent contains "SEOkicks") or
+  (http.user_agent contains "BLEXBot") or
+  (http.user_agent contains "MegaIndex") or
+  (http.user_agent contains "MegaIndex.ru") or
+  (http.user_agent contains "NetcraftSurveyAgent") or
+  (http.user_agent contains "Apache-HttpClient") or
+  (http.user_agent contains "Python-urllib") or
+  (http.user_agent contains "python-requests") or
+  (http.user_agent contains "libwww-perl") or
+  (http.user_agent contains "Curl") or
+  (http.user_agent contains "wget") or
+  (http.user_agent contains "CensysInspect") or
+  (http.user_agent contains "ZoominfoBot") or
+  (http.user_agent contains "MauiBot") or
+  (http.user_agent contains "spbot") or
+  (http.user_agent contains "GPTBot") or
+  (http.user_agent contains "ClaudeBot") or
+  (http.user_agent contains "Claude-SearchBot") or
+  (http.user_agent contains "Claude-User") or
+  (http.user_agent contains "Bytespider") or
+  (http.user_agent contains "MistralAI-User") or
+  (http.user_agent contains "Perplexity-User") or
+  (http.user_agent contains "ProRataInc") or
+  (http.user_agent contains "Novellum") or
+  (http.user_agent contains "OAI-SearchBot") or
+  (http.user_agent contains "Meta-ExternalFetcher") or
+  (http.user_agent contains "Meta-ExternalAgent")
+)'
+
+    # Apply rules based on level
+    cloudflare_create_rule "$zone_id" "$api_token" "Block XMLRPC and unauthorized includes" "$expr_light" || return 1
+    if [[ "$level" == "moderate" || "$level" == "extreme" ]]; then
+        cloudflare_create_rule "$zone_id" "$api_token" "Restrict wp-login/wp-admin to AU, US, UK" "$expr_moderate" || return 1
+    fi
+    if [[ "$level" == "extreme" ]]; then
+        cloudflare_create_rule "$zone_id" "$api_token" "Block access from high-risk countries" "$expr_extreme" || return 1
+    fi
+    if [[ "$botblock" =~ ^[Yy]$ ]]; then
+        cloudflare_create_rule "$zone_id" "$api_token" "AI Crawl Control - Block AI & SEO Bots" "$expr_bots" || return 1
+    fi
+
+    log "Cloudflare rules applied for domain: $domain level: $level"
+    speak_if_enabled "Cloudflare security rules applied"
+    ui_msg "Success" "✅ Cloudflare security rules applied for ${domain} (${level} mode)"
+    return 0
+}
+
 show_wordpress_setup_menu() {
     log "Entering show_wordpress_setup_menu function"
     
@@ -7928,7 +10105,7 @@ show_wordpress_setup_menu() {
             "wp-cli" "(.Y.) 🔧 Install/Manage WP-CLI"
             "wp-cleanup" "(.Y.) 🧹 WordPress Cleanup & Customization"
             "sql-import-optimize" "(.Y.) 📊 Optimize for Large SQL Imports"
-            "ssl-setup" "(.Y.) 🔒 Add SSL Certificate (Let's Encrypt)"
+            "ssl-setup" "(.Y.) 🔒 SSL Setup (Local or Live)"
             "wp-security" "(.Y.) 🛡️  WordPress Security Hardening"
             "" "(_*_)"
             "zback" "(Z) ← Back to Main Menu"
@@ -7968,7 +10145,7 @@ show_wordpress_setup_menu() {
                 optimize_for_large_sql_imports
                 ;;
             ssl-setup)
-                wordpress_ssl_setup
+                wordpress_ssl_setup_menu
                 ;;
             wp-security)
                 wordpress_security_hardening
@@ -8119,6 +10296,8 @@ wordpress_quick_setup() {
             ui_msg "SSL Setup Warning" "⚠️  SSL setup failed, but site will work with HTTP.\n\nYour WordPress site is fully functional at: http://$domain\n\nYou can set up SSL later using:\n• WordPress management menu\n• Manual SSL configuration\n• Let's Encrypt (for public domains)"
         fi
     fi
+
+    # Removed Let's Encrypt prompt during quick install; SSL can be configured later via WordPress SSL menu (Local or Live)
     
     ui_msg "Step 5 Complete" "✅ $web_server configured successfully!\n\n• Server block: Created\n• PHP processing: Enabled\n• Security headers: Set\n• Site: Active and running$(if [[ "$use_ssl" == true ]]; then echo "\n• SSL: HTTPS enabled"; fi)"
     
@@ -8177,6 +10356,8 @@ wordpress_custom_setup() {
     else
         configure_apache_wordpress_custom "$domain" "$site_dir"
     fi
+
+    # Removed Let's Encrypt prompt during custom install; SSL can be configured later via WordPress SSL menu (Local or Live)
     
     # Show completion
     show_wordpress_completion "$domain" "$db_info"
@@ -9614,9 +11795,13 @@ wordpress_ssl_setup() {
         fi
     fi
     
-    # Get domain name
+    # Get domain name (allow optional argument)
     local domain
-    domain=$(ui_input "Domain Name" "Enter domain for SSL certificate:" "") || return
+    if [[ -n "$1" ]]; then
+        domain="$1"
+    else
+        domain=$(ui_input "Domain Name" "Enter domain for SSL certificate:" "") || return
+    fi
     
     if [[ -z "$domain" || "$domain" == "localhost" ]]; then
         ui_msg "Invalid Domain" "SSL certificates cannot be issued for localhost or empty domains.\n\nPlease use a real domain name."
@@ -9661,7 +11846,7 @@ wordpress_ssl_setup() {
     ui_msg "Obtaining SSL Certificate" "Requesting SSL certificate from Let's Encrypt...\n\nThis may take a moment."
     
     if sudo certbot --${certbot_plugin} -d "$domain" -d "www.$domain" --email "$email" --agree-tos --non-interactive 2>&1 | tee -a "$LOGFILE"; then
-        ui_msg "SSL Success" "SSL certificate installed successfully!\n\nYour site is now available at:\nhttps://$domain\n\nCertbot will automatically renew the certificate."
+    ui_msg "SSL Success" "SSL certificate installed successfully!\n\nYour site is now available at:\nhttps://$domain\n\nCertbot will automatically renew the certificate."
     else
         ui_msg "SSL Error" "Failed to obtain SSL certificate. Please check:\n\n• Domain DNS points to this server\n• Port 80/443 are open\n• Domain is accessible from internet\n\nCheck logs for details."
     fi
@@ -9677,20 +11862,36 @@ setup_local_ssl() {
     local ssl_dir="/etc/ssl/local"
     sudo mkdir -p "$ssl_dir"
     
-    # Generate self-signed certificate
+    # Generate local certificate (prefer mkcert if available)
     local cert_file="$ssl_dir/$domain.crt"
     local key_file="$ssl_dir/$domain.key"
     
-    # Create certificate with proper extensions for modern browsers
-    sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout "$key_file" \
-        -out "$cert_file" \
-        -subj "/C=US/ST=Local/L=Local/O=Local Development/CN=$domain" \
-        -extensions v3_req \
-        -config <(cat /etc/ssl/openssl.cnf <(printf "\n[v3_req]\nsubjectAltName=DNS:$domain,DNS:*.$domain,IP:127.0.0.1")) 2>/dev/null || {
-        log_error "Failed to generate SSL certificate"
-        return 1
-    }
+    if command -v mkcert >/dev/null 2>&1; then
+        log "mkcert detected - generating local certificate"
+        if ! sudo mkcert -key-file "$key_file" -cert-file "$cert_file" "$domain" "www.$domain" 2>/dev/null; then
+            log_warning "mkcert failed, falling back to self-signed OpenSSL certificate"
+            sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout "$key_file" \
+                -out "$cert_file" \
+                -subj "/C=US/ST=Local/L=Local/O=Local Development/CN=$domain" \
+                -extensions v3_req \
+                -config <(cat /etc/ssl/openssl.cnf <(printf "\n[v3_req]\nsubjectAltName=DNS:$domain,DNS:*.$domain,IP:127.0.0.1")) 2>/dev/null || {
+                log_error "Failed to generate SSL certificate"
+                return 1
+            }
+        fi
+    else
+        log "mkcert not found - generating self-signed OpenSSL certificate"
+        sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+            -keyout "$key_file" \
+            -out "$cert_file" \
+            -subj "/C=US/ST=Local/L=Local/O=Local Development/CN=$domain" \
+            -extensions v3_req \
+            -config <(cat /etc/ssl/openssl.cnf <(printf "\n[v3_req]\nsubjectAltName=DNS:$domain,DNS:*.$domain,IP:127.0.0.1")) 2>/dev/null || {
+            log_error "Failed to generate SSL certificate"
+            return 1
+        }
+    fi
     
     # Set proper permissions
     sudo chmod 600 "$key_file"
@@ -9705,6 +11906,121 @@ setup_local_ssl() {
     
     log "Local SSL certificate setup completed for $domain"
     return 0
+}
+
+# Dedicated SSL setup menu for existing WordPress installations
+wordpress_ssl_setup_menu() {
+    log "Entering wordpress_ssl_setup_menu"
+
+    while true; do
+        # Discover WordPress sites
+        local wp_sites=()
+        if [[ -d "/var/www" ]]; then
+            while IFS= read -r -d '' dir; do
+                local site_name
+                site_name=$(basename "$dir")
+                if [[ -f "$dir/wp-config.php" ]]; then
+                    wp_sites+=("$site_name")
+                fi
+            done < <(find /var/www -maxdepth 1 -type d -print0 2>/dev/null)
+        fi
+
+        local info="WordPress SSL Setup\n\n"
+        if [[ ${#wp_sites[@]} -eq 0 ]]; then
+            info+="No WordPress installations detected under /var/www.\n\nUse WordPress Installation to create a site first."
+        else
+            info+="Choose a site, then select Local or Live SSL:\n"
+            info+="═══════════════════════════════════════════════════════════\n"
+            info+="Local (Development): .localhost domains recommended → self-signed or mkcert.\n"
+            info+="Live (Production): Public domain via Let’s Encrypt with Certbot.\n\n"
+            info+="Live prerequisites:\n"
+            info+="• DNS points to this server (A/AAAA record)\n"
+            info+="• If using Cloudflare, set records to your server’s IP (proxied OK)\n"
+            info+="• Ports 80/443 open and reachable\n"
+            info+="• Web server active (Nginx or Apache)\n"
+        fi
+
+        local menu_items=()
+        for site in "${wp_sites[@]}"; do
+            local ssl_icon="🔓"
+            if [[ -f "/etc/letsencrypt/live/$site/fullchain.pem" ]] || [[ -f "/etc/ssl/local/$site.crt" ]]; then
+                ssl_icon="🔒"
+            fi
+            menu_items+=("$site" "$ssl_icon $site")
+        done
+        menu_items+=("" "(_*)")
+        menu_items+=("zback" "(Z) ← Back to WordPress Menu")
+
+        local choice
+        choice=$(ui_menu "SSL Setup" "$info" $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
+
+        case "$choice" in
+            back|zback|z|"")
+                break
+                ;;
+            *)
+                if [[ " ${wp_sites[*]} " =~ " $choice " ]]; then
+                    wordpress_ssl_method_menu "$choice"
+                fi
+                ;;
+        esac
+    done
+
+    log "Exiting wordpress_ssl_setup_menu"
+}
+
+wordpress_ssl_method_menu() {
+    local domain="$1"
+
+    # Detect web server for local SSL config
+    local web_server=""
+    if systemctl is-active --quiet nginx; then
+        web_server="nginx"
+    elif systemctl is-active --quiet apache2; then
+        web_server="apache2"
+    fi
+
+    local info="SSL for: $domain\n\n"
+    if [[ -z "$web_server" ]]; then
+        info+="No active web server detected. Please start Nginx or Apache before configuring SSL."
+    else
+        info+="Choose SSL type:\n"
+        info+="═══════════════════════════════════════════════════════════\n"
+        info+="Local (Development): Generates a local certificate (mkcert if available, otherwise self-signed). Best for .localhost domains.\n\n"
+        info+="Live (Production): Obtains a certificate from Let’s Encrypt via Certbot.\n"
+        info+="Requirements: DNS points to this server, Cloudflare (if used) is set to your server IP, and ports 80/443 are open.\n"
+    fi
+
+    local menu_items=(
+        "local" "🔒 Local SSL (self-signed/mkcert)"
+        "live" "🌍 Live SSL (Let’s Encrypt via Certbot)"
+        "" "(_*)"
+        "zback" "(Z) ← Back to Site List"
+    )
+
+    local choice
+    choice=$(ui_menu "Choose SSL Type" "$info" $DIALOG_HEIGHT $DIALOG_WIDTH 8 "${menu_items[@]}") || return
+
+    case "$choice" in
+        local)
+            if [[ -z "$web_server" ]]; then
+                ui_error "No web server detected. Start Nginx or Apache first."
+                return
+            fi
+            ui_msg "Configuring Local SSL" "Generating a local certificate and updating $web_server configuration for $domain."
+            if setup_local_ssl "$domain" "$web_server"; then
+                ui_success "Local SSL configured: https://$domain"
+            else
+                ui_error "Local SSL setup failed for $domain"
+            fi
+            ;;
+        live)
+            # Route to Let’s Encrypt flow, passing domain
+            wordpress_ssl_setup "$domain"
+            ;;
+        back|zback|z|"")
+            ;;
+    esac
 }
 
 setup_nginx_ssl() {
@@ -10339,6 +12655,7 @@ show_individual_site_management() {
             "test-db" "🗄️  Test Database Connection"
             "repair-db" "🔧 Repair Database Connection"
             "" "(_*_)"
+            "file-access" "📁 Grant File Access to Current User"
             "enable-site" "🔗 Enable/Disable Site"
             "test-site" "🧪 Test Site Accessibility"
             "" "(_*_)"
@@ -10390,6 +12707,9 @@ show_individual_site_management() {
                 ;;
             repair-db)
                 repair_wordpress_database_connection "$site"
+                ;;
+            file-access)
+                grant_file_access_to_user "$site"
                 ;;
             enable-site)
                 manage_site_enablement "$site" "$web_server"
@@ -10471,7 +12791,7 @@ test_site_accessibility() {
         fi
         
         # HTTPS test if SSL is configured
-        if [[ -f "/etc/letsencrypt/live/$site/fullchain.pem" ]] || [[ -f "/etc/ssl/certs/$site.crt" ]]; then
+        if [[ -f "/etc/letsencrypt/live/$site/fullchain.pem" ]] || [[ -f "/etc/ssl/certs/$site.crt" ]] || [[ -f "/etc/ssl/local/$site.crt" ]]; then
             test_info+="HTTPS Test:\n"
             local https_result
             if [[ "$site" =~ \.localhost$ ]]; then
@@ -11009,6 +13329,103 @@ restart_web_services() {
         ui_info "Services Restarted" "✅ All services restarted successfully!\n\n$restart_results\n🎉 PHP configuration changes are now active."
     else
         ui_info "Restart Issues" "⚠️  Some services failed to restart:\n\n$restart_results\n🔧 Please check service status manually if needed."
+    fi
+}
+
+# WordPress file access management function
+grant_file_access_to_user() {
+    local site="$1"
+    local current_user
+    current_user=$(whoami)
+    
+    log "Granting file access to user $current_user for WordPress site: $site"
+    
+    # Check if running as root
+    if [[ "$EUID" -ne 0 ]]; then
+        ui_error "Root Access Required" "This function requires root privileges to modify file permissions.\n\nPlease run the script with sudo or as root user."
+        return 1
+    fi
+    
+    # Get the actual user (not root) if running with sudo
+    if [[ -n "$SUDO_USER" ]]; then
+        current_user="$SUDO_USER"
+    fi
+    
+    local info_text="File Access Management for WordPress Sites\n\n"
+    info_text+="This will grant the current user ($current_user) access to manage files in /var/www/\n\n"
+    info_text+="The following actions will be performed:\n"
+    info_text+="• Add user '$current_user' to the 'www-data' group\n"
+    info_text+="• Change ownership of /var/www to $current_user:www-data\n"
+    info_text+="• Set permissions to 2775 (rwxrwsr-x) for directories\n"
+    info_text+="• Set the setgid bit on directories for proper group inheritance\n"
+    info_text+="• Activate the www-data group for the current session\n\n"
+    info_text+="⚠️  This will affect ALL WordPress sites in /var/www/\n\n"
+    info_text+="Benefits:\n"
+    info_text+="✅ Edit files directly without sudo\n"
+    info_text+="✅ Proper file permissions maintained\n"
+    info_text+="✅ Shared access with web server (www-data)\n"
+    info_text+="✅ New files inherit correct group ownership\n"
+    
+    if ! ui_yesno "Grant File Access" "$info_text"; then
+        return 0
+    fi
+    
+    local results=""
+    local success=true
+    
+    # Step 1: Add user to www-data group
+    results+="Adding user '$current_user' to www-data group...\n"
+    if usermod -aG www-data "$current_user" 2>/dev/null; then
+        results+="✅ User added to www-data group successfully\n\n"
+    else
+        results+="❌ Failed to add user to www-data group\n\n"
+        success=false
+    fi
+    
+    # Step 2: Change ownership of /var/www
+    results+="Changing ownership of /var/www to $current_user:www-data...\n"
+    if chown -R "$current_user:www-data" /var/www 2>/dev/null; then
+        results+="✅ Ownership changed successfully\n\n"
+    else
+        results+="❌ Failed to change ownership\n\n"
+        success=false
+    fi
+    
+    # Step 3: Set permissions
+    results+="Setting permissions to 2775 for /var/www...\n"
+    if chmod -R 2775 /var/www 2>/dev/null; then
+        results+="✅ Permissions set successfully\n\n"
+    else
+        results+="❌ Failed to set permissions\n\n"
+        success=false
+    fi
+    
+    # Step 4: Set setgid bit on directories
+    results+="Setting setgid bit on directories...\n"
+    if find /var/www -type d -exec chmod g+s {} \; 2>/dev/null; then
+        results+="✅ Setgid bit set on directories\n\n"
+    else
+        results+="❌ Failed to set setgid bit\n\n"
+        success=false
+    fi
+    
+    # Step 5: Information about group activation
+    results+="Group Activation:\n"
+    results+="⚠️  To activate the www-data group for your current session, run:\n"
+    results+="   newgrp www-data\n\n"
+    results+="Or log out and log back in for the group changes to take effect.\n\n"
+    
+    if [[ "$success" == "true" ]]; then
+        results+="🎉 File access granted successfully!\n\n"
+        results+="You can now:\n"
+        results+="• Edit files in /var/www/ without sudo\n"
+        results+="• Create new files with proper permissions\n"
+        results+="• Manage WordPress sites directly\n\n"
+        results+="Note: You may need to start a new shell session or run 'newgrp www-data' to activate the group membership."
+        
+        ui_info "File Access Granted" "$results"
+    else
+        ui_error "File Access Setup Failed" "$results"
     fi
 }
 
@@ -11686,7 +14103,8 @@ wordpress_wpcli_management() {
             "zback" "(Z) ← Back to WordPress Menu"
         )
         
-        local choice=$(show_menu "WP-CLI Management" "$wpcli_status" "${menu_items[@]}")
+        local choice
+        choice=$(ui_menu "WP-CLI Management" "$wpcli_status" 20 70 10 "${menu_items[@]}") || break
         
         case $choice in
             install)
@@ -11726,9 +14144,17 @@ install_wpcli() {
         fi
     fi
     
+    # Ensure PHP CLI is available
+    if ! command -v php >/dev/null 2>&1; then
+        log_error "PHP CLI (php) is required for WP-CLI"
+        ui_msg "WP-CLI Install Error" "WP-CLI requires the PHP command-line interpreter (php).\n\nPlease install it first: sudo apt-get update && sudo apt-get install -y php-cli"
+        return 1
+    fi
+    
     # Download and install WP-CLI
     log "Downloading WP-CLI..."
-    if curl -O https://raw.githubusercontent.com/wp-cli/wp-cli/v2.8.1/utils/wp-cli.phar; then
+    # Use official builds URL and follow redirects
+    if curl -L -o wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar; then
         log "Making WP-CLI executable..."
         chmod +x wp-cli.phar
         
@@ -11753,7 +14179,7 @@ install_wpcli() {
     
     # Install bash completion (optional)
     log "Installing bash completion for WP-CLI..."
-    if curl -o /tmp/wp-completion.bash https://raw.githubusercontent.com/wp-cli/wp-cli/v2.8.1/utils/wp-completion.bash 2>/dev/null; then
+    if curl -L -o /tmp/wp-completion.bash https://raw.githubusercontent.com/wp-cli/wp-cli/main/utils/wp-completion.bash 2>/dev/null; then
         sudo mv /tmp/wp-completion.bash /etc/bash_completion.d/wp-cli
         log "Bash completion installed"
     else
@@ -11774,9 +14200,13 @@ update_wpcli() {
     fi
     
     # Update using WP-CLI's self-update command
-    if wp cli update; then
+    local wp_cmd=(wp)
+    if [[ $EUID -eq 0 ]]; then
+        wp_cmd=(wp --allow-root)
+    fi
+    if "${wp_cmd[@]}" cli update; then
         log "✅ WP-CLI updated successfully!"
-        wp --version
+        "${wp_cmd[@]}" --version
     else
         log_warning "WP-CLI self-update failed. Trying manual update..."
         install_wpcli
@@ -11854,19 +14284,38 @@ test_wpcli_sites() {
         
         cd "$site_dir" || continue
         
-        # Test basic WP-CLI functionality
-        if wp core version 2>/dev/null; then
-            echo "   ✅ WP-CLI working - WordPress version: $(wp core version 2>/dev/null)"
-            
-            # Show additional info
-            echo "   📊 Database status: $(wp db check 2>/dev/null && echo "✅ OK" || echo "❌ Error")"
-            echo "   🔌 Active plugins: $(wp plugin list --status=active --format=count 2>/dev/null || echo "Unknown")"
-            echo "   🎨 Active theme: $(wp theme list --status=active --field=name 2>/dev/null || echo "Unknown")"
+        # Select the appropriate WP-CLI invocation based on user context
+        local wp_cmd=()
+        if [[ $EUID -eq 0 ]]; then
+            # Prefer running as www-data; fallback to allow-root
+            if sudo -u www-data -H wp --path="$site_dir" core version >/dev/null 2>&1; then
+                wp_cmd=(sudo -u www-data -H wp --path="$site_dir")
+            elif wp --allow-root --path="$site_dir" core version >/dev/null 2>&1; then
+                wp_cmd=(wp --allow-root --path="$site_dir")
+            else
+                echo "   ❌ WP-CLI not working on this site"
+                echo "   💡 Try: sudo -u www-data -H wp --path=\"$site_dir\" core version"
+                echo "   💡 Or: wp --allow-root --path=\"$site_dir\" core version"
+                echo "   🔍 Checking permissions..."
+                ls -la wp-config.php 2>/dev/null || echo "   ⚠️  wp-config.php not readable"
+                continue
+            fi
         else
-            echo "   ❌ WP-CLI not working on this site"
-            echo "   🔍 Checking permissions..."
-            ls -la wp-config.php 2>/dev/null || echo "   ⚠️  wp-config.php not readable"
+            if wp --path="$site_dir" core version >/dev/null 2>&1; then
+                wp_cmd=(wp --path="$site_dir")
+            else
+                echo "   ❌ WP-CLI not working on this site"
+                echo "   💡 Try: sudo -u www-data -H wp --path=\"$site_dir\" core version"
+                echo "   🔍 Checking permissions..."
+                ls -la wp-config.php 2>/dev/null || echo "   ⚠️  wp-config.php not readable"
+                continue
+            fi
         fi
+
+        echo "   ✅ WP-CLI working - WordPress version: $("${wp_cmd[@]}" core version 2>/dev/null)"
+        echo "   📊 Database status: $("${wp_cmd[@]}" db check >/dev/null 2>&1 && echo "✅ OK" || echo "❌ Error")"
+        echo "   🔌 Active plugins: $("${wp_cmd[@]}" plugin list --status=active --format=count 2>/dev/null || echo "Unknown")"
+        echo "   🎨 Active theme: $("${wp_cmd[@]}" theme list --status=active --field=name 2>/dev/null || echo "Unknown")"
     done
     
     echo
@@ -12979,6 +15428,185 @@ show_database_management_menu() {
     log "Exiting show_database_management_menu function"
 }
 
+# ==============================================================================
+# SWAPPINESS TUNING
+# ==============================================================================
+
+get_runtime_swappiness() {
+    local value=""
+    if command -v sysctl >/dev/null 2>&1; then
+        value=$(sysctl -n vm.swappiness 2>/dev/null || true)
+    fi
+    if [[ -z "$value" && -r /proc/sys/vm/swappiness ]]; then
+        value=$(cat /proc/sys/vm/swappiness 2>/dev/null || true)
+    fi
+    echo "${value:-unknown}"
+}
+
+get_persistent_swappiness() {
+    local file="/etc/sysctl.conf"
+    if [[ ! -r "$file" ]]; then
+        echo ""
+        return 0
+    fi
+    local line
+    line=$(grep -E '^[[:space:]]*vm\.swappiness[[:space:]]*=' "$file" | grep -v '^[[:space:]]*#' | tail -n 1)
+    if [[ -z "$line" ]]; then
+        echo ""
+    else
+        echo "$line" | sed -E 's/^[[:space:]]*vm\.swappiness[[:space:]]*=[[:space:]]*([0-9]+).*/\1/'
+    fi
+}
+
+validate_swappiness_value() {
+    local v="$1"
+    if [[ "$v" =~ ^[0-9]+$ ]] && (( v >= 0 && v <= 100 )); then
+        return 0
+    fi
+    return 1
+}
+
+set_runtime_swappiness() {
+    local v="$1"
+    if ! validate_swappiness_value "$v"; then
+        ui_msg "Invalid Value" "Please enter a number between 0 and 100."
+        return 1
+    fi
+    if ! command -v sysctl >/dev/null 2>&1; then
+        log_error "sysctl command not found"
+        ui_msg "Error" "sysctl command not found on this system."
+        return 1
+    fi
+    if sudo sysctl vm.swappiness="$v" >/dev/null 2>&1; then
+        ui_msg "Runtime Updated" "Swappiness set to $v (runtime).\nCurrent runtime value: $(get_runtime_swappiness)"
+        return 0
+    else
+        log_error "Failed to set runtime swappiness"
+        ui_msg "Error" "Failed to set runtime swappiness. See /var/log/ultrabunt.log for details."
+        return 1
+    fi
+}
+
+ensure_persistent_swappiness() {
+    local v="$1"
+    if ! validate_swappiness_value "$v"; then
+        ui_msg "Invalid Value" "Please enter a number between 0 and 100."
+        return 1
+    fi
+    local file="/etc/sysctl.conf"
+    if [[ ! -f "$file" ]]; then
+        echo "vm.swappiness=$v" | sudo tee "$file" >/dev/null
+    else
+        if grep -Eq '^[[:space:]]*#?[[:space:]]*vm\\.swappiness[[:space:]]*=' "$file"; then
+            sudo sed -i -E 's/^[[:space:]]*#?[[:space:]]*vm\\.swappiness[[:space:]]*=.*/vm.swappiness='"$v"'/g' "$file"
+        else
+            echo "vm.swappiness=$v" | sudo tee -a "$file" >/dev/null
+        fi
+    fi
+    return 0
+}
+
+reload_sysctl_conf() {
+    if sudo sysctl -p /etc/sysctl.conf >/dev/null 2>&1; then
+        ui_msg "Sysctl Reloaded" "sysctl.conf reloaded.\nCurrent runtime value: $(get_runtime_swappiness)"
+        return 0
+    else
+        log_warning "Failed to reload sysctl.conf"
+        ui_msg "Error" "Failed to reload /etc/sysctl.conf."
+        return 1
+    fi
+}
+
+show_sysctl_swappiness_lines() {
+    local file="/etc/sysctl.conf"
+    local lines
+    if [[ -r "$file" ]]; then
+        lines=$(grep -n -E 'vm\\.swappiness' "$file" 2>/dev/null)
+    fi
+    ui_info "sysctl.conf swappiness" "${lines:-No swappiness entry found in /etc/sysctl.conf}"
+}
+
+show_swappiness_menu() {
+    log "Entering show_swappiness_menu"
+    while true; do
+        local runtime_val persistent_val entry_state
+        runtime_val=$(get_runtime_swappiness)
+        persistent_val=$(get_persistent_swappiness)
+        if [[ -n "$persistent_val" ]]; then
+            entry_state="Persistent entry present (vm.swappiness=$persistent_val)"
+        else
+            entry_state="No persistent entry in /etc/sysctl.conf"
+        fi
+
+        local info="Swappiness Controls\n\n"
+        info+="Runtime value: ${runtime_val}\n"
+        info+="Persistent (/etc/sysctl.conf): ${persistent_val:-none}\n"
+        info+="State: ${entry_state}\n\nChoose an action:"
+
+        local menu_items=(
+            "set-10" "(.Y.) Set runtime to 10"
+            "set-30" "(.Y.) Set runtime to 30"
+            "set-40" "(.Y.) Set runtime to 40"
+            "set-custom" "(.Y.) Set runtime to custom value"
+            "" "(_*_)"
+            "persist-10" "(.Y.) Persist swappiness 10"
+            "persist-30" "(.Y.) Persist swappiness 30"
+            "persist-40" "(.Y.) Persist swappiness 40"
+            "persist-custom" "(.Y.) Persist custom value"
+            "apply-persist" "(.Y.) Reload sysctl.conf (apply persistent values)"
+            "show-entry" "(.Y.) Show sysctl.conf swappiness lines"
+            "edit-conf" "(.Y.) Edit /etc/sysctl.conf"
+            "" "(_*_)"
+            "zback" "(Z) ← Back to Main Menu"
+        )
+
+        local choice
+        choice=$(ui_menu "Swappiness Tuning" "$info" 25 90 15 "${menu_items[@]}") || break
+
+        case "$choice" in
+            set-10) set_runtime_swappiness 10 ;;
+            set-30) set_runtime_swappiness 30 ;;
+            set-40) set_runtime_swappiness 40 ;;
+            set-custom)
+                local val
+                val=$(ui_input "Custom Swappiness" "Enter a value between 0 and 100:" "${runtime_val:-60}") || continue
+                [[ -z "$val" ]] && continue
+                set_runtime_swappiness "$val"
+                ;;
+            persist-10)
+                ensure_persistent_swappiness 10 && ui_msg "Persistent Updated" "vm.swappiness set to 10 in /etc/sysctl.conf"
+                ;;
+            persist-30)
+                ensure_persistent_swappiness 30 && ui_msg "Persistent Updated" "vm.swappiness set to 30 in /etc/sysctl.conf"
+                ;;
+            persist-40)
+                ensure_persistent_swappiness 40 && ui_msg "Persistent Updated" "vm.swappiness set to 40 in /etc/sysctl.conf"
+                ;;
+            persist-custom)
+                local pval
+                pval=$(ui_input "Custom Persistent Value" "Enter a value between 0 and 100:" "${persistent_val:-60}") || continue
+                [[ -z "$pval" ]] && continue
+                if ensure_persistent_swappiness "$pval"; then
+                    ui_msg "Persistent Updated" "vm.swappiness set to $pval in /etc/sysctl.conf"
+                fi
+                ;;
+            apply-persist)
+                reload_sysctl_conf
+                ;;
+            show-entry)
+                show_sysctl_swappiness_lines
+                ;;
+            edit-conf)
+                sudo nano /etc/sysctl.conf
+                ;;
+            zback|back|"")
+                break
+                ;;
+        esac
+    done
+    log "Exiting show_swappiness_menu"
+}
+
 # LOG VIEWER FUNCTIONS
 show_log_viewer_menu() {
     log "Entering show_log_viewer_menu function"
@@ -13714,9 +16342,9 @@ main() {
     ensure_deps
     log "Dependencies check completed"
     
-    log "╔═══════════════════════════════════════════════════════╗"
-    log "║     ULTRABUNT ULTIMATE BUNTSTALLER v4.2.0 STARTED     ║"
-    log "╚═══════════════════════════════════════════════════════╝"
+    log "╔═══════════════════════════════════════════════╗"
+    log "║ ULTRABUNT ULTIMATE BUNTSTALLER v4.2.0 STARTED ║"
+    log "╚═══════════════════════════════════════════════╝"
     
     # Update buntage cache
     log "Starting APT cache update..."

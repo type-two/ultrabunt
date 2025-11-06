@@ -1,0 +1,1469 @@
+staller exiting.
+lscpu
+Architecture:                x86_64
+  CPU op-mode(s):            32-bit, 64-bit
+  Address sizes:             39 bits physical, 48 bits virtual
+  Byte Order:                Little Endian
+CPU(s):                      4
+  On-line CPU(s) list:       0-3
+Vendor ID:                   GenuineIntel
+  Model name:                Intel(R) Core(TM) i5-4260U CPU @ 1.40GHz
+    CPU family:              6
+    Model:                   69
+    Thread(s) per core:      2
+    Core(s) per socket:      2
+    Socket(s):               1
+    Stepping:                1
+    CPU(s) scaling MHz:      62%
+    CPU max MHz:             2700.0000
+    CPU min MHz:             800.0000
+    BogoMIPS:                4000.11
+    Flags:                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb
+                              rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx
+                              est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm cpu
+                             id_fault epb pti ssbd ibrs ibpb stibp tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveop
+                             t dtherm ida arat pln pts vnmi md_clear flush_l1d
+Virtualization features:     
+  Virtualization:            VT-x
+Caches (sum of all):         
+  L1d:                       64 KiB (2 instances)
+  L1i:                       64 KiB (2 instances)
+  L2:                        512 KiB (2 instances)
+  L3:                        3 MiB (1 instance)
+NUMA:                        
+  NUMA node(s):              1
+  NUMA node0 CPU(s):         0-3
+Vulnerabilities:             
+  Gather data sampling:      Not affected
+  Ghostwrite:                Not affected
+  Indirect target selection: Not affected
+  Itlb multihit:             KVM: Mitigation: Split huge pages
+  L1tf:                      Mitigation; PTE Inversion; VMX conditional cache flushes, SMT vulnerable
+  Mds:                       Mitigation; Clear CPU buffers; SMT vulnerable
+  Meltdown:                  Mitigation; PTI
+  Mmio stale data:           Unknown: No mitigations
+  Reg file data sampling:    Not affected
+  Retbleed:                  Not affected
+  Spec rstack overflow:      Not affected
+  Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+  Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+  Spectre v2:                Mitigation; Retpolines; IBPB conditional; IBRS_FW; STIBP conditional; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected
+  Srbds:                     Mitigation; Microcode
+  Tsx async abort:           Not affected
+cat /proc/cpuinfo
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 69
+model name	: Intel(R) Core(TM) i5-4260U CPU @ 1.40GHz
+stepping	: 1
+microcode	: 0x26
+cpu MHz		: 2160.458
+cache size	: 3072 KB
+physical id	: 0
+siblings	: 4
+core id		: 0
+cpu cores	: 2
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm cpuid_fault epb pti ssbd ibrs ibpb stibp tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts vnmi md_clear flush_l1d
+vmx flags	: vnmi preemption_timer invvpid ept_x_only ept_ad ept_1gb flexpriority tsc_offset vtpr mtf vapic ept vpid unrestricted_guest ple
+bugs		: cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs itlb_multihit srbds mmio_unknown
+bogomips	: 4000.11
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 69
+model name	: Intel(R) Core(TM) i5-4260U CPU @ 1.40GHz
+stepping	: 1
+microcode	: 0x26
+cpu MHz		: 2101.815
+cache size	: 3072 KB
+physical id	: 0
+siblings	: 4
+core id		: 1
+cpu cores	: 2
+apicid		: 2
+initial apicid	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm cpuid_fault epb pti ssbd ibrs ibpb stibp tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts vnmi md_clear flush_l1d
+vmx flags	: vnmi preemption_timer invvpid ept_x_only ept_ad ept_1gb flexpriority tsc_offset vtpr mtf vapic ept vpid unrestricted_guest ple
+bugs		: cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs itlb_multihit srbds mmio_unknown
+bogomips	: 4000.11
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 2
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 69
+model name	: Intel(R) Core(TM) i5-4260U CPU @ 1.40GHz
+stepping	: 1
+microcode	: 0x26
+cpu MHz		: 2182.793
+cache size	: 3072 KB
+physical id	: 0
+siblings	: 4
+core id		: 0
+cpu cores	: 2
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm cpuid_fault epb pti ssbd ibrs ibpb stibp tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts vnmi md_clear flush_l1d
+vmx flags	: vnmi preemption_timer invvpid ept_x_only ept_ad ept_1gb flexpriority tsc_offset vtpr mtf vapic ept vpid unrestricted_guest ple
+bugs		: cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs itlb_multihit srbds mmio_unknown
+bogomips	: 4000.11
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+processor	: 3
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 69
+model name	: Intel(R) Core(TM) i5-4260U CPU @ 1.40GHz
+stepping	: 1
+microcode	: 0x26
+cpu MHz		: 2139.493
+cache size	: 3072 KB
+physical id	: 0
+siblings	: 4
+core id		: 1
+cpu cores	: 2
+apicid		: 3
+initial apicid	: 3
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm cpuid_fault epb pti ssbd ibrs ibpb stibp tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt dtherm ida arat pln pts vnmi md_clear flush_l1d
+vmx flags	: vnmi preemption_timer invvpid ept_x_only ept_ad ept_1gb flexpriority tsc_offset vtpr mtf vapic ept vpid unrestricted_guest ple
+bugs		: cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs itlb_multihit srbds mmio_unknown
+bogomips	: 4000.11
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+
+free -h
+               total        used        free      shared  buff/cache   available
+Mem:           3.8Gi       2.3Gi       282Mi       259Mi       1.7Gi       1.5Gi
+Swap:          3.8Gi       1.7Gi       2.1Gi
+sudo dmidecode - - type memory
+[sudo] password for ronster: 
+# dmidecode 3.5
+Getting SMBIOS data from sysfs.
+SMBIOS 2.4 present.
+43 structures occupying 2616 bytes.
+Table at 0x8CD10000.
+
+Wrong DMI structures length: 2616 bytes announced, only 2205 bytes available.
+Handle 0x0000, DMI type 4, 35 bytes
+Processor Information
+	Socket Designation: U3E1
+	Type: Central Processor
+	Family: Core i5
+	Manufacturer: Intel(R) Corporation
+	ID: 51 06 04 00 FF FB EB BF
+	Signature: Type 0, Family 6, Model 69, Stepping 1
+	Flags:
+		FPU (Floating-point unit on-chip)
+		VME (Virtual mode extension)
+		DE (Debugging extension)
+		PSE (Page size extension)
+		TSC (Time stamp counter)
+		MSR (Model specific registers)
+		PAE (Physical address extension)
+		MCE (Machine check exception)
+		CX8 (CMPXCHG8 instruction supported)
+		APIC (On-chip APIC hardware supported)
+		SEP (Fast system call)
+		MTRR (Memory type range registers)
+		PGE (Page global enable)
+		MCA (Machine check architecture)
+		CMOV (Conditional move instruction supported)
+		PAT (Page attribute table)
+		PSE-36 (36-bit page size extension)
+		CLFSH (CLFLUSH instruction supported)
+		DS (Debug store)
+		ACPI (ACPI supported)
+		MMX (MMX technology supported)
+		FXSR (FXSAVE and FXSTOR instructions supported)
+		SSE (Streaming SIMD extensions)
+		SSE2 (Streaming SIMD extensions 2)
+		SS (Self-snoop)
+		HTT (Multi-threading)
+		TM (Thermal monitor supported)
+		PBE (Pending break enabled)
+	Version: Intel(R) Core(TM) i5-4260U CPU @ 1.40GHz
+	Voltage: 0.9 V
+	External Clock: 25 MHz
+	Max Speed: 1400 MHz
+	Current Speed: 1400 MHz
+	Status: Populated, Enabled
+	Upgrade: Socket BGA1168
+	L1 Cache Handle: 0x0002
+	L2 Cache Handle: 0x0003
+	L3 Cache Handle: 0x0004
+	Serial Number: To Be Filled By O.E.M.
+	Asset Tag: To Be Filled By O.E.M.
+	Part Number: Not Specified
+
+Handle 0x0001, DMI type 7, 19 bytes
+Cache Information
+	Socket Designation: Not Specified
+	Configuration: Enabled, Not Socketed, Level 1
+	Operational Mode: Write Back
+	Location: Internal
+	Installed Size: 64 kB
+	Maximum Size: 64 kB
+	Supported SRAM Types:
+		Asynchronous
+	Installed SRAM Type: Asynchronous
+	Speed: Unknown
+	Error Correction Type: Single-bit ECC
+	System Type: Data
+	Associativity: 8-way Set-associative
+
+Handle 0x0002, DMI type 7, 19 bytes
+Cache Information
+	Socket Designation: Not Specified
+	Configuration: Enabled, Not Socketed, Level 1
+	Operational Mode: Write Back
+	Location: Internal
+	Installed Size: 64 kB
+	Maximum Size: 64 kB
+	Supported SRAM Types:
+		Asynchronous
+	Installed SRAM Type: Asynchronous
+	Speed: Unknown
+	Error Correction Type: Single-bit ECC
+	System Type: Instruction
+	Associativity: 8-way Set-associative
+
+Handle 0x0003, DMI type 7, 19 bytes
+Cache Information
+	Socket Designation: Not Specified
+	Configuration: Enabled, Not Socketed, Level 2
+	Operational Mode: Write Back
+	Location: Internal
+	Installed Size: 512 kB
+	Maximum Size: 512 kB
+	Supported SRAM Types:
+		Asynchronous
+	Installed SRAM Type: Asynchronous
+	Speed: Unknown
+	Error Correction Type: Single-bit ECC
+	System Type: Unified
+	Associativity: 8-way Set-associative
+
+Handle 0x0004, DMI type 7, 19 bytes
+Cache Information
+	Socket Designation: Not Specified
+	Configuration: Enabled, Not Socketed, Level 3
+	Operational Mode: Write Back
+	Location: Internal
+	Installed Size: 3 MB
+	Maximum Size: 3 MB
+	Supported SRAM Types:
+		Asynchronous
+	Installed SRAM Type: Asynchronous
+	Speed: Unknown
+	Error Correction Type: Single-bit ECC
+	System Type: Unified
+	Associativity: 12-way Set-associative
+
+Handle 0x0005, DMI type 16, 15 bytes
+Physical Memory Array
+	Location: System Board Or Motherboard
+	Use: System Memory
+	Error Correction Type: None
+	Maximum Capacity: 8 GB
+	Error Information Handle: Not Provided
+	Number Of Devices: 2
+
+Handle 0x0006, DMI type 130, 186 bytes
+OEM-specific Type
+	Header and Data:
+		82 BA 06 00 07 00 00 00 B0 00 92 10 F1 03 04 11
+		05 0B 03 11 01 08 0A 00 F4 01 78 78 90 50 90 11
+		50 E0 10 04 3C 3C 01 90 83 8C 00 A1 00 00 00 00
+		00 A8 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02
+		FE 00 00 00 00 00 00 00 AF E6 45 42 4A 32 30 55
+		46 38 45 44 55 30 2D 47 4E 2D 46 20 30 20 02 FE
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00
+
+Handle 0x0007, DMI type 17, 34 bytes
+Memory Device
+	Array Handle: 0x0005
+	Error Information Handle: No Error
+	Total Width: Unknown
+	Data Width: Unknown
+	Size: 2 GB
+	Form Factor: SODIMM
+	Set: None
+	Locator: DIMM0
+	Bank Locator: BANK 0
+	Type: DDR3
+	Type Detail: Synchronous
+	Speed: 1600 MT/s
+	Manufacturer: 0x02FE
+	Serial Number: 0x00000000
+	Asset Tag: Unknown
+	Part Number: 0x45424A3230554638454455302D474E2D4620
+	Rank: Unknown
+	Configured Memory Speed: Unknown
+
+Handle 0x0008, DMI type 130, 186 bytes
+OEM-specific Type
+	Header and Data:
+		82 BA 08 00 09 00 00 00 B0 00 92 10 F1 03 04 11
+		05 0B 03 11 01 08 0A 00 F4 01 78 78 90 50 90 11
+		50 E0 10 04 3C 3C 01 90 83 8C 00 A1 00 00 00 00
+		00 A8 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02
+		FE 00 00 00 00 00 00 00 AF E6 45 42 4A 32 30 55
+		46 38 45 44 55 30 2D 47 4E 2D 46 20 30 20 02 FE
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00
+
+Handle 0x0009, DMI type 17, 34 bytes
+Memory Device
+	Array Handle: 0x0005
+	Error Information Handle: No Error
+	Total Width: Unknown
+	Data Width: Unknown
+	Size: 2 GB
+	Form Factor: SODIMM
+	Set: None
+	Locator: DIMM0
+	Bank Locator: BANK 1
+	Type: DDR3
+	Type Detail: Synchronous
+	Speed: 1600 MT/s
+	Manufacturer: 0x02FE
+	Serial Number: 0x00000000
+	Asset Tag: Unknown
+	Part Number: 0x45424A3230554638454455302D474E2D4620
+	Rank: Unknown
+	Configured Memory Speed: Unknown
+
+Handle 0x000A, DMI type 19, 15 bytes
+Memory Array Mapped Address
+	Starting Address: 0x00000000000
+	Ending Address: 0x000FFFFFFFF
+	Range Size: 4 GB
+	Physical Array Handle: 0x0005
+	Partition Width: 0
+
+Handle 0x000B, DMI type 0, 24 bytes
+BIOS Information
+	Vendor: Apple Inc.
+	Version: 431.140.6.0.0
+	Release Date: 06/13/2021
+	ROM Size: 8 MB
+	Characteristics:
+		PCI is supported
+		BIOS is upgradeable
+		BIOS shadowing is allowed
+		Boot from CD is supported
+		Selectable boot is supported
+		ACPI is supported
+		IEEE 1394 boot is supported
+		Smart battery is supported
+		Function key-initiated network boot is supported
+	BIOS Revision: 0.1
+
+Handle 0x000C, DMI type 1, 27 bytes
+System Information
+	Manufacturer: Apple Inc.
+	Product Name: MacBookAir6,2
+	Version: 1.0
+	Serial Number: C02NJSN2G085
+	UUID: 46f5f24d-5e97-d651-876c-174121a74ad3
+	Wake-up Type: Power Switch
+	SKU Number: System SKU#
+	Family: MacBook Air
+
+Handle 0x000D, DMI type 2, 16 bytes
+Base Board Information
+	Manufacturer: Apple Inc.
+	Product Name: Mac-7DF21CB3ED6977E5
+	Version: MacBookAir6,2
+	Serial Number: C0244060HPWFY58AQ
+	Asset Tag: Base Board Asset Tag#
+	Features:
+		Board is a hosting board
+		Board is replaceable
+	Location In Chassis: Part Component
+	Chassis Handle: 0x000E
+	Type: Motherboard
+	Contained Object Handles: 0
+
+Handle 0x000E, DMI type 3, 21 bytes
+Chassis Information
+	Manufacturer: Apple Inc.
+	Type: Notebook
+	Lock: Not Present
+	Version: Mac-7DF21CB3ED6977E5
+	Serial Number: C02NJSN2G085
+	Asset Tag: Not Specified
+	Boot-up State: Safe
+	Power Supply State: Safe
+	Thermal State: Other
+	Security Status: Other
+	OEM Information: 0x00000000
+	Height: Unspecified
+	Number Of Power Cords: Unspecified
+	Contained Elements: 0
+
+Handle 0x000F, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: None
+	External Reference Designator: USB0
+	External Connector Type: Access Bus (USB)
+	Port Type: USB
+
+Handle 0x0010, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: None
+	External Reference Designator: USB1
+	External Connector Type: Access Bus (USB)
+	Port Type: USB
+
+Handle 0x0011, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: Other
+	External Reference Designator: Mini DisplayPort
+	External Connector Type: None
+	Port Type: Other
+
+Handle 0x0012, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: Other
+	External Reference Designator: HDMI
+	External Connector Type: None
+	Port Type: Other
+
+Handle 0x0013, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: Other
+	External Reference Designator: Microphone
+	External Connector Type: None
+	Port Type: Other
+
+Handle 0x0014, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: Other
+	External Reference Designator: Speaker
+	External Connector Type: None
+	Port Type: Other
+
+Handle 0x0015, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: None
+	External Reference Designator: MagSafe DC Power
+	External Connector Type: Other
+	Port Type: Other
+
+Handle 0x0016, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: None
+	External Reference Designator: Audio Line Out
+	External Connector Type: Mini Jack (headphones)
+	Port Type: Audio Port
+
+Handle 0x0017, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: None
+	External Reference Designator: SD Card Reader
+	External Connector Type: Access Bus (USB)
+	Port Type: USB
+
+Handle 0x0018, DMI type 9, 13 bytes
+System Slot Information
+	Designation: AirPort
+	Type: x1 PCI Express
+	Current Usage: Available
+	Length: Short
+	ID: 0
+	Characteristics:
+		3.3 V is provided
+		Hot-plug devices are supported
+		SMBus signal is supported
+
+Handle 0x0019, DMI type 9, 13 bytes
+System Slot Information
+	Designation: Thunderbolt Slot 1
+	Type: 32-bit PCI
+	Current Usage: Available
+	Length: Long
+	ID: 2
+	Characteristics:
+		3.3 V is provided
+		PME signal is supported
+		Hot-plug devices are supported
+		SMBus signal is supported
+
+Handle 0x001A, DMI type 9, 13 bytes
+System Slot Information
+	Designation: Thunderbolt Slot 2
+	Type: 32-bit PCI
+	Current Usage: Available
+	Length: Long
+	ID: 3
+	Characteristics:
+		3.3 V is provided
+		PME signal is supported
+		Hot-plug devices are supported
+		SMBus signal is supported
+
+Handle 0x001B, DMI type 9, 13 bytes
+System Slot Information
+	Designation: Thunderbolt Slot 3
+	Type: 32-bit PCI
+	Current Usage: Available
+	Length: Long
+	ID: 4
+	Characteristics:
+		3.3 V is provided
+		PME signal is supported
+		Hot-plug devices are supported
+		SMBus signal is supported
+
+Handle 0x001C, DMI type 9, 13 bytes
+System Slot Information
+	Designation: Thunderbolt Slot 4
+	Type: 32-bit PCI
+	Current Usage: Available
+	Length: Long
+	ID: 5
+	Characteristics:
+		3.3 V is provided
+		PME signal is supported
+		Hot-plug devices are supported
+		SMBus signal is supported
+
+Handle 0x001D, DMI type 10, 6 bytes
+On Board Device Information
+	Type: Video
+	Status: Enabled
+	Description: Integrated Video Controller
+
+Handle 0x001E, DMI type 10, 6 bytes
+On Board Device Information
+	Type: Sound
+	Status: Enabled
+	Description: Azalia Audio Codec
+
+Handle 0x001F, DMI type 10, 6 bytes
+On Board Device Information
+	Type: Other
+	Status: Enabled
+	Description: SATA
+
+Handle 0x0020, DMI type 11, 5 bytes
+OEM Strings
+	String 1: Apple ROM Version.  Model:        MBA61.  EFI Version:  431.140
+	String 2: .6.0.0.  Built by:     root@bb-g9-pdb92.  Date:         Sun Jun
+	String 3:  13 18:52:10 PDT 2021.  Revision:     431.140.6 (B&I).  ROM Ver
+	String 4: sion:  F000_B00.  Build Type:   Official Build, Release.  Compi
+	String 5: ler:     clang-1205.0.19.59.6.
+
+Handle 0x0021, DMI type 12, 5 bytes
+System Configuration Options
+
+Handle 0x0022, DMI type 13, 22 bytes
+BIOS Language Information
+	Language Description Format: Long
+	Installable Languages: 1
+		<BAD INDEX>
+	Currently Installed Language: Not Specified
+
+Handle 0x0023, DMI type 32, 20 bytes
+System Boot Information
+	Status: No errors detected
+
+Handle 0x0024, DMI type 131, 6 bytes
+OEM-specific Type
+	Header and Data:
+		83 06 24 00 05 06
+
+Handle 0x0025, DMI type 128, 88 bytes
+OEM-specific Type
+	Header and Data:
+		80 58 25 00 03 00 00 00 77 F5 0F FB 7F FF 1F FF
+		02 00 03 00 00 00 00 00 00 00 99 FF FF FF B2 FF
+		00 00 B3 FF FF FF DD FF 00 00 E1 FF FF FF E3 FF
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00
+
+Handle 0x0026, DMI type 133, 12 bytes
+OEM-specific Type
+	Header and Data:
+		85 0C 26 00 02 00 00 00 00 00 00 00
+
+Handle 0x0027, DMI type 221, 26 bytes
+OEM-specific Type
+	Header and Data:
+		DD 1A 27 00 03 01 00 01 08 00 00 00 02 00 00 00
+		00 26 00 03 00 01 03 00 01 00
+	Strings:
+		Reference Code - CPU
+		uCode Version
+		TXT ACM version
+
+Wrong DMI structures count: 43 announced, only 40 decoded.
+lsblk
+NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+loop0    7:0    0     4K  1 loop /snap/bare/5
+loop1    7:1    0  73.9M  1 loop /snap/core22/2133
+loop2    7:2    0  73.9M  1 loop /snap/core22/2139
+loop3    7:3    0 249.2M  1 loop /snap/firefox/7084
+loop4    7:4    0  66.8M  1 loop /snap/core24/1196
+loop5    7:5    0  66.8M  1 loop /snap/core24/1225
+loop6    7:6    0 245.1M  1 loop /snap/firefox/6565
+loop7    7:7    0  11.1M  1 loop /snap/firmware-updater/167
+loop8    7:8    0  18.5M  1 loop /snap/firmware-updater/210
+loop9    7:9    0 516.2M  1 loop /snap/gnome-42-2204/226
+loop10   7:10   0   516M  1 loop /snap/gnome-42-2204/202
+loop11   7:11   0 618.3M  1 loop /snap/gnome-46-2404/125
+loop12   7:12   0  91.7M  1 loop /snap/gtk-common-themes/1535
+loop13   7:13   0  17.1M  1 loop /snap/localsend/32
+loop14   7:14   0 302.8M  1 loop /snap/mesa-2404/1110
+loop15   7:15   0 290.8M  1 loop /snap/mesa-2404/912
+loop16   7:16   0  50.8M  1 loop /snap/snapd/25202
+loop17   7:17   0  10.8M  1 loop /snap/snap-store/1270
+loop18   7:18   0  50.9M  1 loop /snap/snapd/25577
+loop19   7:19   0   576K  1 loop /snap/snapd-desktop-integration/315
+loop20   7:20   0   8.1M  1 loop /snap/mirrorselect/6
+sda      8:0    0   113G  0 disk 
+├─sda1   8:1    0     1G  0 part /boot/efi
+└─sda2   8:2    0 111.9G  0 part /
+sudo fdisk -l
+Disk /dev/loop0: 4 KiB, 4096 bytes, 8 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop1: 73.92 MiB, 77512704 bytes, 151392 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop2: 73.91 MiB, 77500416 bytes, 151368 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop3: 249.22 MiB, 261324800 bytes, 510400 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop4: 66.8 MiB, 70045696 bytes, 136808 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop5: 66.84 MiB, 70090752 bytes, 136896 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop6: 245.13 MiB, 257036288 bytes, 502024 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop7: 11.13 MiB, 11673600 bytes, 22800 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/sda: 113 GiB, 121332826112 bytes, 236978176 sectors
+Disk model: APPLE SSD SM0128
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 4096 bytes
+I/O size (minimum/optimal): 4096 bytes / 4096 bytes
+Disklabel type: gpt
+Disk identifier: 896EBFA8-B4A7-4B9C-83E6-EE1AD1D0171D
+
+Device       Start       End   Sectors   Size Type
+/dev/sda1     2048   2203647   2201600     1G EFI System
+/dev/sda2  2203648 236976127 234772480 111.9G Linux filesystem
+
+
+Disk /dev/loop8: 18.49 MiB, 19386368 bytes, 37864 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop10: 516.01 MiB, 541073408 bytes, 1056784 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop9: 516.2 MiB, 541278208 bytes, 1057184 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop11: 618.26 MiB, 648290304 bytes, 1266192 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop12: 91.69 MiB, 96141312 bytes, 187776 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop13: 17.13 MiB, 17965056 bytes, 35088 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop14: 302.77 MiB, 317480960 bytes, 620080 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop15: 290.77 MiB, 304898048 bytes, 595504 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop16: 50.77 MiB, 53235712 bytes, 103976 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop17: 10.83 MiB, 11354112 bytes, 22176 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop18: 50.93 MiB, 53399552 bytes, 104296 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop19: 576 KiB, 589824 bytes, 1152 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop20: 8.09 MiB, 8482816 bytes, 16568 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+df -h
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           386M  2.3M  384M   1% /run
+/dev/sda2       110G   28G   77G  27% /
+tmpfs           1.9G   34M  1.9G   2% /dev/shm
+tmpfs           5.0M   12K  5.0M   1% /run/lock
+/dev/sda1       1.1G  6.2M  1.1G   1% /boot/efi
+tmpfs           386M  164K  386M   1% /run/user/1000
+lspci -nnk
+00:00.0 Host bridge [0600]: Intel Corporation Haswell-ULT DRAM Controller [8086:0a04] (rev 09)
+	Subsystem: Apple Inc. Haswell-ULT DRAM Controller [106b:011b]
+	Kernel driver in use: hsw_uncore
+00:02.0 VGA compatible controller [0300]: Intel Corporation Haswell-ULT Integrated Graphics Controller [8086:0a26] (rev 09)
+	Subsystem: Apple Inc. Haswell-ULT Integrated Graphics Controller [106b:011b]
+	Kernel driver in use: i915
+	Kernel modules: i915
+00:03.0 Audio device [0403]: Intel Corporation Haswell-ULT HD Audio Controller [8086:0a0c] (rev 09)
+	Subsystem: Apple Inc. Haswell-ULT HD Audio Controller [106b:011b]
+	Kernel driver in use: snd_hda_intel
+	Kernel modules: snd_hda_intel
+00:14.0 USB controller [0c03]: Intel Corporation 8 Series USB xHCI HC [8086:9c31] (rev 04)
+	Subsystem: Intel Corporation Apple MacBookAir6,2 / MacBookPro11,1 [8086:7270]
+	Kernel driver in use: xhci_hcd
+00:15.0 DMA controller [0801]: Intel Corporation 8 Series Low Power Sub-System DMA [8086:9c60] (rev 04)
+	Kernel driver in use: dw_dmac_pci
+	Kernel modules: dw_dmac_pci
+00:15.4 Serial bus controller [0c80]: Intel Corporation 8 Series SPI Controller #1 [8086:9c66] (rev 04)
+	Kernel modules: spi_pxa2xx_pci
+00:16.0 Communication controller [0780]: Intel Corporation 8 Series HECI #0 [8086:9c3a] (rev 04)
+	Subsystem: Intel Corporation 8 Series HECI [8086:7270]
+	Kernel driver in use: mei_me
+	Kernel modules: mei_me
+00:1b.0 Audio device [0403]: Intel Corporation 8 Series HD Audio Controller [8086:9c20] (rev 04)
+	Subsystem: Intel Corporation 8 Series HD Audio Controller [8086:7270]
+	Kernel driver in use: snd_hda_intel
+	Kernel modules: snd_hda_intel
+00:1c.0 PCI bridge [0604]: Intel Corporation 8 Series PCI Express Root Port 1 [8086:9c10] (rev e4)
+	Subsystem: Intel Corporation 8 Series PCI Express Root Port 1 [8086:7270]
+	Kernel driver in use: pcieport
+00:1c.1 PCI bridge [0604]: Intel Corporation 8 Series PCI Express Root Port 2 [8086:9c12] (rev e4)
+	Subsystem: Intel Corporation 8 Series PCI Express Root Port 2 [8086:7270]
+	Kernel driver in use: pcieport
+00:1c.2 PCI bridge [0604]: Intel Corporation 8 Series PCI Express Root Port 3 [8086:9c14] (rev e4)
+	Subsystem: Intel Corporation 8 Series PCI Express Root Port 3 [8086:7270]
+	Kernel driver in use: pcieport
+00:1c.4 PCI bridge [0604]: Intel Corporation 8 Series PCI Express Root Port 5 [8086:9c18] (rev e4)
+	Subsystem: Intel Corporation 8 Series PCI Express Root Port 5 [8086:7270]
+	Kernel driver in use: pcieport
+00:1c.5 PCI bridge [0604]: Intel Corporation 8 Series PCI Express Root Port 6 [8086:9c1a] (rev e4)
+	Subsystem: Intel Corporation 8 Series PCI Express Root Port 6 [8086:7270]
+	Kernel driver in use: pcieport
+00:1f.0 ISA bridge [0601]: Intel Corporation 8 Series LPC Controller [8086:9c43] (rev 04)
+	Subsystem: Intel Corporation 8 Series LPC Controller [8086:7270]
+	Kernel driver in use: lpc_ich
+	Kernel modules: lpc_ich
+00:1f.3 SMBus [0c05]: Intel Corporation 8 Series SMBus Controller [8086:9c22] (rev 04)
+	Subsystem: Intel Corporation 8 Series SMBus Controller [8086:7270]
+	Kernel driver in use: i801_smbus
+	Kernel modules: i2c_i801
+02:00.0 Multimedia controller [0480]: Broadcom Inc. and subsidiaries 720p FaceTime HD Camera [14e4:1570]
+	Subsystem: Broadcom Inc. and subsidiaries 720p FaceTime HD Camera [14e4:1570]
+03:00.0 Network controller [0280]: Broadcom Inc. and subsidiaries BCM4360 802.11ac Dual Band Wireless Network Adapter [14e4:43a0] (rev 03)
+	Subsystem: Apple Inc. BCM4360 802.11ac Dual Band Wireless Network Adapter [106b:0117]
+	Kernel driver in use: wl
+	Kernel modules: bcma, wl
+04:00.0 SATA controller [0106]: Samsung Electronics Co Ltd S4LN058A01[SSUBX] AHCI SSD Controller (Apple slot) [144d:a801] (rev 01)
+	Subsystem: Samsung Electronics Co Ltd S4LN058A01[SSUBX] AHCI SSD Controller (Apple slot) [144d:a801]
+	Kernel driver in use: ahci
+	Kernel modules: ahci
+05:00.0 PCI bridge [0604]: Intel Corporation DSL3510 Thunderbolt Controller [Cactus Ridge 4C 2012] [8086:1547] (rev 03)
+	Subsystem: Device [2222:1111]
+	Kernel driver in use: pcieport
+06:00.0 PCI bridge [0604]: Intel Corporation DSL3510 Thunderbolt Controller [Cactus Ridge 4C 2012] [8086:1547] (rev 03)
+	Subsystem: Device [2222:1111]
+	Kernel driver in use: pcieport
+06:03.0 PCI bridge [0604]: Intel Corporation DSL3510 Thunderbolt Controller [Cactus Ridge 4C 2012] [8086:1547] (rev 03)
+	Subsystem: Device [2222:1111]
+	Kernel driver in use: pcieport
+06:04.0 PCI bridge [0604]: Intel Corporation DSL3510 Thunderbolt Controller [Cactus Ridge 4C 2012] [8086:1547] (rev 03)
+	Subsystem: Device [2222:1111]
+	Kernel driver in use: pcieport
+06:05.0 PCI bridge [0604]: Intel Corporation DSL3510 Thunderbolt Controller [Cactus Ridge 4C 2012] [8086:1547] (rev 03)
+	Subsystem: Device [2222:1111]
+	Kernel driver in use: pcieport
+06:06.0 PCI bridge [0604]: Intel Corporation DSL3510 Thunderbolt Controller [Cactus Ridge 4C 2012] [8086:1547] (rev 03)
+	Subsystem: Device [2222:1111]
+	Kernel driver in use: pcieport
+07:00.0 System peripheral [0880]: Intel Corporation DSL3510 Thunderbolt Controller [Cactus Ridge 4C 2012] [8086:1547] (rev 03)
+	Subsystem: Device [2222:1111]
+	Kernel driver in use: thunderbolt
+	Kernel modules: thunderbolt
+lsusb -vt
+/:  Bus 001.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/9p, 480M
+    ID 1d6b:0002 Linux Foundation 2.0 root hub
+    |__ Port 003: Dev 002, If 0, Class=Hub, Driver=hub/3p, 12M
+        ID 0a5c:4500 Broadcom Corp. BCM2046B1 USB 2.0 Hub (part of BCM2046 Bluetooth)
+        |__ Port 003: Dev 006, If 0, Class=Vendor Specific Class, Driver=btusb, 12M
+            ID 05ac:828f Apple, Inc. 
+        |__ Port 003: Dev 006, If 1, Class=Wireless, Driver=btusb, 12M
+            ID 05ac:828f Apple, Inc. 
+        |__ Port 003: Dev 006, If 2, Class=Vendor Specific Class, Driver=btusb, 12M
+            ID 05ac:828f Apple, Inc. 
+        |__ Port 003: Dev 006, If 3, Class=Application Specific Interface, Driver=[none], 12M
+            ID 05ac:828f Apple, Inc. 
+    |__ Port 005: Dev 003, If 0, Class=Human Interface Device, Driver=usbhid, 12M
+        ID 05ac:0291 Apple, Inc. 
+    |__ Port 005: Dev 003, If 1, Class=Human Interface Device, Driver=usbhid, 12M
+        ID 05ac:0291 Apple, Inc. 
+    |__ Port 005: Dev 003, If 2, Class=Human Interface Device, Driver=bcm5974, 12M
+        ID 05ac:0291 Apple, Inc. 
+/:  Bus 002.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/4p, 5000M
+    ID 1d6b:0003 Linux Foundation 3.0 root hub
+sudo dmidecode - - type system
+# dmidecode 3.5
+Getting SMBIOS data from sysfs.
+SMBIOS 2.4 present.
+43 structures occupying 2616 bytes.
+Table at 0x8CD10000.
+
+Wrong DMI structures length: 2616 bytes announced, only 2205 bytes available.
+Handle 0x0000, DMI type 4, 35 bytes
+Processor Information
+	Socket Designation: U3E1
+	Type: Central Processor
+	Family: Core i5
+	Manufacturer: Intel(R) Corporation
+	ID: 51 06 04 00 FF FB EB BF
+	Signature: Type 0, Family 6, Model 69, Stepping 1
+	Flags:
+		FPU (Floating-point unit on-chip)
+		VME (Virtual mode extension)
+		DE (Debugging extension)
+		PSE (Page size extension)
+		TSC (Time stamp counter)
+		MSR (Model specific registers)
+		PAE (Physical address extension)
+		MCE (Machine check exception)
+		CX8 (CMPXCHG8 instruction supported)
+		APIC (On-chip APIC hardware supported)
+		SEP (Fast system call)
+		MTRR (Memory type range registers)
+		PGE (Page global enable)
+		MCA (Machine check architecture)
+		CMOV (Conditional move instruction supported)
+		PAT (Page attribute table)
+		PSE-36 (36-bit page size extension)
+		CLFSH (CLFLUSH instruction supported)
+		DS (Debug store)
+		ACPI (ACPI supported)
+		MMX (MMX technology supported)
+		FXSR (FXSAVE and FXSTOR instructions supported)
+		SSE (Streaming SIMD extensions)
+		SSE2 (Streaming SIMD extensions 2)
+		SS (Self-snoop)
+		HTT (Multi-threading)
+		TM (Thermal monitor supported)
+		PBE (Pending break enabled)
+	Version: Intel(R) Core(TM) i5-4260U CPU @ 1.40GHz
+	Voltage: 0.9 V
+	External Clock: 25 MHz
+	Max Speed: 1400 MHz
+	Current Speed: 1400 MHz
+	Status: Populated, Enabled
+	Upgrade: Socket BGA1168
+	L1 Cache Handle: 0x0002
+	L2 Cache Handle: 0x0003
+	L3 Cache Handle: 0x0004
+	Serial Number: To Be Filled By O.E.M.
+	Asset Tag: To Be Filled By O.E.M.
+	Part Number: Not Specified
+
+Handle 0x0001, DMI type 7, 19 bytes
+Cache Information
+	Socket Designation: Not Specified
+	Configuration: Enabled, Not Socketed, Level 1
+	Operational Mode: Write Back
+	Location: Internal
+	Installed Size: 64 kB
+	Maximum Size: 64 kB
+	Supported SRAM Types:
+		Asynchronous
+	Installed SRAM Type: Asynchronous
+	Speed: Unknown
+	Error Correction Type: Single-bit ECC
+	System Type: Data
+	Associativity: 8-way Set-associative
+
+Handle 0x0002, DMI type 7, 19 bytes
+Cache Information
+	Socket Designation: Not Specified
+	Configuration: Enabled, Not Socketed, Level 1
+	Operational Mode: Write Back
+	Location: Internal
+	Installed Size: 64 kB
+	Maximum Size: 64 kB
+	Supported SRAM Types:
+		Asynchronous
+	Installed SRAM Type: Asynchronous
+	Speed: Unknown
+	Error Correction Type: Single-bit ECC
+	System Type: Instruction
+	Associativity: 8-way Set-associative
+
+Handle 0x0003, DMI type 7, 19 bytes
+Cache Information
+	Socket Designation: Not Specified
+	Configuration: Enabled, Not Socketed, Level 2
+	Operational Mode: Write Back
+	Location: Internal
+	Installed Size: 512 kB
+	Maximum Size: 512 kB
+	Supported SRAM Types:
+		Asynchronous
+	Installed SRAM Type: Asynchronous
+	Speed: Unknown
+	Error Correction Type: Single-bit ECC
+	System Type: Unified
+	Associativity: 8-way Set-associative
+
+Handle 0x0004, DMI type 7, 19 bytes
+Cache Information
+	Socket Designation: Not Specified
+	Configuration: Enabled, Not Socketed, Level 3
+	Operational Mode: Write Back
+	Location: Internal
+	Installed Size: 3 MB
+	Maximum Size: 3 MB
+	Supported SRAM Types:
+		Asynchronous
+	Installed SRAM Type: Asynchronous
+	Speed: Unknown
+	Error Correction Type: Single-bit ECC
+	System Type: Unified
+	Associativity: 12-way Set-associative
+
+Handle 0x0005, DMI type 16, 15 bytes
+Physical Memory Array
+	Location: System Board Or Motherboard
+	Use: System Memory
+	Error Correction Type: None
+	Maximum Capacity: 8 GB
+	Error Information Handle: Not Provided
+	Number Of Devices: 2
+
+Handle 0x0006, DMI type 130, 186 bytes
+OEM-specific Type
+	Header and Data:
+		82 BA 06 00 07 00 00 00 B0 00 92 10 F1 03 04 11
+		05 0B 03 11 01 08 0A 00 F4 01 78 78 90 50 90 11
+		50 E0 10 04 3C 3C 01 90 83 8C 00 A1 00 00 00 00
+		00 A8 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02
+		FE 00 00 00 00 00 00 00 AF E6 45 42 4A 32 30 55
+		46 38 45 44 55 30 2D 47 4E 2D 46 20 30 20 02 FE
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00
+
+Handle 0x0007, DMI type 17, 34 bytes
+Memory Device
+	Array Handle: 0x0005
+	Error Information Handle: No Error
+	Total Width: Unknown
+	Data Width: Unknown
+	Size: 2 GB
+	Form Factor: SODIMM
+	Set: None
+	Locator: DIMM0
+	Bank Locator: BANK 0
+	Type: DDR3
+	Type Detail: Synchronous
+	Speed: 1600 MT/s
+	Manufacturer: 0x02FE
+	Serial Number: 0x00000000
+	Asset Tag: Unknown
+	Part Number: 0x45424A3230554638454455302D474E2D4620
+	Rank: Unknown
+	Configured Memory Speed: Unknown
+
+Handle 0x0008, DMI type 130, 186 bytes
+OEM-specific Type
+	Header and Data:
+		82 BA 08 00 09 00 00 00 B0 00 92 10 F1 03 04 11
+		05 0B 03 11 01 08 0A 00 F4 01 78 78 90 50 90 11
+		50 E0 10 04 3C 3C 01 90 83 8C 00 A1 00 00 00 00
+		00 A8 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02
+		FE 00 00 00 00 00 00 00 AF E6 45 42 4A 32 30 55
+		46 38 45 44 55 30 2D 47 4E 2D 46 20 30 20 02 FE
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00
+
+Handle 0x0009, DMI type 17, 34 bytes
+Memory Device
+	Array Handle: 0x0005
+	Error Information Handle: No Error
+	Total Width: Unknown
+	Data Width: Unknown
+	Size: 2 GB
+	Form Factor: SODIMM
+	Set: None
+	Locator: DIMM0
+	Bank Locator: BANK 1
+	Type: DDR3
+	Type Detail: Synchronous
+	Speed: 1600 MT/s
+	Manufacturer: 0x02FE
+	Serial Number: 0x00000000
+	Asset Tag: Unknown
+	Part Number: 0x45424A3230554638454455302D474E2D4620
+	Rank: Unknown
+	Configured Memory Speed: Unknown
+
+Handle 0x000A, DMI type 19, 15 bytes
+Memory Array Mapped Address
+	Starting Address: 0x00000000000
+	Ending Address: 0x000FFFFFFFF
+	Range Size: 4 GB
+	Physical Array Handle: 0x0005
+	Partition Width: 0
+
+Handle 0x000B, DMI type 0, 24 bytes
+BIOS Information
+	Vendor: Apple Inc.
+	Version: 431.140.6.0.0
+	Release Date: 06/13/2021
+	ROM Size: 8 MB
+	Characteristics:
+		PCI is supported
+		BIOS is upgradeable
+		BIOS shadowing is allowed
+		Boot from CD is supported
+		Selectable boot is supported
+		ACPI is supported
+		IEEE 1394 boot is supported
+		Smart battery is supported
+		Function key-initiated network boot is supported
+	BIOS Revision: 0.1
+
+Handle 0x000C, DMI type 1, 27 bytes
+System Information
+	Manufacturer: Apple Inc.
+	Product Name: MacBookAir6,2
+	Version: 1.0
+	Serial Number: C02NJSN2G085
+	UUID: 46f5f24d-5e97-d651-876c-174121a74ad3
+	Wake-up Type: Power Switch
+	SKU Number: System SKU#
+	Family: MacBook Air
+
+Handle 0x000D, DMI type 2, 16 bytes
+Base Board Information
+	Manufacturer: Apple Inc.
+	Product Name: Mac-7DF21CB3ED6977E5
+	Version: MacBookAir6,2
+	Serial Number: C0244060HPWFY58AQ
+	Asset Tag: Base Board Asset Tag#
+	Features:
+		Board is a hosting board
+		Board is replaceable
+	Location In Chassis: Part Component
+	Chassis Handle: 0x000E
+	Type: Motherboard
+	Contained Object Handles: 0
+
+Handle 0x000E, DMI type 3, 21 bytes
+Chassis Information
+	Manufacturer: Apple Inc.
+	Type: Notebook
+	Lock: Not Present
+	Version: Mac-7DF21CB3ED6977E5
+	Serial Number: C02NJSN2G085
+	Asset Tag: Not Specified
+	Boot-up State: Safe
+	Power Supply State: Safe
+	Thermal State: Other
+	Security Status: Other
+	OEM Information: 0x00000000
+	Height: Unspecified
+	Number Of Power Cords: Unspecified
+	Contained Elements: 0
+
+Handle 0x000F, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: None
+	External Reference Designator: USB0
+	External Connector Type: Access Bus (USB)
+	Port Type: USB
+
+Handle 0x0010, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: None
+	External Reference Designator: USB1
+	External Connector Type: Access Bus (USB)
+	Port Type: USB
+
+Handle 0x0011, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: Other
+	External Reference Designator: Mini DisplayPort
+	External Connector Type: None
+	Port Type: Other
+
+Handle 0x0012, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: Other
+	External Reference Designator: HDMI
+	External Connector Type: None
+	Port Type: Other
+
+Handle 0x0013, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: Other
+	External Reference Designator: Microphone
+	External Connector Type: None
+	Port Type: Other
+
+Handle 0x0014, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: Other
+	External Reference Designator: Speaker
+	External Connector Type: None
+	Port Type: Other
+
+Handle 0x0015, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: None
+	External Reference Designator: MagSafe DC Power
+	External Connector Type: Other
+	Port Type: Other
+
+Handle 0x0016, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: None
+	External Reference Designator: Audio Line Out
+	External Connector Type: Mini Jack (headphones)
+	Port Type: Audio Port
+
+Handle 0x0017, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: None
+	Internal Connector Type: None
+	External Reference Designator: SD Card Reader
+	External Connector Type: Access Bus (USB)
+	Port Type: USB
+
+Handle 0x0018, DMI type 9, 13 bytes
+System Slot Information
+	Designation: AirPort
+	Type: x1 PCI Express
+	Current Usage: Available
+	Length: Short
+	ID: 0
+	Characteristics:
+		3.3 V is provided
+		Hot-plug devices are supported
+		SMBus signal is supported
+
+Handle 0x0019, DMI type 9, 13 bytes
+System Slot Information
+	Designation: Thunderbolt Slot 1
+	Type: 32-bit PCI
+	Current Usage: Available
+	Length: Long
+	ID: 2
+	Characteristics:
+		3.3 V is provided
+		PME signal is supported
+		Hot-plug devices are supported
+		SMBus signal is supported
+
+Handle 0x001A, DMI type 9, 13 bytes
+System Slot Information
+	Designation: Thunderbolt Slot 2
+	Type: 32-bit PCI
+	Current Usage: Available
+	Length: Long
+	ID: 3
+	Characteristics:
+		3.3 V is provided
+		PME signal is supported
+		Hot-plug devices are supported
+		SMBus signal is supported
+
+Handle 0x001B, DMI type 9, 13 bytes
+System Slot Information
+	Designation: Thunderbolt Slot 3
+	Type: 32-bit PCI
+	Current Usage: Available
+	Length: Long
+	ID: 4
+	Characteristics:
+		3.3 V is provided
+		PME signal is supported
+		Hot-plug devices are supported
+		SMBus signal is supported
+
+Handle 0x001C, DMI type 9, 13 bytes
+System Slot Information
+	Designation: Thunderbolt Slot 4
+	Type: 32-bit PCI
+	Current Usage: Available
+	Length: Long
+	ID: 5
+	Characteristics:
+		3.3 V is provided
+		PME signal is supported
+		Hot-plug devices are supported
+		SMBus signal is supported
+
+Handle 0x001D, DMI type 10, 6 bytes
+On Board Device Information
+	Type: Video
+	Status: Enabled
+	Description: Integrated Video Controller
+
+Handle 0x001E, DMI type 10, 6 bytes
+On Board Device Information
+	Type: Sound
+	Status: Enabled
+	Description: Azalia Audio Codec
+
+Handle 0x001F, DMI type 10, 6 bytes
+On Board Device Information
+	Type: Other
+	Status: Enabled
+	Description: SATA
+
+Handle 0x0020, DMI type 11, 5 bytes
+OEM Strings
+	String 1: Apple ROM Version.  Model:        MBA61.  EFI Version:  431.140
+	String 2: .6.0.0.  Built by:     root@bb-g9-pdb92.  Date:         Sun Jun
+	String 3:  13 18:52:10 PDT 2021.  Revision:     431.140.6 (B&I).  ROM Ver
+	String 4: sion:  F000_B00.  Build Type:   Official Build, Release.  Compi
+	String 5: ler:     clang-1205.0.19.59.6.
+
+Handle 0x0021, DMI type 12, 5 bytes
+System Configuration Options
+
+Handle 0x0022, DMI type 13, 22 bytes
+BIOS Language Information
+	Language Description Format: Long
+	Installable Languages: 1
+		<BAD INDEX>
+	Currently Installed Language: Not Specified
+
+Handle 0x0023, DMI type 32, 20 bytes
+System Boot Information
+	Status: No errors detected
+
+Handle 0x0024, DMI type 131, 6 bytes
+OEM-specific Type
+	Header and Data:
+		83 06 24 00 05 06
+
+Handle 0x0025, DMI type 128, 88 bytes
+OEM-specific Type
+	Header and Data:
+		80 58 25 00 03 00 00 00 77 F5 0F FB 7F FF 1F FF
+		02 00 03 00 00 00 00 00 00 00 99 FF FF FF B2 FF
+		00 00 B3 FF FF FF DD FF 00 00 E1 FF FF FF E3 FF
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 00 00 00
+
+Handle 0x0026, DMI type 133, 12 bytes
+OEM-specific Type
+	Header and Data:
+		85 0C 26 00 02 00 00 00 00 00 00 00
+
+Handle 0x0027, DMI type 221, 26 bytes
+OEM-specific Type
+	Header and Data:
+		DD 1A 27 00 03 01 00 01 08 00 00 00 02 00 00 00
+		00 26 00 03 00 01 03 00 01 00
+	Strings:
+		Reference Code - CPU
+		uCode Version
+		TXT ACM version
+
+Wrong DMI structures count: 43 announced, only 40 decoded.
+ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host noprefixroute 
+       valid_lft forever preferred_lft forever
+2: wlp3s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 2c:f0:ee:2c:c9:b6 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.0.129/24 brd 192.168.0.255 scope global dynamic noprefixroute wlp3s0
+       valid_lft 69028sec preferred_lft 69028sec
+    inet6 2403:580b:c4f1:0:2c29:38f5:cead:5105/64 scope global temporary dynamic 
+       valid_lft 7176sec preferred_lft 3575sec
+    inet6 2403:580b:c4f1:0:f2da:ec3b:a12b:f463/64 scope global dynamic mngtmpaddr noprefixroute 
+       valid_lft 7176sec preferred_lft 3575sec
+    inet6 fe80::a723:94df:1f0e:6489/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+iwconfig
+lo        no wireless extensions.
+
+wlp3s0    IEEE 802.11  ESSID:"interwebs"  
+          Mode:Managed  Frequency:2.422 GHz  Access Point: 78:98:E8:66:04:49   
+          Retry short limit:7   RTS thr:off   Fragment thr:off
+          Power Management:on
+          
+nmcli device show
+GENERAL.DEVICE:                         wlp3s0
+GENERAL.TYPE:                           wifi
+GENERAL.HWADDR:                         2C:F0:EE:2C:C9:B6
+GENERAL.MTU:                            1500
+GENERAL.STATE:                          100 (connected)
+GENERAL.CONNECTION:                     interwebs
+GENERAL.CON-PATH:                       /org/freedesktop/NetworkManager/ActiveConnection/7
+IP4.ADDRESS[1]:                         192.168.0.129/24
+IP4.GATEWAY:                            192.168.0.1
+IP4.ROUTE[1]:                           dst = 192.168.0.0/24, nh = 0.0.0.0, mt = 600
+IP4.ROUTE[2]:                           dst = 0.0.0.0/0, nh = 192.168.0.1, mt = 600
+IP4.DNS[1]:                             192.168.0.1
+IP6.ADDRESS[1]:                         2403:580b:c4f1:0:2c29:38f5:cead:5105/64
+IP6.ADDRESS[2]:                         2403:580b:c4f1:0:f2da:ec3b:a12b:f463/64
+IP6.ADDRESS[3]:                         fe80::a723:94df:1f0e:6489/64
+IP6.GATEWAY:                            fe80::7a98:e8ff:fe66:445
+IP6.ROUTE[1]:                           dst = fe80::/64, nh = ::, mt = 1024
+IP6.ROUTE[2]:                           dst = 2403:580b:c4f1::/64, nh = ::, mt = 600
+IP6.ROUTE[3]:                           dst = 2403:580b:c4f1::/48, nh = fe80::7a98:e8ff:fe66:445, mt = 600
+IP6.ROUTE[4]:                           dst = ::/0, nh = fe80::7a98:e8ff:fe66:445, mt = 600
+IP6.DNS[1]:                             2403:580b:c4f1::1
+
+GENERAL.DEVICE:                         lo
+GENERAL.TYPE:                           loopback
+GENERAL.HWADDR:                         00:00:00:00:00:00
+GENERAL.MTU:                            65536
+GENERAL.STATE:                          100 (connected (externally))
+GENERAL.CONNECTION:                     lo
+GENERAL.CON-PATH:                       /org/freedesktop/NetworkManager/ActiveConnection/1
+IP4.ADDRESS[1]:                         127.0.0.1/8
+IP4.GATEWAY:                            --
+IP6.ADDRESS[1]:                         ::1/128
+IP6.GATEWAY:                            --
