@@ -269,7 +269,8 @@ parse_arguments() {
         case $1 in
             -h|--help)
                 show_help
-                exit 0
+                # Only run main menu when executed directly (not when sourced for tests)
+[[ "${BASH_SOURCE[0]}" == "$0" ]] && main "$@"
                 ;;
             -dev|--no-dev)
                 EXCLUDED_CATEGORIES["dev"]=1
@@ -16616,24 +16617,22 @@ main "$@"
 # ---------------------------------------------------------------------------
 
 # Helper: list WordPress sites (returns array of site names)
-# Searches /var/www/* 2 levels deep for any folder that contains
-# wp-config.php plus a couple of other core files to avoid false positives.
+# Searches /var/www/* 2 levels deep for any folder that contains wp-config.php
 __wp_sites() {
-    local sites=()
-    local base="/var/www"
+    local sites=() base="/var/www"
     [[ -d $base ]] || return 0
 
-    # use find with maxdepth 2 – fast and safe
-    local wp_root
-    while IFS= read -r -d '' wp_root; do
-        # wp_root is the directory that holds wp-config.php
-        # we want the *domain* part immediately under /var/www/
-        local domain
-        domain=$(realpath --relative-to="$base" "$wp_root" 2>/dev/null | cut -d/ -f1)
-        [[ -n $domain && $domain != "." ]] && sites+=("$domain")
-    done < <(find "$base" -maxdepth 2 -type f -name wp-config.php -print0 2>/dev/null | xargs -0 -I{} dirname {} | sort -u -z)
+    local f
+    while IFS= read -r -d '' f; do          # f = …/wp-config.php
+        local dir=${f%/*}                     # strip filename → directory
+        local rel=${dir#$base/}               # remove /var/www/ prefix
+        rel=${rel%%/*}                        # first component = domain
+        [[ $rel && $rel != "." ]] && sites+=("$rel")
+    done < <(find "$base" -maxdepth 3 -type f -name wp-config.php -print0 2>/dev/null)
 
-    printf '%s\n' "${sites[@]}"
+    # de-duplicate
+    ((${#sites[@]})) && mapfile -t sites < <(printf "%s\n" "${sites[@]}" | sort -u)
+    printf "%s\n" "${sites[@]}"
 }
 
 # Helper: returns 0 if the site appears to be Internet-facing (has real DNS)
@@ -16650,9 +16649,16 @@ __site_is_live() {
 # Menu entry point
 show_reverse_proxy_addons_menu() {
     log "Reverse-Proxy & Add-ons menu opened"
+
+    # ---- extra safety: ensure we never call ui_menu with zero items ----
+    local wp; mapfile -t wp < <(__wp_sites)
+    if [[ ${#wp[@]} -eq 0 ]]; then
+        ui_msg "No WordPress sites" "No WordPress installations detected in /var/www.\n\nPlease install WordPress first."
+        return 1
+    fi
+    # --------------------------------------------------------------------
+
     while true; do
-        local wp
-        mapfile -t wp < <(__wp_sites)
         local info="Reverse-Proxy & Add-ons\n\n"
         if [[ ${#wp[@]} -eq 0 ]]; then
             info+="❌ No WordPress sites found.\n   Please install WordPress first.\n"
