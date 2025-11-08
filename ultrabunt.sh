@@ -7383,7 +7383,7 @@ is_package_installed() {
                     fi
                     ;;
                 *) 
-                    log "WARNING: Unknown custom buntage '$name'"
+                    # Silently ignore unknown custom buntage entries
                     result=1
                     ;;
             esac
@@ -16616,14 +16616,26 @@ main "$@"
 # ---------------------------------------------------------------------------
 
 # Helper: list WordPress sites (returns array of site names)
+# Looks for wp-config.php either directly in /var/www/<domain>/
+# or one level deeper (/var/www/<domain>/public/, /var/www/<domain>/htdocs/, …)
 __wp_sites() {
     local sites=()
-    if [[ -d /var/www ]]; then
-        while IFS= read -r -d '' d; do
-            local n=$(basename "$d")
-            [[ -f "$d/wp-config.php" ]] && sites+=("$n")
-        done < <(find /var/www -maxdepth 1 -type d -print0 2>/dev/null)
-    fi
+    local base="/var/www"
+    [[ -d $base ]] || return 0
+
+    # top-level domains
+    local d
+    for d in "$base"/*; do
+        [[ -L $d || ! -d $d ]] && continue          # skip symlinks / files
+        local domain=$(basename "$d")
+        # 1) direct install
+        [[ -f "$d/wp-config.php" ]] && { sites+=("$domain"); continue; }
+        # 2) common sub-folder installs (public, htdocs, html, www)
+        local sub
+        for sub in public htdocs html www; do
+            [[ -f "$d/$sub/wp-config.php" ]] && { sites+=("$domain"); break; }
+        done
+    done
     printf '%s\n' "${sites[@]}"
 }
 
@@ -16653,8 +16665,10 @@ show_reverse_proxy_addons_menu() {
         fi
 
         local items=()
-        [[ ${#wp[@]} -gt 0 ]] && items+=("mailcow" "📧 Install Mailcow + proxy it")
-        [[ ${#wp[@]} -gt 0 ]] && items+=("umami"   "📊 Install Umami  + proxy it")
+        if [[ ${#wp[@]} -gt 0 ]]; then
+            items+=("mailcow" "📧 Install Mailcow + proxy it")
+            items+=("umami"   "📊 Install Umami  + proxy it")
+        fi
         items+=("" "(_*_)")
         items+=("zback" "(Z) ← Back to Main Menu")
 
