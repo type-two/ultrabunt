@@ -16616,26 +16616,23 @@ main "$@"
 # ---------------------------------------------------------------------------
 
 # Helper: list WordPress sites (returns array of site names)
-# Looks for wp-config.php either directly in /var/www/<domain>/
-# or one level deeper (/var/www/<domain>/public/, /var/www/<domain>/htdocs/, …)
+# Searches /var/www/* 2 levels deep for any folder that contains
+# wp-config.php plus a couple of other core files to avoid false positives.
 __wp_sites() {
     local sites=()
     local base="/var/www"
     [[ -d $base ]] || return 0
 
-    # top-level domains
-    local d
-    for d in "$base"/*; do
-        [[ -L $d || ! -d $d ]] && continue          # skip symlinks / files
-        local domain=$(basename "$d")
-        # 1) direct install
-        [[ -f "$d/wp-config.php" ]] && { sites+=("$domain"); continue; }
-        # 2) common sub-folder installs (public, htdocs, html, www)
-        local sub
-        for sub in public htdocs html www; do
-            [[ -f "$d/$sub/wp-config.php" ]] && { sites+=("$domain"); break; }
-        done
-    done
+    # use find with maxdepth 2 – fast and safe
+    local wp_root
+    while IFS= read -r -d '' wp_root; do
+        # wp_root is the directory that holds wp-config.php
+        # we want the *domain* part immediately under /var/www/
+        local domain
+        domain=$(realpath --relative-to="$base" "$wp_root" 2>/dev/null | cut -d/ -f1)
+        [[ -n $domain && $domain != "." ]] && sites+=("$domain")
+    done < <(find "$base" -maxdepth 2 -type f -name wp-config.php -print0 2>/dev/null | xargs -0 -I{} dirname {} | sort -u -z)
+
     printf '%s\n' "${sites[@]}"
 }
 
