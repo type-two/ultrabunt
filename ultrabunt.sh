@@ -1875,6 +1875,12 @@ PKG_DESC[gamemode]="Optimize gaming performance [APT]"
 PKG_METHOD[gamemode]="apt"
 PKG_CATEGORY[gamemode]="gaming-platforms"
 
+# Gargoyle (Source Build)
+PACKAGES[gargoyle-source]="gargoyle"
+PKG_DESC[gargoyle-source]="Gargoyle interactive fiction player [SOURCE BUILD]"
+PKG_METHOD[gargoyle-source]="custom"
+PKG_CATEGORY[gargoyle-source]="gaming-platforms"
+
 PACKAGES[gimp]="gimp"
 PKG_DESC[gimp]="GIMP image editor [APT]"
 PKG_METHOD[gimp]="apt"
@@ -2245,6 +2251,17 @@ PACKAGES[n8n]="n8n"
 PKG_DESC[n8n]="Workflow automation tool (self-hosted Zapier alternative) [NPM]"
 PKG_METHOD[n8n]="custom"
 PKG_CATEGORY[n8n]="dev"
+
+# ==============================================================================
+# GAMING - Z-CODE / INTERACTIVE FICTION
+# ==============================================================================
+
+PACKAGES[frotz]="frotz"
+PKG_DESC[frotz]="Frotz Z-machine interpreter [APT]"
+PKG_METHOD[frotz]="apt"
+PKG_CATEGORY[frotz]="gaming-platforms"
+
+## tmux is already defined under 'core' category above; avoid redefining here
 
 # ==============================================================================
 # SINGLE BOARD COMPUTERS & MICROCONTROLLERS
@@ -6876,6 +6893,130 @@ remove_esp-idf() {
 # BUNTAGE MANAGEMENT DISPATCHER
 # ==============================================================================
 
+# Build and install Gargoyle from source
+install_gargoyle() {
+    log "Starting Gargoyle (source build) installation"
+
+    # Dependencies needed for building Gargoyle
+    local deps=(
+        build-essential
+        cmake
+        pkg-config
+        git
+        libgtk-3-dev
+        libglade2-dev
+        libgtkglext1-dev
+        libglk-dev
+        libsdl2-dev
+        libsdl2-mixer-dev
+        libfreetype6-dev
+        libjpeg-dev
+        libfontconfig1-dev
+    )
+
+    apt_update
+
+    # Try to install each dependency (skip gracefully if unavailable)
+    for d in "${deps[@]}"; do
+        if apt-cache show "$d" >/dev/null 2>&1; then
+            install_apt_package "$d" || log_error "Failed to install dependency: $d"
+        else
+            log "Dependency not found in APT and will be skipped: $d"
+        fi
+    done
+
+    # Prepare source directories
+    local src_root="$HOME/.ultrabunt-src"
+    local repo_root="$src_root/gargoyle"
+    local repo_dir="$repo_root/garglk"
+    local build_dir="$repo_dir/build"
+
+    mkdir -p "$repo_root" || {
+        ui_msg "Error" "Could not create source directory at $repo_root"
+        return 1
+    }
+
+    # Clone or update repository
+    if [[ -d "$repo_dir/.git" ]]; then
+        log "Updating Gargoyle repository"
+        (cd "$repo_dir" && git pull --rebase) 2>&1 | tee -a "$LOGFILE" || true
+    else
+        log "Cloning Gargoyle repository"
+        (cd "$repo_root" && git clone https://github.com/garglk/garglk.git) 2>&1 | tee -a "$LOGFILE" || {
+            ui_msg "Clone Failed" "Failed to clone Gargoyle repo. Check logs at $LOGFILE."
+            return 1
+        }
+    fi
+
+    # Configure and build
+    mkdir -p "$build_dir"
+    ui_msg "Building Gargoyle" "Configuring and compiling Gargoyle...\n\n⏳ This may take several minutes."
+
+    local jobs
+    jobs=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 1)
+
+    (
+        cd "$build_dir" && cmake .. && make -j"$jobs"
+    ) 2>&1 | tee -a "$LOGFILE" || {
+        ui_msg "Build Failed" "Compiling Gargoyle failed. See $LOGFILE for details."
+        return 1
+    }
+
+    # Install
+    if ui_yesno "Install Gargoyle" "Install Gargoyle system-wide (sudo make install)?"; then
+        (cd "$build_dir" && sudo make install) 2>&1 | tee -a "$LOGFILE" || {
+            ui_msg "Install Failed" "Installation failed. See $LOGFILE for details."
+            return 1
+        }
+
+        # Ensure the system can find libgarglk.so (Ubuntu often misses /usr/local/lib)
+        local garg_conf="/etc/ld.so.conf.d/gargoyle.conf"
+        if [[ -w "/etc/ld.so.conf.d" ]]; then
+            echo "/usr/local/lib" | sudo tee "$garg_conf" >/dev/null
+            sudo ldconfig 2>&1 | tee -a "$LOGFILE" || true
+            log "Updated ld.so configuration at $garg_conf and refreshed cache via ldconfig"
+        else
+            # Fallback message if directory is not writable (unlikely due to sudo)
+            ui_msg "Manual Step Required" "Add /usr/local/lib to the library path and run ldconfig:\n\n  echo '/usr/local/lib' | sudo tee /etc/ld.so.conf.d/gargoyle.conf\n  sudo ldconfig"
+        fi
+    else
+        ui_msg "Build Complete" "Gargoyle built successfully at:\n$build_dir\n\nYou can run from the build directory or install later."
+        return 0
+    fi
+
+    ui_msg "Gargoyle Installed" "Gargoyle installed successfully. Try 'gargoyle --paths' or '--edit-config'."
+    return 0
+}
+
+remove_gargoyle() {
+    # Minimal helper; source builds rarely have automatic uninstall unless provided
+    local src_root="$HOME/.ultrabunt-src"
+    local repo_root="$src_root/gargoyle"
+    local repo_dir="$repo_root/garglk"
+    local build_dir="$repo_dir/build"
+
+    if ui_yesno "Remove Gargoyle?" "Attempt to remove Gargoyle.\n\nNote: Source builds may not support automatic uninstall.\nIf available, we will run 'sudo make uninstall' from:\n$build_dir\n\nOtherwise, we remove the main binary and known assets."; then
+        local removed=0
+        if [[ -d "$build_dir" ]] && grep -q uninstall "${build_dir}/Makefile" 2>/dev/null; then
+            (cd "$build_dir" && sudo make uninstall) 2>&1 | tee -a "$LOGFILE" && removed=1
+        fi
+
+        # Fallback: remove common install locations
+        if [[ $removed -eq 0 ]]; then
+            sudo rm -f /usr/local/bin/gargoyle 2>/dev/null || true
+            sudo rm -f /usr/bin/gargoyle 2>/dev/null || true
+            sudo rm -f /usr/local/share/applications/gargoyle.desktop 2>/dev/null || true
+            sudo rm -rf /usr/local/share/gargoyle 2>/dev/null || true
+            sudo rm -f /etc/garglk.ini 2>/dev/null || true
+            log "Removed common Gargoyle files"
+        fi
+
+        ui_msg "Gargoyle Removed" "Removal attempted. Some files may remain if the build system did not provide an uninstall target."
+        return 0
+    fi
+    return 1
+}
+
 install_package() {
     local name="$1"
     local pkg="${PACKAGES[$name]}"
@@ -6993,6 +7134,7 @@ install_package() {
                 arduino-ide) install_arduino-ide; install_result=$? ;;
                 arduino-cli) install_arduino-cli; install_result=$? ;;
                 esp-idf) install_esp-idf; install_result=$? ;;
+                gargoyle-source) install_gargoyle; install_result=$? ;;
                 *) log_error "Unknown custom installer: $name"; install_result=1 ;;
             esac
             ;;
@@ -7097,6 +7239,7 @@ remove_package() {
                 arduino-ide) remove_arduino-ide; remove_result=$? ;;
                 arduino-cli) remove_arduino-cli; remove_result=$? ;;
                 esp-idf) remove_esp-idf; remove_result=$? ;;
+                gargoyle-source) remove_gargoyle; remove_result=$? ;;
                 *) log_error "Unknown custom remover: $name"; remove_result=1 ;;
             esac
             ;;
@@ -7232,6 +7375,13 @@ is_package_installed() {
                         result=1
                     fi
                     ;;
+                gargoyle-source)
+                    if is_binary_available "gargoyle"; then
+                        result=0
+                    else
+                        result=1
+                    fi
+                    ;;
                 *) 
                     log "WARNING: Unknown custom buntage '$name'"
                     result=1
@@ -7306,6 +7456,7 @@ show_category_menu() {
         menu_items+=("database-management" "(.Y.) Database Management")
         menu_items+=("swappiness" "(.Y.) Swappiness Tuning")
         menu_items+=("wordpress-setup" "(.Y.) WordPress Management")
+        menu_items+=("reverse-proxy-addons" "(.Y.) Reverse-Proxy & Add-ons")
         menu_items+=("keyboard-layout" "(.Y.) Keyboard Layout Configuration")
         menu_items+=("php-settings" "(.Y.) PHP Configuration")
         menu_items+=("log-viewer" "(.Y.) Log Viewer")
@@ -7489,6 +7640,12 @@ show_category_menu() {
                     ui_msg "Error" "Failed to display WordPress setup menu. Please check the logs."
                 }
                 ;;
+            reverse-proxy-addons)
+                show_reverse_proxy_addons_menu || {
+                    log "ERROR: show_reverse_proxy_addons_menu failed"
+                    ui_msg "Error" "Failed to display Reverse-Proxy & Add-ons menu. Please check the logs."
+                }
+                ;;
             php-settings)
                 show_php_settings_menu || {
                     log "ERROR: show_php_settings_menu failed"
@@ -7642,6 +7799,11 @@ show_buntage_list() {
         done
         
         menu_items=("${sorted_items[@]}")
+
+        # Inject Z-Code submenu entry inside Gaming Platforms category
+        if [[ "$category" == "gaming-platforms" ]]; then
+            menu_items+=("zcode-menu" "(.Y.) Z-Code & Interactive Fiction")
+        fi
         
         menu_items+=("" "(_*_)")
         menu_items+=("zback" "(B) ← Back to Categories")
@@ -7653,7 +7815,37 @@ show_buntage_list() {
         
         case "$choice" in
             back|zback|z|"") break ;;
+            zcode-menu)
+                show_zcode_menu
+                ;;
             *) show_buntage_actions "$choice" ;;
+        esac
+    done
+}
+
+# Submenu for Z-Code & Interactive Fiction tools
+show_zcode_menu() {
+    while true; do
+        local menu_items=()
+        menu_items+=("manage-frotz" "(.Y.) Manage Frotz (Install/Remove/Info)")
+        menu_items+=("manage-gargoyle" "(.Y.) Build & Install Gargoyle (Source)")
+        menu_items+=("zback" "(B) ← Back to Gaming Platforms")
+
+        local choice
+        choice=$(ui_menu "Z-Code & Interactive Fiction" \
+            "Manage classic interactive fiction interpreters and frontends" \
+            $DIALOG_HEIGHT $DIALOG_WIDTH $DIALOG_MENU_HEIGHT "${menu_items[@]}") || break
+
+        case "$choice" in
+            manage-frotz)
+                show_buntage_actions "frotz"
+                ;;
+            manage-gargoyle)
+                show_buntage_actions "gargoyle-source"
+                ;;
+            back|zback|z|"")
+                break
+                ;;
         esac
     done
 }
@@ -10304,8 +10496,11 @@ wordpress_quick_setup() {
     # Show completion message
     ui_msg "Step 6/6" "Finalizing WordPress installation...\n\nPreparing completion summary with all details.\n\n⏳ This process is automatic - please wait..."
     show_wordpress_completion "$domain" "$db_info"
-    
+
     ui_msg "Installation Complete!" "🎉 WordPress installation finished successfully!\n\nYour site is ready at: http://$domain\n\nNext steps:\n1. Visit your site to complete WordPress setup\n2. Create your admin account\n3. Choose your theme and plugins\n\n💡 Tip: Use the WordPress Cleanup option in the WordPress menu to remove default content and optimize your site."
+
+    # Apply shared ownership permissions and restart services per requested policy
+    finalize_wordpress_setup "$domain" "$web_server"
 }
 
 wordpress_custom_setup() {
@@ -10361,6 +10556,9 @@ wordpress_custom_setup() {
     
     # Show completion
     show_wordpress_completion "$domain" "$db_info"
+
+    # Apply shared ownership permissions and restart services per requested policy
+    finalize_wordpress_setup "$domain" "$web_server" "$site_dir"
 }
 
 wordpress_custom_database_setup() {
@@ -10535,6 +10733,42 @@ install_wordpress_prerequisites() {
     setup_mariadb_security
     
     log "WordPress prerequisites installed successfully"
+}
+
+# Finalize WordPress setup by granting shared ownership and restarting services
+finalize_wordpress_setup() {
+    local domain="$1"
+    local web_server="$2"
+    local site_dir="${3:-/var/www/$domain}"
+
+    log "Finalizing WordPress setup for $domain at $site_dir (web server: $web_server)"
+
+    # Grant shared ownership to current user and www-data group
+    sudo usermod -aG www-data "$(whoami)" 2>&1 | tee -a "$LOGFILE" || true
+    sudo chown -R "$(whoami)":www-data "$site_dir" 2>&1 | tee -a "$LOGFILE" || true
+
+    # Set directory permissions to 2775 and file permissions to 0664
+    sudo find "$site_dir" -type d -exec chmod 2775 {} \; 2>&1 | tee -a "$LOGFILE" || true
+    sudo find "$site_dir" -type f -exec chmod 0664 {} \; 2>&1 | tee -a "$LOGFILE" || true
+
+    # Ensure wp-config.php has group-writable permissions per requested policy
+    if [[ -f "$site_dir/wp-config.php" ]]; then
+        sudo chmod 0664 "$site_dir/wp-config.php" 2>&1 | tee -a "$LOGFILE" || true
+    fi
+
+    # Restart appropriate services
+    if [[ "$web_server" == "nginx" ]]; then
+        sudo systemctl restart php${PHP_VER}-fpm 2>&1 | tee -a "$LOGFILE" || true
+        sudo systemctl restart nginx 2>&1 | tee -a "$LOGFILE" || true
+    else
+        sudo systemctl restart apache2 2>&1 | tee -a "$LOGFILE" || true
+        # Restart PHP-FPM if present on Apache setups
+        if systemctl list-unit-files | grep -q "php${PHP_VER}-fpm.service"; then
+            sudo systemctl restart php${PHP_VER}-fpm 2>&1 | tee -a "$LOGFILE" || true
+        fi
+    fi
+
+    ui_msg "Permissions Applied" "✅ Shared ownership granted for:\n$site_dir\n\nOwner: $(whoami)\nGroup: www-data\nDirectories: 2775\nFiles: 0664\nwp-config.php: 0664\n\n🔄 Services restarted: ${web_server^} and PHP-FPM ${PHP_VER} (if applicable)."
 }
 
 check_wordpress_prerequisites() {
@@ -12656,6 +12890,7 @@ show_individual_site_management() {
             "repair-db" "🔧 Repair Database Connection"
             "" "(_*_)"
             "file-access" "📁 Grant File Access to Current User"
+            "grant-root" "🔑 Grant Shared Ownership to Root"
             "enable-site" "🔗 Enable/Disable Site"
             "test-site" "🧪 Test Site Accessibility"
             "" "(_*_)"
@@ -12710,6 +12945,9 @@ show_individual_site_management() {
                 ;;
             file-access)
                 grant_file_access_to_user "$site"
+                ;;
+            grant-root)
+                finalize_wordpress_setup "$site" "$web_server" "$site_dir"
                 ;;
             enable-site)
                 manage_site_enablement "$site" "$web_server"
@@ -16372,4 +16610,222 @@ main() {
 
 # Run main program
 main "$@"
+
+# ---------------------------------------------------------------------------
+#  REVERSE-PROXY & ADD-ONS  (Mailcow + Umami behind Nginx)
+# ---------------------------------------------------------------------------
+
+# Helper: list WordPress sites (returns array of site names)
+__wp_sites() {
+    local sites=()
+    if [[ -d /var/www ]]; then
+        while IFS= read -r -d '' d; do
+            local n=$(basename "$d")
+            [[ -f "$d/wp-config.php" ]] && sites+=("$n")
+        done < <(find /var/www -maxdepth 1 -type d -print0 2>/dev/null)
+    fi
+    printf '%s\n' "${sites[@]}"
+}
+
+# Helper: returns 0 if the site appears to be Internet-facing (has real DNS)
+__site_is_live() {
+    local domain="$1"
+    # crude checks: 1) not localhost  2) DNS resolves to something != 127.x / private-only
+    [[ "$domain" =~ ^(localhost|127\.|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.) ]] && return 1
+    if ! host "$domain" >/dev/null 2>&1; then
+        return 1   # no DNS at all
+    fi
+    return 0
+}
+
+# Menu entry point
+show_reverse_proxy_addons_menu() {
+    log "Reverse-Proxy & Add-ons menu opened"
+    while true; do
+        local wp
+        mapfile -t wp < <(__wp_sites)
+        local info="Reverse-Proxy & Add-ons\n\n"
+        if [[ ${#wp[@]} -eq 0 ]]; then
+            info+="❌ No WordPress sites found.\n   Please install WordPress first.\n"
+        else
+            info+="📁 Detected WordPress sites:\n"
+            for w in "${wp[@]}"; do info+="   • $w\n"; done
+        fi
+
+        local items=()
+        [[ ${#wp[@]} -gt 0 ]] && items+=("mailcow" "📧 Install Mailcow + proxy it")
+        [[ ${#wp[@]} -gt 0 ]] && items+=("umami"   "📊 Install Umami  + proxy it")
+        items+=("" "(_*_)")
+        items+=("zback" "(Z) ← Back to Main Menu")
+
+        local c; c=$(ui_menu "Reverse-Proxy & Add-ons" "$info" 20 80 10 "${items[@]}") || break
+        case "$c" in
+            mailcow)  _do_mailcow_setup   ;;
+            umami)    _do_umami_setup    ;;
+            zback|back|z|"") break ;;
+        esac
+    done
+}
+
+# --------------------------------------------------
+# Mailcow (Docker) + Nginx reverse-proxy
+# --------------------------------------------------
+_do_mailcow_setup() {
+    local all; mapfile -t all < <(__wp_sites)
+    [[ ${#all[@]} -eq 0 ]] && { ui_msg "No WP" "No WordPress sites available."; return; }
+
+    # build menu: only live sites selectable
+    local items=() w
+    for w in "${all[@]}"; do
+        if __site_is_live "$w"; then
+            items+=("$w" "")
+        else
+            items+=("$w" "(localhost – not usable for Mailcow)" "off")
+        fi
+    done
+    [[ ${#items[@]} -eq 0 ]] && { ui_msg "No live sites" "No Internet-facing WordPress sites found."; return; }
+
+    local target_domain
+    target_domain=$(ui_menu "Select site" "Which WordPress domain is the BASE domain?\n(e.g. example.com → mail.example.com)" 18 70 8 "${items[@]}" "") || return
+
+    local mail_domain; mail_domain="mail.$target_domain"
+
+    ui_yesno "Confirm" "Mailcow will be reachable at:\nhttps://$mail_domain\n\nContinue?" || return
+
+    # 1. Install Docker + Compose if missing
+    if ! command -v docker &>/dev/null; then
+        ui_msg "Docker" "Installing Docker & docker-compose…"
+        sudo apt update && sudo apt install -y docker.io docker-compose
+        sudo usermod -aG docker "$USER"
+        sudo systemctl enable --now docker
+    fi
+
+    # 2. Clone Mailcow repo
+    local mailcow_dir="/opt/mailcow-dockerized"
+    if [[ -d "$mailcow_dir" ]]; then
+        ui_msg "Exists" "Mailcow directory already present. Skipping clone."
+    else
+        sudo git clone https://github.com/mailcow/mailcow-dockerized "$mailcow_dir"
+    fi
+    cd "$mailcow_dir"
+
+    # 3. Generate mailcow.conf interactively (skip if exists)
+    [[ -f mailcow.conf ]] || sudo ./generate_config.sh
+
+    # 4. Start Mailcow
+    sudo docker-compose pull
+    sudo docker-compose up -d
+
+    # 5. Nginx reverse-proxy snippet
+    local ngx_conf="/etc/nginx/sites-available/mailcow.conf"
+    sudo tee "$ngx_conf" >/dev/null <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $mail_domain;
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+    sudo ln -sf "$ngx_conf" /etc/nginx/sites-enabled/
+    sudo nginx -t && sudo systemctl reload nginx
+
+    # 6. Print DNS checklist
+    ui_info "Next steps" "🎉 Mailcow is running behind the proxy!\n\nAdd these DNS records in Cloudflare (or your DNS):\n\nType: A | Name: mail | Content: <your-server-ip>\nType: MX | Name: @ | Content: $mail_domain | Priority: 10\n\n(Replace <your-server-ip> with the IP of this server.)"
+}
+
+# --------------------------------------------------
+# Umami (Docker) + Nginx reverse-proxy
+# --------------------------------------------------
+_do_umami_setup() {
+    local all; mapfile -t all < <(__wp_sites)
+    [[ ${#all[@]} -eq 0 ]] && { ui_msg "No WP" "No WordPress sites available."; return; }
+
+    # build menu: only live sites selectable
+    local items=() w
+    for w in "${all[@]}"; do
+        if __site_is_live "$w"; then
+            items+=("$w" "")
+        else
+            items+=("$w" "(localhost – not usable for Umami)" "off")
+        fi
+    done
+    [[ ${#items[@]} -eq 0 ]] && { ui_msg "No live sites" "No Internet-facing WordPress sites found."; return; }
+
+    local target_domain
+    target_domain=$(ui_menu "Select site" "Which WordPress domain is the BASE domain?\n(e.g. example.com → analytics.example.com)" 18 70 8 "${items[@]}" "") || return
+
+    local analytics_domain; analytics_domain="analytics.$target_domain"
+
+    ui_yesno "Confirm" "Umami will be reachable at:\nhttps://$analytics_domain\n\nContinue?" || return
+
+    # 1. Docker (same as Mailcow)
+    if ! command -v docker &>/dev/null; then
+        ui_msg "Docker" "Installing Docker & docker-compose…"
+        sudo apt update && sudo apt install -y docker.io docker-compose
+        sudo usermod -aG docker "$USER"
+        sudo systemctl enable --now docker
+    fi
+
+    # 2. Folder & compose file
+    local umami_dir="/opt/umami"
+    sudo mkdir -p "$umami_dir"
+    sudo tee "$umami_dir/docker-compose.yml" >/dev/null <<'EOF'
+version: '3.9'
+services:
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://umami:umami@db:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: replace-me-with-a-random-string
+    depends_on:
+      - db
+    restart: unless-stopped
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: umami
+    volumes:
+      - umami-db:/var/lib/postgresql/data
+    restart: unless-stopped
+volumes:
+  umami-db:
+EOF
+
+    # 3. Start Umami
+    cd "$umami_dir"
+    sudo docker-compose up -d
+
+    # 4. Nginx reverse-proxy snippet
+    local ngx_conf="/etc/nginx/sites-available/umami.conf"
+    sudo tee "$ngx_conf" >/dev/null <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $analytics_domain;
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+    sudo ln -sf "$ngx_conf" /etc/nginx/sites-enabled/
+    sudo nginx -t && sudo systemctl reload nginx
+
+    ui_info "Next steps" "🎉 Umami is running behind the proxy!\n\nAdd this DNS record in Cloudflare (or your DNS):\n\nType: A | Name: analytics | Content: <your-server-ip>\n\nDefault login: admin / umami\n(Change password immediately after first login.)"
+}
+
 exit 0
