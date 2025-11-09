@@ -50,7 +50,7 @@ declare -A INSTALLED_CACHE
 # Session variables for database authentication
 
 # ============================================================================== 
-# TTS (Text-to-Speech) Integration for Accessibility
+# TITS (Text-to-Speech) Integration for Accessibility
 # ==============================================================================
 
 # TTS function to speak text if accessibility mode is enabled
@@ -74,6 +74,20 @@ speak_if_enabled() {
             --wait \
             "$clean_text" 2>/dev/null &
     fi
+}
+
+# Helper: resolve the WordPress root directory for a domain
+# Searches within /var/www/<domain> up to 2 levels for wp-config.php
+__wp_root_for_domain() {
+    local domain="$1" base="/var/www/$domain"
+    [[ -d "$base" ]] || { printf "%s\n" "$base"; return 0; }
+    local f
+    while IFS= read -r -d '' f; do
+        printf "%s\n" "${f%/*}"
+        return 0
+    done < <(find -L "$base" -maxdepth 4 -type f -name wp-config.php -print0 2>/dev/null)
+    # Fallback to domain folder
+    printf "%s\n" "$base"
 }
 
 # Enhanced UI message function with TTS support
@@ -269,8 +283,7 @@ parse_arguments() {
         case $1 in
             -h|--help)
                 show_help
-                # Only run main menu when executed directly (not when sourced for tests)
-[[ "${BASH_SOURCE[0]}" == "$0" ]] && main "$@"
+                exit 0
                 ;;
             -dev|--no-dev)
                 EXCLUDED_CATEGORIES["dev"]=1
@@ -7458,6 +7471,7 @@ show_category_menu() {
         menu_items+=("swappiness" "(.Y.) Swappiness Tuning")
         menu_items+=("wordpress-setup" "(.Y.) WordPress Management")
         menu_items+=("reverse-proxy-addons" "(.Y.) Reverse-Proxy & Add-ons")
+        menu_items+=("web-config-summary" "(.Y.) Web Config Summary (Nginx/Apache)")
         menu_items+=("keyboard-layout" "(.Y.) Keyboard Layout Configuration")
         menu_items+=("php-settings" "(.Y.) PHP Configuration")
         menu_items+=("log-viewer" "(.Y.) Log Viewer")
@@ -7645,6 +7659,12 @@ show_category_menu() {
                 show_reverse_proxy_addons_menu || {
                     log "ERROR: show_reverse_proxy_addons_menu failed"
                     ui_msg "Error" "Failed to display Reverse-Proxy & Add-ons menu. Please check the logs."
+                }
+                ;;
+            web-config-summary)
+                show_web_config_summary_menu || {
+                    log "ERROR: show_web_config_summary_menu failed"
+                    ui_msg "Error" "Failed to display Web Config Summary. Please check the logs."
                 }
                 ;;
             php-settings)
@@ -12522,17 +12542,9 @@ show_wordpress_status() {
     while true; do
         local status_info="WordPress\n\n"
         
-        # Check for WordPress installations
+        # Find WordPress installations (supports deeper structures like /var/www/<domain>/html)
         local wp_sites=()
-        if [[ -d "/var/www" ]]; then
-            while IFS= read -r -d '' dir; do
-                local site_name
-                site_name=$(basename "$dir")
-                if [[ -f "$dir/wp-config.php" ]]; then
-                    wp_sites+=("$site_name")
-                fi
-            done < <(find /var/www -maxdepth 1 -type d -print0 2>/dev/null)
-        fi
+        mapfile -t wp_sites < <(__wp_sites)
         
         if [[ ${#wp_sites[@]} -eq 0 ]]; then
             status_info+="No WordPress installations found in /var/www/\n\n"
@@ -12694,7 +12706,7 @@ show_wordpress_site_management() {
 
 show_individual_site_management() {
     local site="$1"
-    local site_dir="/var/www/$site"
+    local site_root="$(__wp_root_for_domain "$site")"
     
     while true; do
         local status_info="Managing Site: $site\n\n"
@@ -12702,12 +12714,12 @@ show_individual_site_management() {
         # Detailed site information
         status_info+="Site Details:\n"
         status_info+="═══════════════════════════════════════════════════════════\n"
-        status_info+="📁 Directory: $site_dir\n"
+        status_info+="📁 Directory: $site_root\n"
         
         # WordPress version
         local wp_version=""
-        if [[ -f "$site_dir/wp-includes/version.php" ]]; then
-            wp_version=$(grep "wp_version =" "$site_dir/wp-includes/version.php" | cut -d"'" -f2 2>/dev/null || echo "Unknown")
+        if [[ -f "$site_root/wp-includes/version.php" ]]; then
+            wp_version=$(grep "wp_version =" "$site_root/wp-includes/version.php" | cut -d"'" -f2 2>/dev/null || echo "Unknown")
         fi
         status_info+="🌐 WordPress Version: $wp_version\n"
         
@@ -12772,12 +12784,12 @@ show_individual_site_management() {
         local db_tables_count="0"
         local wp_tables_exist="❌"
         
-        if [[ -f "$site_dir/wp-config.php" ]]; then
+        if [[ -f "$site_root/wp-config.php" ]]; then
             local db_name db_user db_pass db_host
-            db_name=$(grep "DB_NAME" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
-            db_user=$(grep "DB_USER" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
-            db_pass=$(grep "DB_PASSWORD" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
-            db_host=$(grep "DB_HOST" "$site_dir/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+            db_name=$(grep "DB_NAME" "$site_root/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+            db_user=$(grep "DB_USER" "$site_root/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+            db_pass=$(grep "DB_PASSWORD" "$site_root/wp-config.php" | cut -d"'" -f4 2>/dev/null)
+            db_host=$(grep "DB_HOST" "$site_root/wp-config.php" | cut -d"'" -f4 2>/dev/null)
             
             if [[ -n "$db_name" && -n "$db_user" ]]; then
                 # Test database connection
@@ -16609,8 +16621,7 @@ main() {
     ui_msg "Goodbye!" "Thanks for bunting Ultrabunt Ultimate Buntstaller!\n\nLog: $LOGFILE\nBackups: $BACKUP_DIR\n\n💡 Tip: Reboot to apply all changes."
 }
 
-# Run main program
-main "$@"
+# (moved) Run main program from tail so all functions are defined first
 
 # ---------------------------------------------------------------------------
 #  REVERSE-PROXY & ADD-ONS  (Mailcow + Umami behind Nginx)
@@ -16628,7 +16639,7 @@ __wp_sites() {
         local rel=${dir#$base/}               # remove /var/www/ prefix
         rel=${rel%%/*}                        # first component = domain
         [[ $rel && $rel != "." ]] && sites+=("$rel")
-    done < <(find "$base" -maxdepth 3 -type f -name wp-config.php -print0 2>/dev/null)
+    done < <(find -L "$base" -maxdepth 5 -type f -name wp-config.php -print0 2>/dev/null)
 
     # de-duplicate
     ((${#sites[@]})) && mapfile -t sites < <(printf "%s\n" "${sites[@]}" | sort -u)
@@ -16650,13 +16661,8 @@ __site_is_live() {
 show_reverse_proxy_addons_menu() {
     log "Reverse-Proxy & Add-ons menu opened"
 
-    # ---- extra safety: ensure we never call ui_menu with zero items ----
+    # Collect WP sites; menu will still load even if none are found
     local wp; mapfile -t wp < <(__wp_sites)
-    if [[ ${#wp[@]} -eq 0 ]]; then
-        ui_msg "No WordPress sites" "No WordPress installations detected in /var/www.\n\nPlease install WordPress first."
-        return 1
-    fi
-    # --------------------------------------------------------------------
 
     while true; do
         local info="Reverse-Proxy & Add-ons\n\n"
@@ -16682,6 +16688,159 @@ show_reverse_proxy_addons_menu() {
             zback|back|z|"") break ;;
         esac
     done
+}
+
+# ---------------------------------------------------------------------------
+#  Web Config Summary (Nginx / Apache2)
+# ---------------------------------------------------------------------------
+show_web_config_summary_menu() {
+    log "Web Config Summary menu opened"
+
+    local summary=""
+
+    # Nginx summary
+    if [[ -d "/etc/nginx" ]]; then
+        local nginx_lines
+        nginx_lines=$(summarize_nginx_configs)
+        if [[ -n "$nginx_lines" ]]; then
+            summary+="Nginx configuration summary\n\n$nginx_lines\n\n"
+        else
+            summary+="Nginx: No server blocks detected in sites-enabled/conf.d.\n\n"
+        fi
+    else
+        summary+="Nginx not installed or /etc/nginx missing.\n\n"
+    fi
+
+    # Apache2 summary
+    if [[ -d "/etc/apache2" ]]; then
+        local apache_lines
+        apache_lines=$(summarize_apache_configs)
+        if [[ -n "$apache_lines" ]]; then
+            summary+="Apache2 configuration summary\n\n$apache_lines\n"
+        else
+            summary+="Apache2: No VirtualHost blocks detected in sites-enabled/conf.d.\n"
+        fi
+    else
+        summary+="Apache2 not installed or /etc/apache2 missing.\n"
+    fi
+
+    ui_info "Web Config Summary" "${summary}"
+}
+
+# Collect and summarize Nginx server blocks across sites-enabled and conf.d
+summarize_nginx_configs() {
+    local base="/etc/nginx"
+    [[ -d "$base" ]] || return 0
+
+    local files=()
+    if [[ -d "$base/sites-enabled" ]]; then
+        while IFS= read -r -d '' f; do files+=("$f"); done < <(find -L "$base/sites-enabled" -maxdepth 1 -type f -print0 2>/dev/null)
+    fi
+    if [[ -d "$base/conf.d" ]]; then
+        while IFS= read -r -d '' f; do files+=("$f"); done < <(find -L "$base/conf.d" -maxdepth 1 -type f -name "*.conf" -print0 2>/dev/null)
+    fi
+    # Fallback to main config if nothing else
+    if [[ -f "$base/nginx.conf" ]]; then files+=("$base/nginx.conf"); fi
+
+    ((${#files[@]})) || return 0
+
+    local tmp_out
+    tmp_out=$(mktemp)
+    local f
+    for f in "${files[@]}"; do
+        [[ -r "$f" ]] || continue
+        awk '
+            function trim(s){ sub(/^\s+/,"",s); sub(/\s+$/,"",s); return s }
+            BEGIN { in_server=0; level=0; server_name=""; listen=""; root=""; proxy=""; redirect=""; ssl="no" }
+            {
+                # track brace nesting
+                level += gsub(/\{/,"&");
+                level -= gsub(/\}/,"&");
+                if ($0 ~ /server\s*\{/ && in_server==0) { in_server=1; server_name=""; listen=""; root=""; proxy=""; redirect=""; ssl="no" }
+                if (in_server) {
+                    if ($0 ~ /server_name[[:space:]]+/) { s=$0; sub(/.*server_name[[:space:]]+/,"",s); sub(/;.*/,"",s); server_name=trim(s) }
+                    if ($0 ~ /listen[[:space:]]+443/){ ssl="yes" }
+                    if ($0 ~ /listen[[:space:]]+/){ s=$0; sub(/.*listen[[:space:]]+/,"",s); sub(/;.*/,"",s); listen=trim(s) }
+                    if ($0 ~ /root[[:space:]]+/){ s=$0; sub(/.*root[[:space:]]+/,"",s); sub(/;.*/,"",s); root=trim(s) }
+                    if ($0 ~ /proxy_pass[[:space:]]+/){ s=$0; sub(/.*proxy_pass[[:space:]]+/,"",s); sub(/;.*/,"",s); if (proxy=="") proxy=trim(s) }
+                    if ($0 ~ /return[[:space:]]+301[[:space:]]+/){ match($0,/return[[:space:]]+301[[:space:]]+([^;]+)/,m); if(m[1]) redirect=trim(m[1]) }
+                    if (level==0) {
+                        in_server=0;
+                        d=(server_name!=""?server_name:"(no server_name)");
+                        type="serves"; info="";
+                        if (redirect!="") { type="redirect"; info=redirect }
+                        else if (proxy!="") { type="reverse-proxy"; info=proxy }
+                        else if (root!="") { type="root"; info=root }
+                        printf("Nginx: %s → %s%s %s\n", d, type, (info!=""?": " info:""), (ssl=="yes"?"[SSL]":""));
+                        server_name=""; listen=""; root=""; proxy=""; redirect=""; ssl="no";
+                    }
+                }
+            }
+        ' "$f" >>"$tmp_out" 2>/dev/null || true
+    done
+
+    if [[ -s "$tmp_out" ]]; then
+        sort -u "$tmp_out" | sed -E 's/[[:space:]]+/ /g'
+    fi
+    rm -f "$tmp_out" 2>/dev/null || true
+}
+
+# Collect and summarize Apache2 VirtualHosts across sites-enabled and conf.d
+summarize_apache_configs() {
+    local base="/etc/apache2"
+    [[ -d "$base" ]] || return 0
+
+    local files=()
+    if [[ -d "$base/sites-enabled" ]]; then
+        while IFS= read -r -d '' f; do files+=("$f"); done < <(find -L "$base/sites-enabled" -maxdepth 1 -type f -name "*.conf" -print0 2>/dev/null)
+        # in case of symlinks without .conf
+        while IFS= read -r -d '' f; do files+=("$f"); done < <(find -L "$base/sites-enabled" -maxdepth 1 -type f ! -name "*.conf" -print0 2>/dev/null)
+    fi
+    if [[ -d "$base/conf.d" ]]; then
+        while IFS= read -r -d '' f; do files+=("$f"); done < <(find -L "$base/conf.d" -maxdepth 1 -type f -name "*.conf" -print0 2>/dev/null)
+    fi
+
+    ((${#files[@]})) || return 0
+
+    local tmp_out
+    tmp_out=$(mktemp)
+    local f
+    for f in "${files[@]}"; do
+        [[ -r "$f" ]] || continue
+        awk '
+            function trim(s){ sub(/^\s+/,"",s); sub(/\s+$/,"",s); return s }
+            BEGIN { in_vhost=0; server_name=""; aliases=""; docroot=""; proxy=""; redirect=""; ssl="no" }
+            {
+                if ($0 ~ /<VirtualHost[^>]*>/) {
+                    in_vhost=1; server_name=""; aliases=""; docroot=""; proxy=""; redirect=""; ssl="no";
+                    if (match($0,/<VirtualHost[^>]*:(\d+)>/,m) && m[1]==443) ssl="yes";
+                } else if ($0 ~ /<\/VirtualHost>/) {
+                    if (in_vhost==1) {
+                        d=(server_name!=""?server_name:"(no ServerName)");
+                        type="serves"; info="";
+                        if (redirect!="") { type="redirect"; info=redirect }
+                        else if (proxy!="") { type="reverse-proxy"; info=proxy }
+                        else if (docroot!="") { type="docroot"; info=docroot }
+                        printf("Apache: %s → %s%s %s\n", d, type, (info!=""?": " info:""), (ssl=="yes"?"[SSL]":""));
+                    }
+                    in_vhost=0;
+                }
+                if (in_vhost==1) {
+                    if ($0 ~ /ServerName[[:space:]]+/) { s=$0; sub(/.*ServerName[[:space:]]+/,"",s); server_name=trim(s) }
+                    if ($0 ~ /ServerAlias[[:space:]]+/) { s=$0; sub(/.*ServerAlias[[:space:]]+/,"",s); aliases=trim(s) }
+                    if ($0 ~ /DocumentRoot[[:space:]]+/) { s=$0; sub(/.*DocumentRoot[[:space:]]+/,"",s); docroot=trim(s) }
+                    if ($0 ~ /ProxyPass[[:space:]]+/) { s=$0; sub(/.*ProxyPass[[:space:]]+/,"",s); if (proxy=="") proxy=trim(s) }
+                    if ($0 ~ /Redirect[[:space:]]+(permanent|temp|301|302)[[:space:]]+/) { match($0,/Redirect[[:space:]]+(permanent|temp|301|302)[[:space:]]+[^ ]+[[:space:]]+(\S+)/,m); if(m[2]) redirect=trim(m[2]) }
+                    if ($0 ~ /SSLEngine[[:space:]]+on/) { ssl="yes" }
+                }
+            }
+        ' "$f" >>"$tmp_out" 2>/dev/null || true
+    done
+
+    if [[ -s "$tmp_out" ]]; then
+        sort -u "$tmp_out" | sed -E 's/[[:space:]]+/ /g'
+    fi
+    rm -f "$tmp_out" 2>/dev/null || true
 }
 
 # --------------------------------------------------
@@ -16842,7 +17001,8 @@ EOF
     sudo ln -sf "$ngx_conf" /etc/nginx/sites-enabled/
     sudo nginx -t && sudo systemctl reload nginx
 
-    ui_info "Next steps" "🎉 Umami is running behind the proxy!\n\nAdd this DNS record in Cloudflare (or your DNS):\n\nType: A | Name: analytics | Content: <your-server-ip>\n\nDefault login: admin / umami\n(Change password immediately after first login.)"
+ui_info "Next steps" "🎉 Umami is running behind the proxy!\n\nAdd this DNS record in Cloudflare (or your DNS):\n\nType: A | Name: analytics | Content: <your-server-ip>\n\nDefault login: admin / umami\n(Change password immediately after first login.)"
 }
 
-exit 0
+# Only run main when executed directly, not when sourced for tests
+[[ "${BASH_SOURCE[0]}" == "$0" ]] && main "$@"

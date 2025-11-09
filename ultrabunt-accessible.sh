@@ -632,5 +632,5 @@ main() {
 # Handle script interruption gracefully
 trap 'announce "Installation interrupted by user. Goodbye!" "$YELLOW" "important"; exit 130' INT
 
-# Run main function with all arguments
-main "$@"
+# Only run main when executed directly, not when sourced for tests
+[[ "${BASH_SOURCE[0]}" == "$0" ]] && main "$@"
